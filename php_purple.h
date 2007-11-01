@@ -41,16 +41,13 @@ PHP_RSHUTDOWN_FUNCTION(purple);
 PHP_MINFO_FUNCTION(purple);
 
 PHP_FUNCTION(confirm_purple_compiled);	/* For testing, remove later. */
-
-/* 
-  	Declare any global variables you may need between the BEGIN
-	and END macros here:     
+PHP_FUNCTION(purple_core_get_version);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
 	long  global_value;
 	char *global_string;
 ZEND_END_MODULE_GLOBALS(purple)
-*/
+
 
 /* In every utility function you add that needs to use variables 
    in php_purple_globals, call TSRMLS_FETCH(); after declaring other 
@@ -67,6 +64,13 @@ ZEND_END_MODULE_GLOBALS(purple)
 #else
 #define PURPLE_G(v) (purple_globals.v)
 #endif
+
+/* Define some purple settings
+*/
+// #define PURPLE_CUSTOM_USER_DIRECTORY    "/dev/null"
+// #define PURPLE_CUSTOM_PLUGIN_PATH       ""
+// #define PURPLE_UI_ID                    "php"
+// #define PURPLE_DEBUG_ENABLED            TRUE
 
 #endif	/* PHP_PURPLE_H */
 
