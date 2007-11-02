@@ -21,6 +21,27 @@
 #ifndef PHP_PURPLE_H
 #define PHP_PURPLE_H
 
+#include <glib.h>
+#include "account.h"
+#include "conversation.h"
+#include "core.h"
+#include "debug.h"
+#include "eventloop.h"
+#include "ft.h"
+#include "log.h"
+#include "notify.h"
+#include "prefs.h"
+#include "prpl.h"
+#include "pounce.h"
+#include "savedstatuses.h"
+#include "sound.h"
+#include "status.h"
+#include "util.h"
+#include "whiteboard.h"
+#include "version.h"
+
+typedef struct _PurpleGLibIOClosure PurpleGLibIOClosure;
+
 extern zend_module_entry purple_module_entry;
 #define phpext_purple_ptr &purple_module_entry
 
@@ -42,6 +63,7 @@ PHP_MINFO_FUNCTION(purple);
 
 PHP_FUNCTION(confirm_purple_compiled);	/* For testing, remove later. */
 PHP_FUNCTION(purple_core_get_version);
+PHP_FUNCTION(purple_plugins_get_protocols);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
 	long  global_value;
@@ -72,6 +94,13 @@ ZEND_END_MODULE_GLOBALS(purple)
 // #define PURPLE_UI_ID                    "php"
 // #define PURPLE_DEBUG_ENABLED            TRUE
 
+        
+struct _PurpleGLibIOClosure {
+    PurpleInputFunction function;
+    guint result;
+    gpointer data;
+};
+        
 #endif	/* PHP_PURPLE_H */
 
 

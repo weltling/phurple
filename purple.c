@@ -57,12 +57,6 @@
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
-typedef struct _PurpleGLibIOClosure {
-    PurpleInputFunction function;
-    guint result;
-    gpointer data;
-} PurpleGLibIOClosure;
-
 static void purple_glib_io_destroy(gpointer data)
 {
     g_free(data);
@@ -199,6 +193,7 @@ static int le_purple;
 zend_function_entry purple_functions[] = {
 	PHP_FE(confirm_purple_compiled,	NULL)		/* For testing, remove later. */
     PHP_FE(purple_core_get_version, NULL)
+    PHP_FE(purple_plugins_get_protocols, NULL)
 	{NULL, NULL, NULL}	/* Must be the last line in purple_functions[] */
 };
 /* }}} */
@@ -236,6 +231,7 @@ PHP_INI_BEGIN()
     STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
     STD_PHP_INI_ENTRY("purple.ui_id", "php", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
     STD_PHP_INI_ENTRY("purple.debug_enabled", "1", PHP_INI_ALL, OnUpdateString, global_value, zend_purple_globals, purple_globals)
+    STD_PHP_INI_ENTRY("purple.plugin_save_pref", "/dev/null", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
 PHP_INI_END()
 
 /* }}} */
@@ -274,7 +270,7 @@ PHP_MINIT_FUNCTION(purple)
     }
     
     /* Create and load the buddylist. */
-    purple_set_blist(purple_blist_new());
+//     purple_set_blist(purple_blist_new());
     purple_blist_load();
 
     /* Load the preferences. */
@@ -282,7 +278,7 @@ PHP_MINIT_FUNCTION(purple)
 
     /* Load the desired plugins. The client should save the list of loaded plugins in
      * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
-//     purple_plugins_load_saved(PLUGIN_SAVE_PREF);
+    purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
 
     /* Load the pounces. */
     purple_pounces_load();
@@ -360,13 +356,6 @@ PHP_FUNCTION(confirm_purple_compiled)
    function definition, where the functions purpose is also documented. Please 
    follow this convention for the convenience of others editing your code.
 */
-
-PHP_FUNCTION(purple_core_get_version)
-{
-    char *version = estrdup(purple_core_get_version());
-    
-    RETURN_STRING(version, 0);
-}
 
 /*
  * Local variables:
