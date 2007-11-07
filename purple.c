@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: Anatoliy Belsky                                              |
   +----------------------------------------------------------------------+
 */
 
@@ -57,67 +57,67 @@
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
-static void purple_glib_io_destroy(gpointer data)
+static void purple_glib_io_destroy(gpointer data) 
 {
-    g_free(data);
+	g_free(data); 
 }
 
 static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-    PurpleGLibIOClosure *closure = data;
-    PurpleInputCondition purple_cond = 0;
-
-    if (condition & PURPLE_GLIB_READ_COND)
-        purple_cond |= PURPLE_INPUT_READ;
-    if (condition & PURPLE_GLIB_WRITE_COND)
-        purple_cond |= PURPLE_INPUT_WRITE;
-
-    closure->function(closure->data, g_io_channel_unix_get_fd(source),
-              purple_cond);
-
-    return TRUE;
+	PurpleGLibIOClosure *closure = data;
+	PurpleInputCondition purple_cond = 0;
+	
+	if (condition & PURPLE_GLIB_READ_COND)
+		purple_cond |= PURPLE_INPUT_READ;
+	if (condition & PURPLE_GLIB_WRITE_COND)
+		purple_cond |= PURPLE_INPUT_WRITE;
+	
+	closure->function(closure->data, g_io_channel_unix_get_fd(source),
+				purple_cond);
+	
+	return TRUE;
 }
 
 static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
                                gpointer data)
 {
-    PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
-    GIOChannel *channel;
-    GIOCondition cond = 0;
-
-    closure->function = function;
-    closure->data = data;
-
-    if (condition & PURPLE_INPUT_READ)
-        cond |= PURPLE_GLIB_READ_COND;
-    if (condition & PURPLE_INPUT_WRITE)
-        cond |= PURPLE_GLIB_WRITE_COND;
-
-    channel = g_io_channel_unix_new(fd);
-    closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
-                          purple_glib_io_invoke, closure, purple_glib_io_destroy);
-
-    g_io_channel_unref(channel);
-    return closure->result;
+	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
+	GIOChannel *channel;
+	GIOCondition cond = 0;
+	
+	closure->function = function;
+	closure->data = data;
+	
+	if (condition & PURPLE_INPUT_READ)
+		cond |= PURPLE_GLIB_READ_COND;
+	if (condition & PURPLE_INPUT_WRITE)
+		cond |= PURPLE_GLIB_WRITE_COND;
+	
+	channel = g_io_channel_unix_new(fd);
+	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
+							purple_glib_io_invoke, closure, purple_glib_io_destroy);
+	
+	g_io_channel_unref(channel);
+	return closure->result;
 }
 
 static PurpleEventLoopUiOps glib_eventloops = 
 {
-    g_timeout_add,
-    g_source_remove,
-    glib_input_add,
-    g_source_remove,
-    NULL,
+	g_timeout_add,
+	g_source_remove,
+	glib_input_add,
+	g_source_remove,
+	NULL,
 #if GLIB_CHECK_VERSION(2,14,0)
-    g_timeout_add_seconds,
+	g_timeout_add_seconds,
 #else
-    NULL,
+	NULL,
 #endif
-
-    /* padding */
-    NULL,
-    NULL,
-    NULL
+	
+	/* padding */
+	NULL,
+	NULL,
+	NULL
 };
 
 /*** Conversation uiops ***/
@@ -125,60 +125,60 @@ static void
 php_write_conv(PurpleConversation *conv, const char *who, const char *alias,
             const char *message, PurpleMessageFlags flags, time_t mtime)
 {
-    const char *name;
-    if (alias && *alias)
-        name = alias;
-    else if (who && *who)
-        name = who;
-    else
-        name = NULL;
-
-    printf("(%s) %s %s: %s\n", purple_conversation_get_name(conv),
-            purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
-            name, message);
+	const char *name;
+	if (alias && *alias)
+		name = alias;
+	else if (who && *who)
+		name = who;
+	else
+		name = NULL;
+	
+	printf("(%s) %s %s: %s\n", purple_conversation_get_name(conv),
+			purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
+			name, message);
 }
 
 static PurpleConversationUiOps php_conv_uiops = 
 {
-    NULL,                      /* create_conversation  */
-    NULL,                      /* destroy_conversation */
-    NULL,                      /* write_chat           */
-    NULL,                      /* write_im             */
-    php_write_conv,           /* write_conv           */
-    NULL,                      /* chat_add_users       */
-    NULL,                      /* chat_rename_user     */
-    NULL,                      /* chat_remove_users    */
-    NULL,                      /* chat_update_user     */
-    NULL,                      /* present              */
-    NULL,                      /* has_focus            */
-    NULL,                      /* custom_smiley_add    */
-    NULL,                      /* custom_smiley_write  */
-    NULL,                      /* custom_smiley_close  */
-    NULL,                      /* send_confirm         */
-    NULL,
-    NULL,
-    NULL,
-    NULL
+	NULL,                      /* create_conversation  */
+	NULL,                      /* destroy_conversation */
+	NULL,                      /* write_chat           */
+	NULL,                      /* write_im             */
+	php_write_conv,           /* write_conv           */
+	NULL,                      /* chat_add_users       */
+	NULL,                      /* chat_rename_user     */
+	NULL,                      /* chat_remove_users    */
+	NULL,                      /* chat_update_user     */
+	NULL,                      /* present              */
+	NULL,                      /* has_focus            */
+	NULL,                      /* custom_smiley_add    */
+	NULL,                      /* custom_smiley_write  */
+	NULL,                      /* custom_smiley_close  */
+	NULL,                      /* send_confirm         */
+	NULL,
+	NULL,
+	NULL,
+	NULL
 };
 
 static void
 php_ui_init()
 {
-    purple_conversations_set_ui_ops(&php_conv_uiops);
+	purple_conversations_set_ui_ops(&php_conv_uiops);
 }
 
 static PurpleCoreUiOps php_core_uiops = 
 {
-    NULL,
-    NULL,
-    php_ui_init,
-    NULL,
-
-    /* padding */
-    NULL,
-    NULL,
-    NULL,
-    NULL
+	NULL,
+	NULL,
+	php_ui_init,
+	NULL,
+	
+	/* padding */
+	NULL,
+	NULL,
+	NULL,
+	NULL
 };
 
 ZEND_DECLARE_MODULE_GLOBALS(purple);
@@ -191,9 +191,26 @@ static int le_purple;
  * Every user visible function must have an entry in purple_functions[].
  */
 zend_function_entry purple_functions[] = {
-	PHP_FE(confirm_purple_compiled,	NULL)		/* For testing, remove later. */
-    PHP_FE(purple_core_get_version, NULL)
-    PHP_FE(purple_plugins_get_protocols, NULL)
+	PHP_FE(purple_core_get_version, NULL)
+	PHP_FE(purple_core_init, NULL)
+	
+	PHP_FE(purple_plugins_get_protocols, NULL)
+	PHP_FE(purple_plugins_add_search_path, NULL)
+	
+	PHP_FE(purple_account_new, NULL)
+	PHP_FE(purple_account_set_password, NULL)
+	PHP_FE(purple_account_set_enabled, NULL)
+	
+	PHP_FE(purple_util_set_user_dir, NULL)
+	
+	PHP_FE(purple_savedstatus_new, NULL)
+	PHP_FE(purple_savedstatus_activate, NULL)
+			
+	PHP_FE(purple_signal_connect, NULL)
+			
+	/*not purple functions*/
+	PHP_FE(purple_loop, NULL)
+		
 	{NULL, NULL, NULL}	/* Must be the last line in purple_functions[] */
 };
 /* }}} */
@@ -202,7 +219,7 @@ zend_function_entry purple_functions[] = {
  */
 zend_module_entry purple_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
-	STANDARD_MODULE_HEADER,
+	STANDARD_MODULE_HEADER,	
 #endif
 	"purple",
 	purple_functions,
@@ -227,11 +244,11 @@ ZEND_GET_MODULE(purple)
 PHP_INI_BEGIN()
 //     STD_PHP_INI_ENTRY("purple.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_purple_globals, purple_globals)
 //     STD_PHP_INI_ENTRY("purple.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
-    STD_PHP_INI_ENTRY("purple.custom_user_directory", "/dev/null", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
-    STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
-    STD_PHP_INI_ENTRY("purple.ui_id", "php", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.custom_user_directory", "/dev/null", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.ui_id", "php", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
     STD_PHP_INI_ENTRY("purple.debug_enabled", "1", PHP_INI_ALL, OnUpdateString, global_value, zend_purple_globals, purple_globals)
-    STD_PHP_INI_ENTRY("purple.plugin_save_pref", "/dev/null", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.plugin_save_pref", "/dev/null", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
 PHP_INI_END()
 
 /* }}} */
@@ -252,36 +269,54 @@ static void php_purple_init_globals(zend_purple_globals *purple_globals)
 PHP_MINIT_FUNCTION(purple)
 {
 	REGISTER_INI_ENTRIES();
+//     php_printf("%d\n", PURPLE_STATUS_AVAILABLE);
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_UNSET",         PURPLE_STATUS_UNSET,         CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_OFFLINE",       PURPLE_STATUS_OFFLINE,       CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_AVAILABLE",     PURPLE_STATUS_AVAILABLE,     CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_UNAVAILABLE",   PURPLE_STATUS_UNAVAILABLE,   CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_INVISIBLE",     PURPLE_STATUS_INVISIBLE,     CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_AWAY",          PURPLE_STATUS_AWAY,          CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_EXTENDED_AWAY", PURPLE_STATUS_EXTENDED_AWAY, CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_STATUS_MOBILE",        PURPLE_STATUS_MOBILE,        CONST_CS | CONST_PERSISTENT );
     
     /* purple initialization stuff
     */
-    purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
+	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
     purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
-    purple_core_set_ui_ops(&php_core_uiops);
-    purple_eventloop_set_ui_ops(&glib_eventloops);
-    purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
+	purple_core_set_ui_ops(&php_core_uiops);
+	purple_eventloop_set_ui_ops(&glib_eventloops);
+	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
     
-    if (!purple_core_init(INI_STR("purple.ui_id"))) {
-        /* Initializing the core failed. Terminate. */
-        fprintf(stderr,
-                "libpurple initialization failed. Dumping core.\n"
-                "Please report this!\n");
-        abort();
-    }
+//     GList *iter = purple_plugins_get_protocols();
+//     for (; iter; iter = iter->next) {
+//         PurplePlugin *plugin = iter->data;
+//         PurplePluginInfo *info = plugin->info;
+//         if (info && info->name) {
+//             protocols_list = g_list_append(protocols_list, info);
+//         }
+//     }
+    
+//     if (!purple_core_init(INI_STR("purple.ui_id"))) {
+//         /* Initializing the core failed. Terminate. */
+//         fprintf(stderr,
+//                 "libpurple initialization failed. Dumping core.\n"
+//                 "Please report this!\n");
+//         abort();
+//     }
     
     /* Create and load the buddylist. */
 //     purple_set_blist(purple_blist_new());
-    purple_blist_load();
+//     purple_blist_load();
 
     /* Load the preferences. */
-    purple_prefs_load();
+//     purple_prefs_load();
 
     /* Load the desired plugins. The client should save the list of loaded plugins in
      * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
-    purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
+//     purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
 
     /* Load the pounces. */
-    purple_pounces_load();
+//     purple_pounces_load();
     
 	return SUCCESS;
 }
@@ -292,8 +327,8 @@ PHP_MINIT_FUNCTION(purple)
 PHP_MSHUTDOWN_FUNCTION(purple)
 {
 	UNREGISTER_INI_ENTRIES();
-	
-    return SUCCESS;
+
+	return SUCCESS;
 }
 /* }}} */
 
@@ -329,33 +364,13 @@ PHP_MINFO_FUNCTION(purple)
 }
 /* }}} */
 
-
-/* Remove the following function when you have succesfully modified config.m4
-   so that your module can be compiled into PHP, it exists only for testing
-   purposes. */
-
-/* Every user-visible function in PHP should document itself in the source */
-/* {{{ proto string confirm_purple_compiled(string arg)
-   Return a string to confirm that the module is compiled in */
-PHP_FUNCTION(confirm_purple_compiled)
+/* {{{ */
+PHP_FUNCTION(purple_loop)
 {
-	char *arg = NULL;
-	int arg_len, len;
-	char *strg;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &arg, &arg_len) == FAILURE) {
-		return;
-	}
-
-	len = spprintf(&strg, 0, "Congratulations! You have successfully modified ext/%.78s/config.m4. Module %.78s is now compiled into PHP.", "purple", arg);
-	RETURN_STRINGL(strg, len, 0);
+	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+	g_main_loop_run(loop);
 }
 /* }}} */
-/* The previous line is meant for vim and emacs, so it can correctly fold and 
-   unfold functions in source code. See the corresponding marks just before 
-   function definition, where the functions purpose is also documented. Please 
-   follow this convention for the convenience of others editing your code.
-*/
 
 /*
  * Local variables:

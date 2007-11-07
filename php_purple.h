@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: Anatoliy Belsky                                              |
   +----------------------------------------------------------------------+
 */
 
@@ -40,7 +40,17 @@
 #include "whiteboard.h"
 #include "version.h"
 
+#define ACCOUNT_LIST_LENGTH 10
+
 typedef struct _PurpleGLibIOClosure PurpleGLibIOClosure;
+
+// GList *protocols_list;
+
+PurpleAccount* accounts_list[ACCOUNT_LIST_LENGTH];
+
+PurpleSavedStatus* saved_status;
+
+// void* connections_handle;
 
 extern zend_module_entry purple_module_entry;
 #define phpext_purple_ptr &purple_module_entry
@@ -61,9 +71,26 @@ PHP_RINIT_FUNCTION(purple);
 PHP_RSHUTDOWN_FUNCTION(purple);
 PHP_MINFO_FUNCTION(purple);
 
-PHP_FUNCTION(confirm_purple_compiled);	/* For testing, remove later. */
 PHP_FUNCTION(purple_core_get_version);
+PHP_FUNCTION(purple_core_init);
+
 PHP_FUNCTION(purple_plugins_get_protocols);
+PHP_FUNCTION(purple_plugins_add_search_path);
+
+PHP_FUNCTION(purple_account_new);
+PHP_FUNCTION(purple_account_set_password);
+PHP_FUNCTION(purple_account_set_enabled);
+
+PHP_FUNCTION(purple_util_set_user_dir);
+
+PHP_FUNCTION(purple_savedstatus_new);
+PHP_FUNCTION(purple_savedstatus_activate);
+
+PHP_FUNCTION(purple_signal_connect);
+
+/*not purple functions*/
+PHP_FUNCTION(purple_loop);
+
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
 	long  global_value;
@@ -94,11 +121,10 @@ ZEND_END_MODULE_GLOBALS(purple)
 // #define PURPLE_UI_ID                    "php"
 // #define PURPLE_DEBUG_ENABLED            TRUE
 
-        
 struct _PurpleGLibIOClosure {
-    PurpleInputFunction function;
-    guint result;
-    gpointer data;
+	PurpleInputFunction function;
+	guint result;
+	gpointer data;
 };
         
 #endif	/* PHP_PURPLE_H */

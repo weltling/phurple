@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: Anatoliy Belsky                                              |
   +----------------------------------------------------------------------+
 */
 
@@ -51,8 +51,30 @@
 /* {{{ */
 PHP_FUNCTION(purple_core_get_version)
 {
-    char *version = estrdup(purple_core_get_version());
-    
-    RETURN_STRING(version, 0);
+	char *version = estrdup(purple_core_get_version());
+	
+	RETURN_STRING(version, 0);
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_core_init)
+{
+	char *ui_id;
+	int ui_id_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &ui_id, &ui_id_len) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	ui_id = !ui_id_len ? INI_STR("purple.ui_id") : estrdup(ui_id);
+	
+	if (!purple_core_init(ui_id)) {
+//         abort();
+		RETURN_FALSE;
+	}
+	
+	RETURN_TRUE;
 }
 /* }}} */
