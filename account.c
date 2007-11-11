@@ -88,10 +88,11 @@ PHP_FUNCTION(purple_account_set_password)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls", &account_index, &password, &password_len) == FAILURE) {
 		RETURN_NULL();
 	}
-
+	
 	if(NULL != accounts_list[account_index]) {
 		purple_account_set_password(accounts_list[account_index], estrdup(password));
 	}
+// 	php_printf("username: %s, password: %s\n", 	purple_account_get_username(accounts_list[account_index]), 	purple_account_get_password(accounts_list[account_index]));
 }
 
 PHP_FUNCTION(purple_account_set_enabled)
@@ -100,12 +101,15 @@ PHP_FUNCTION(purple_account_set_enabled)
 	char *ui_id;
 	zend_bool enabled;
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "isb", &account_index, &ui_id, &ui_id_len, &enabled) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lsb", &account_index, &ui_id, &ui_id_len, &enabled) == FAILURE) {
 		RETURN_NULL();
 	}
 	
+// 	enabled = (NULL == enabled) ? TRUE : enabled;
+
 	if(NULL != accounts_list[account_index]) {
-		purple_account_set_enabled(accounts_list[account_index], estrdup(ui_id), enabled);
+		purple_account_set_enabled(accounts_list[account_index], estrdup(ui_id), (gboolean) enabled);
+// 		php_printf("protocol_id: %s\n", 	purple_account_get_protocol_id(accounts_list[account_index]));
 	}
 }
 

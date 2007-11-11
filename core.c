@@ -75,6 +75,20 @@ PHP_FUNCTION(purple_core_init)
 		RETURN_FALSE;
 	}
 	
+	/* Create and load the buddylist. */
+	purple_set_blist(purple_blist_new());
+	purple_blist_load();
+
+	/* Load the preferences. */
+	purple_prefs_load();
+
+	/* Load the desired plugins. The client should save the list of loaded plugins in
+	 * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
+	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
+
+	/* Load the pounces. */
+	purple_pounces_load();
+	
 	RETURN_TRUE;
 }
 /* }}} */
