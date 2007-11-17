@@ -28,9 +28,6 @@
 #include "php_purple.h"
 
 #include <glib.h>
-// 
-// #include <string.h>
-// #include <unistd.h>
 
 #include "account.h"
 #include "conversation.h"
@@ -50,61 +47,10 @@
 #include "whiteboard.h"
 #include "version.h"
 
-/* {{{ */
-PHP_FUNCTION(purple_plugins_get_protocols)
-{
-	GList *iter;
-	int i;
-	
-	array_init(return_value);
-	
-	iter = purple_plugins_get_protocols();
-	for (i = 0; iter; iter = iter->next, i++) {
-		PurplePlugin *plugin = iter->data;
-		PurplePluginInfo *info = plugin->info;
-		if (info && info->name) {
-			add_index_string(return_value, i, info->name, 1);
-		}
-	}
-}
-/* }}} */
-
 
 /* {{{ */
-PHP_FUNCTION(purple_plugins_add_search_path)
+PHP_FUNCTION(purple_blist_load)
 {
-	char *plugin_path;
-	int plugin_path_len;
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &plugin_path, &plugin_path_len) == FAILURE) {
-		RETURN_NULL();
-	}
-	
-	plugin_path = !plugin_path_len ? INI_STR("purple.custom_plugin_path") : estrdup(plugin_path);
-	
-	purple_plugins_add_search_path(plugin_path);
+	purple_blist_load();
 }
 /* }}} */
-
-
-
-/* {{{ */
-PHP_FUNCTION(purple_plugins_load_saved)
-{
-	char* key;
-	int key_len;
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
-		RETURN_NULL();
-	}
-	
-	key = !key_len ? INI_STR("purple.plugin_save_pref") : estrdup(key);
-	
-	purple_plugins_load_saved(key);
-}
-
-/* }}} */
-
-
-
-

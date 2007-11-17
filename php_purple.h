@@ -46,9 +46,9 @@ typedef struct _PurpleGLibIOClosure PurpleGLibIOClosure;
 
 // GList *protocols_list;
 
-PurpleAccount* accounts_list[ACCOUNT_LIST_LENGTH];
+static PurpleAccount* accounts_list[ACCOUNT_LIST_LENGTH];
 
-PurpleSavedStatus* saved_status;
+static PurpleSavedStatus* saved_status;
 
 // void* connections_handle;
 
@@ -76,6 +76,7 @@ PHP_FUNCTION(purple_core_init);
 
 PHP_FUNCTION(purple_plugins_get_protocols);
 PHP_FUNCTION(purple_plugins_add_search_path);
+PHP_FUNCTION(purple_plugins_load_saved);
 
 PHP_FUNCTION(purple_account_new);
 PHP_FUNCTION(purple_account_set_password);
@@ -87,6 +88,12 @@ PHP_FUNCTION(purple_savedstatus_new);
 PHP_FUNCTION(purple_savedstatus_activate);
 
 PHP_FUNCTION(purple_signal_connect);
+
+PHP_FUNCTION(purple_blist_load);
+
+PHP_FUNCTION(purple_prefs_load);
+
+PHP_FUNCTION(purple_pounces_load);
 
 /*not purple functions*/
 PHP_FUNCTION(purple_loop);

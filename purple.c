@@ -133,18 +133,37 @@ php_write_conv(PurpleConversation *conv, const char *who, const char *alias,
 	else
 		name = NULL;
 	
-	printf("(%s) %s %s: %s\n", purple_conversation_get_name(conv),
-			purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
-			name, message);
+	php_printf("(%s) %s %s: %s\n",
+				purple_conversation_get_name(conv),
+				purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
+				name,
+				message
+			  );
+}
+
+static void php_write_chat(PurpleConversation *conv, const char *who, const char *message,
+						   PurpleMessageFlags flags, time_t mtime)
+{
+	php_printf("%s + write_chat\n", message);
+}
+
+static void php_write_im(PurpleConversation *conv, const char *who, const char *message,
+						 PurpleMessageFlags flags, time_t mtime)
+{
+	php_printf("%s + write_im\n", message);
+	
+// 	purple_conv_im_send(purple_conversation_get_im_data(conv), "answer: you are an asshole ;) !!! \n");
+// 	purple_conv_im_write(purple_conversation_get_im_data(conv), who, "answer: you are an asshole ;) !!! \n", flags, mtime);
+// 	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
 }
 
 static PurpleConversationUiOps php_conv_uiops = 
 {
 	NULL,                      /* create_conversation  */
 	NULL,                      /* destroy_conversation */
-	NULL,                      /* write_chat           */
-	NULL,                      /* write_im             */
-	php_write_conv,           /* write_conv           */
+	php_write_chat,            /* write_chat           */
+	php_write_im,              /* write_im             */
+	php_write_conv,            /* write_conv           */
 	NULL,                      /* chat_add_users       */
 	NULL,                      /* chat_rename_user     */
 	NULL,                      /* chat_remove_users    */
@@ -196,6 +215,7 @@ zend_function_entry purple_functions[] = {
 	
 	PHP_FE(purple_plugins_get_protocols, NULL)
 	PHP_FE(purple_plugins_add_search_path, NULL)
+	PHP_FE(purple_plugins_load_saved, NULL)
 	
 	PHP_FE(purple_account_new, NULL)
 	PHP_FE(purple_account_set_password, NULL)
@@ -207,6 +227,12 @@ zend_function_entry purple_functions[] = {
 	PHP_FE(purple_savedstatus_activate, NULL)
 			
 	PHP_FE(purple_signal_connect, NULL)
+			
+	PHP_FE(purple_blist_load, NULL)
+			
+	PHP_FE(purple_prefs_load, NULL)
+			
+	PHP_FE(purple_pounces_load, NULL)
 			
 	/*not purple functions*/
 	PHP_FE(purple_loop, NULL)
@@ -248,7 +274,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
 	STD_PHP_INI_ENTRY("purple.ui_id", "php", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
     STD_PHP_INI_ENTRY("purple.debug_enabled", "1", PHP_INI_ALL, OnUpdateString, global_value, zend_purple_globals, purple_globals)
-	STD_PHP_INI_ENTRY("purple.plugin_save_pref", "/dev/null", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.plugin_save_pref", "/purple/nullclient/plugins/saved", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
 PHP_INI_END()
 
 /* }}} */
@@ -369,6 +395,13 @@ PHP_FUNCTION(purple_loop)
 {
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(loop);
+}
+/* }}} */
+
+/* {{{ */
+PHP_FUNCTION(purple_prefs_load)
+{
+	RETURN_BOOL((long)purple_prefs_load());
 }
 /* }}} */
 
