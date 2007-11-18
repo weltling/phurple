@@ -65,6 +65,11 @@
 #include "whiteboard.h"
 #include "version.h"
 
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#include <sys/wait.h>
+#endif
+
 /**
  * The following eventloop functions are used in both pidgin and purple-text. If your
  * application uses glib mainloop, you can safely use this verbatim.
@@ -74,6 +79,77 @@
 
 static zval *purple_php_write_conv_function_name;
 
+#ifdef HAVE_SIGNAL_H
+static void sighandler(int sig);
+
+static int catch_sig_list[] = {
+	SIGSEGV,
+	SIGHUP,
+	SIGINT,
+	SIGTERM,
+	SIGQUIT,
+	SIGCHLD,
+	SIGALRM,
+	-1
+};
+
+static int ignore_sig_list[] = {
+	SIGPIPE,
+	-1
+};
+
+static void
+clean_pid()
+{
+	int status;
+	pid_t pid;
+
+	do {
+		pid = waitpid(-1, &status, WNOHANG);
+	} while (pid != 0 && pid != (pid_t)-1);
+
+	if ((pid == (pid_t) - 1) && (errno != ECHILD)) {
+		char errmsg[BUFSIZ];
+		snprintf(errmsg, BUFSIZ, "Warning: waitpid() returned %d", pid);
+		perror(errmsg);
+	}
+
+	/* Restore signal catching */
+	signal(SIGALRM, sighandler);
+}
+
+static char *segfault_message;
+
+static void
+sighandler(int sig)
+{
+	switch (sig) {
+	case SIGHUP:
+		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
+		purple_connections_disconnect_all();
+		break;
+	case SIGSEGV:
+		fprintf(stderr, "%s", segfault_message);
+		abort();
+		break;
+	case SIGCHLD:
+		/* Restore signal catching */
+		signal(SIGCHLD, sighandler);
+		alarm(1);
+		break;
+	case SIGALRM:
+		clean_pid();
+		break;
+	default:
+		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
+		purple_connections_disconnect_all();
+
+		purple_plugins_unload_all();
+
+		exit(0);
+	}
+}
+#endif
 
 /* {{{ just took this two functions from the readline extension */
 static zval *purple_php_string_zval(const char *str)
@@ -196,6 +272,7 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 	const char *name;
 	zval *params[4];
 	zval *retval;
+	
 	TSRMLS_FETCH();
 	
 	if (alias && *alias)
@@ -206,7 +283,7 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 		name = NULL;
 
 	params[0] = purple_php_string_zval(purple_conversation_get_name(conv));
-	params[1] = purple_php_string_zval(purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)));
+	params[1] = purple_php_long_zval((long)mtime);
 	params[2] = purple_php_string_zval(name);
 	params[3] = purple_php_string_zval(message);
 
@@ -372,7 +449,43 @@ PHP_MINIT_FUNCTION(purple)
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_AWAY",          PURPLE_STATUS_AWAY,          CONST_CS | CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_EXTENDED_AWAY", PURPLE_STATUS_EXTENDED_AWAY, CONST_CS | CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_MOBILE",        PURPLE_STATUS_MOBILE,        CONST_CS | CONST_PERSISTENT );
-    
+
+#ifdef HAVE_SIGNAL_H
+	int sig_indx;	/* for setting up signal catching */
+	sigset_t sigset;
+	RETSIGTYPE (*prev_sig_disp)(int);
+	char errmsg[BUFSIZ];
+
+	if (sigemptyset(&sigset)) {
+		snprintf(errmsg, BUFSIZ, "Warning: couldn't initialise empty signal set");
+		perror(errmsg);
+	}
+	for(sig_indx = 0; catch_sig_list[sig_indx] != -1; ++sig_indx) {
+		if((prev_sig_disp = signal(catch_sig_list[sig_indx], sighandler)) == SIG_ERR) {
+			snprintf(errmsg, BUFSIZ, "Warning: couldn't set signal %d for catching",
+				catch_sig_list[sig_indx]);
+			perror(errmsg);
+		}
+		if(sigaddset(&sigset, catch_sig_list[sig_indx])) {
+			snprintf(errmsg, BUFSIZ, "Warning: couldn't include signal %d for unblocking",
+				catch_sig_list[sig_indx]);
+			perror(errmsg);
+		}
+	}
+	for(sig_indx = 0; ignore_sig_list[sig_indx] != -1; ++sig_indx) {
+		if((prev_sig_disp = signal(ignore_sig_list[sig_indx], SIG_IGN)) == SIG_ERR) {
+			snprintf(errmsg, BUFSIZ, "Warning: couldn't set signal %d to ignore",
+				ignore_sig_list[sig_indx]);
+			perror(errmsg);
+		}
+	}
+
+	if (sigprocmask(SIG_UNBLOCK, &sigset, NULL)) {
+		snprintf(errmsg, BUFSIZ, "Warning: couldn't unblock signals");
+		perror(errmsg);
+	}
+#endif
+	
     /* purple initialization stuff
     */
 	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));

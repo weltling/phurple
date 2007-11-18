@@ -66,10 +66,10 @@
 #include "version.h"
 
 
-// PHP_FUNCTION(purple_connections_get_handle)
-// {
-// 	
-// }
+/*PHP_FUNCTION(purple_connections_get_handle)
+{
+
+}*/
 
 
 
