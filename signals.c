@@ -66,7 +66,7 @@ static void
 signed_on(PurpleConnection *gc, gpointer null)
 {
 	PurpleAccount *account = purple_connection_get_account(gc);
-	php_printf("Account connected: %s %s\n", account->username, account->protocol_id);
+// 	php_printf("Account connected: %s %s\n", account->username, account->protocol_id);
 }
 
 PHP_FUNCTION(purple_signal_connect)

@@ -60,7 +60,7 @@
 typedef struct _PurpleGLibIOClosure PurpleGLibIOClosure;
 
 static GList* accounts_list;
-
+static GList* conversations_list;
 static PurpleSavedStatus* saved_status;
 
 // void* connections_handle;
@@ -99,6 +99,8 @@ PHP_FUNCTION(purple_util_set_user_dir);
 
 PHP_FUNCTION(purple_savedstatus_new);
 PHP_FUNCTION(purple_savedstatus_activate);
+
+PHP_FUNCTION(purple_conversation_get_name);
 
 PHP_FUNCTION(purple_signal_connect);
 

@@ -86,7 +86,7 @@ PHP_FUNCTION(purple_account_new)
 	account = purple_account_new(estrdup(username), estrdup(protocol_id));
 	if(NULL != account) {
 		accounts_list = g_list_append(accounts_list, account);
-		RETURN_LONG((int)g_list_position(accounts_list, g_list_last(accounts_list)));
+		RETURN_LONG((long)g_list_position(accounts_list, g_list_last(accounts_list)));
 	}
 	
 	RETURN_NULL();

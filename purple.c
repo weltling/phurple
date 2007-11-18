@@ -77,10 +77,25 @@
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
+static void php_ui_init();
+static zval *purple_php_string_zval(const char *str);
+static zval *purple_php_long_zval(long l);
+static void purple_glib_io_destroy(gpointer data);
+static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data);
+static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
+							gpointer data);
+static void
+purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
+							   const char *message, PurpleMessageFlags flags, time_t mtime);
+#ifdef HAVE_SIGNAL_H
+static void sighandler(int sig);
+static void clean_pid();
+#endif
+
 static zval *purple_php_write_conv_function_name;
 
 #ifdef HAVE_SIGNAL_H
-static void sighandler(int sig);
+static char *segfault_message;
 
 static int catch_sig_list[] = {
 	SIGSEGV,
@@ -97,134 +112,7 @@ static int ignore_sig_list[] = {
 	SIGPIPE,
 	-1
 };
-
-static void
-clean_pid()
-{
-	int status;
-	pid_t pid;
-
-	do {
-		pid = waitpid(-1, &status, WNOHANG);
-	} while (pid != 0 && pid != (pid_t)-1);
-
-	if ((pid == (pid_t) - 1) && (errno != ECHILD)) {
-		char errmsg[BUFSIZ];
-		snprintf(errmsg, BUFSIZ, "Warning: waitpid() returned %d", pid);
-		perror(errmsg);
-	}
-
-	/* Restore signal catching */
-	signal(SIGALRM, sighandler);
-}
-
-static char *segfault_message;
-
-static void
-sighandler(int sig)
-{
-	switch (sig) {
-	case SIGHUP:
-		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
-		purple_connections_disconnect_all();
-		break;
-	case SIGSEGV:
-		fprintf(stderr, "%s", segfault_message);
-		abort();
-		break;
-	case SIGCHLD:
-		/* Restore signal catching */
-		signal(SIGCHLD, sighandler);
-		alarm(1);
-		break;
-	case SIGALRM:
-		clean_pid();
-		break;
-	default:
-		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
-		purple_connections_disconnect_all();
-
-		purple_plugins_unload_all();
-
-		exit(0);
-	}
-}
 #endif
-
-/* {{{ just took this two functions from the readline extension */
-static zval *purple_php_string_zval(const char *str)
-{
-	zval *ret;
-	int len;
-	
-	MAKE_STD_ZVAL(ret);
-	
-	if (str) {
-		len = strlen(str);
-		ZVAL_STRINGL(ret, (char*)str, len, 1);
-	} else {
-		ZVAL_NULL(ret);
-	}
-
-	return ret;
-}
-
-static zval *purple_php_long_zval(long l)
-{
-	zval *ret;
-	MAKE_STD_ZVAL(ret);
-
-	Z_TYPE_P(ret) = IS_LONG;
-	Z_LVAL_P(ret) = l;
-	return ret;
-}
-/* }}} */
-
-
-
-static void purple_glib_io_destroy(gpointer data) 
-{
-	g_free(data); 
-}
-
-static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
-{
-	PurpleGLibIOClosure *closure = data;
-	PurpleInputCondition purple_cond = 0;
-	
-	if (condition & PURPLE_GLIB_READ_COND)
-		purple_cond |= PURPLE_INPUT_READ;
-	if (condition & PURPLE_GLIB_WRITE_COND)
-		purple_cond |= PURPLE_INPUT_WRITE;
-	
-	closure->function(closure->data, g_io_channel_unix_get_fd(source),
-				purple_cond);
-	
-	return TRUE;
-}
-
-static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
-                               gpointer data)
-{
-	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
-	GIOChannel *channel;
-	GIOCondition cond = 0;
-	
-	closure->function = function;
-	closure->data = data;
-	
-	if (condition & PURPLE_INPUT_READ)
-		cond |= PURPLE_GLIB_READ_COND;
-	if (condition & PURPLE_INPUT_WRITE)
-		cond |= PURPLE_GLIB_WRITE_COND;
-	
-	channel = g_io_channel_unix_new(fd);
-	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
-							purple_glib_io_invoke, closure, purple_glib_io_destroy);
-	
-	g_io_channel_unref(channel);
-	return closure->result;
-}
 
 static PurpleEventLoopUiOps glib_eventloops = 
 {
@@ -246,62 +134,7 @@ static PurpleEventLoopUiOps glib_eventloops =
 };
 
 /*** Conversation uiops ***/
-/*
-static void php_write_chat(PurpleConversation *conv, const char *who, const char *message,
-						   PurpleMessageFlags flags, time_t mtime)
-{
-	php_printf("%s + write_chat\n", message);
-}
-
-static void php_write_im(PurpleConversation *conv, const char *who, const char *message,
-						 PurpleMessageFlags flags, time_t mtime)
-{
-	php_printf("%s + write_im\n", message);
-	
-// 	purple_conv_im_send(purple_conversation_get_im_data(conv), "answer: you are an asshole ;) !!! \n");
-// 	purple_conv_im_write(purple_conversation_get_im_data(conv), who, "answer: you are an asshole ;) !!! \n", flags, mtime);
-// 	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
-}*/
-
-
-/* {{{ */
-static void
-purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
-            const char *message, PurpleMessageFlags flags, time_t mtime)
-{
-	const char *name;
-	zval *params[4];
-	zval *retval;
-	
-	TSRMLS_FETCH();
-	
-	if (alias && *alias)
-		name = alias;
-	else if (who && *who)
-		name = who;
-	else
-		name = NULL;
-
-	params[0] = purple_php_string_zval(purple_conversation_get_name(conv));
-	params[1] = purple_php_long_zval((long)mtime);
-	params[2] = purple_php_string_zval(name);
-	params[3] = purple_php_string_zval(message);
-
-	if(call_user_function(	CG(function_table),
-	   						NULL,
-							purple_php_write_conv_function_name,
-							retval,
-							4,
-							params TSRMLS_CC
-						 ) != SUCCESS) {
-		zend_error(E_ERROR, "Function call failed");
-	}
-
-	zval_dtor(retval);
-}
-/* }}} */
-
-static PurpleConversationUiOps php_conv_uiops = 
+static PurpleConversationUiOps php_conv_uiops =
 {
 	NULL,                      /* create_conversation  */
 	NULL,                      /* destroy_conversation */
@@ -323,12 +156,6 @@ static PurpleConversationUiOps php_conv_uiops =
 	NULL,
 	NULL
 };
-
-static void
-php_ui_init()
-{
-	purple_conversations_set_ui_ops(&php_conv_uiops);
-}
 
 static PurpleCoreUiOps php_core_uiops = 
 {
@@ -369,6 +196,8 @@ zend_function_entry purple_functions[] = {
 	
 	PHP_FE(purple_savedstatus_new, NULL)
 	PHP_FE(purple_savedstatus_activate, NULL)
+
+	PHP_FE(purple_conversation_get_name, NULL)
 			
 	PHP_FE(purple_signal_connect, NULL)
 			
@@ -493,38 +322,7 @@ PHP_MINIT_FUNCTION(purple)
 	purple_core_set_ui_ops(&php_core_uiops);
 	purple_eventloop_set_ui_ops(&glib_eventloops);
 	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
-    
-//     GList *iter = purple_plugins_get_protocols();
-//     for (; iter; iter = iter->next) {
-//         PurplePlugin *plugin = iter->data;
-//         PurplePluginInfo *info = plugin->info;
-//         if (info && info->name) {
-//             protocols_list = g_list_append(protocols_list, info);
-//         }
-//     }
-    
-//     if (!purple_core_init(INI_STR("purple.ui_id"))) {
-//         /* Initializing the core failed. Terminate. */
-//         fprintf(stderr,
-//                 "libpurple initialization failed. Dumping core.\n"
-//                 "Please report this!\n");
-//         abort();
-//     }
-    
-    /* Create and load the buddylist. */
-//     purple_set_blist(purple_blist_new());
-//     purple_blist_load();
 
-    /* Load the preferences. */
-//     purple_prefs_load();
-
-    /* Load the desired plugins. The client should save the list of loaded plugins in
-     * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
-//     purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
-
-    /* Load the pounces. */
-//     purple_pounces_load();
-    
 	return SUCCESS;
 }
 /* }}} */
@@ -607,6 +405,227 @@ PHP_FUNCTION(purple_php_write_conv_function)
 	purple_php_write_conv_function_name = purple_php_string_zval(name);
 }
 /* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_conversation_get_name)
+{
+	int conversation_index;
+	PurpleConversation *conversation = NULL;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &conversation_index) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	conversation = g_list_nth_data (conversations_list, (guint)conversation_index);
+// php_printf("conversation name: %s\n", purple_conversation_get_name(conversation));
+	if(NULL != conversation) {
+		RETURN_STRING(purple_conversation_get_name(conversation), 1);
+	}
+
+	RETURN_NULL();
+}
+/* }}} */
+
+
+
+/*
+**
+** Helper functions
+**
+*/
+
+static void
+php_ui_init()
+{
+	purple_conversations_set_ui_ops(&php_conv_uiops);
+}
+
+#ifdef HAVE_SIGNAL_H
+static void
+clean_pid()
+{
+	int status;
+	pid_t pid;
+
+	do {
+		pid = waitpid(-1, &status, WNOHANG);
+	} while (pid != 0 && pid != (pid_t)-1);
+
+	if ((pid == (pid_t) - 1) && (errno != ECHILD)) {
+		char errmsg[BUFSIZ];
+		snprintf(errmsg, BUFSIZ, "Warning: waitpid() returned %d", pid);
+		perror(errmsg);
+	}
+
+	/* Restore signal catching */
+	signal(SIGALRM, sighandler);
+}
+
+static void
+sighandler(int sig)
+{
+	switch (sig) {
+	case SIGHUP:
+		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
+		purple_connections_disconnect_all();
+		break;
+	case SIGSEGV:
+		fprintf(stderr, "%s", segfault_message);
+		abort();
+		break;
+	case SIGCHLD:
+		/* Restore signal catching */
+		signal(SIGCHLD, sighandler);
+		alarm(1);
+		break;
+	case SIGALRM:
+		clean_pid();
+		break;
+	default:
+		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
+		purple_connections_disconnect_all();
+
+		purple_plugins_unload_all();
+
+		exit(0);
+	}
+}
+#endif
+
+
+/* {{{ just took this two functions from the readline extension */
+static zval *purple_php_string_zval(const char *str)
+{
+	zval *ret;
+	int len;
+	
+	MAKE_STD_ZVAL(ret);
+	
+	if (str) {
+		len = strlen(str);
+		ZVAL_STRINGL(ret, (char*)str, len, 1);
+	} else {
+		ZVAL_NULL(ret);
+	}
+
+	return ret;
+}
+
+static zval *purple_php_long_zval(long l)
+{
+	zval *ret;
+	MAKE_STD_ZVAL(ret);
+
+	Z_TYPE_P(ret) = IS_LONG;
+	Z_LVAL_P(ret) = l;
+	return ret;
+}
+/* }}} */
+
+static void purple_glib_io_destroy(gpointer data) 
+{
+	g_free(data); 
+}
+
+
+static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+{
+	PurpleGLibIOClosure *closure = data;
+	PurpleInputCondition purple_cond = 0;
+	
+	if (condition & PURPLE_GLIB_READ_COND)
+		purple_cond |= PURPLE_INPUT_READ;
+	if (condition & PURPLE_GLIB_WRITE_COND)
+		purple_cond |= PURPLE_INPUT_WRITE;
+	
+	closure->function(closure->data, g_io_channel_unix_get_fd(source),
+				purple_cond);
+	
+	return TRUE;
+}
+
+
+static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
+                               gpointer data)
+{
+	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
+	GIOChannel *channel;
+	GIOCondition cond = 0;
+	
+	closure->function = function;
+	closure->data = data;
+	
+	if (condition & PURPLE_INPUT_READ)
+		cond |= PURPLE_GLIB_READ_COND;
+	if (condition & PURPLE_INPUT_WRITE)
+		cond |= PURPLE_GLIB_WRITE_COND;
+	
+	channel = g_io_channel_unix_new(fd);
+	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
+							purple_glib_io_invoke, closure, purple_glib_io_destroy);
+	
+	g_io_channel_unref(channel);
+	return closure->result;
+}
+
+
+/* {{{ */
+static void
+purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
+            const char *message, PurpleMessageFlags flags, time_t mtime)
+{
+	const int PARAMS_COUNT = 5;
+	zval *params[PARAMS_COUNT];
+	zval *retval;
+	
+	TSRMLS_FETCH();
+
+	if(NULL == g_list_find(conversations_list, conv)) {
+		conversations_list = g_list_append(conversations_list, conv);
+	}
+
+	params[0] = purple_php_long_zval((long)g_list_position(conversations_list, g_list_last(conversations_list)));
+	params[1] = purple_php_long_zval((long)mtime);
+	params[2] = purple_php_string_zval(who);
+	params[3] = purple_php_string_zval(alias);
+	params[4] = purple_php_string_zval(message);
+
+	if(call_user_function(	CG(function_table),
+	   						NULL,
+							purple_php_write_conv_function_name,
+							retval,
+							PARAMS_COUNT,
+							params TSRMLS_CC
+						 ) != SUCCESS) {
+		zend_error(E_ERROR, "Function call failed");
+	}
+
+	zval_dtor(retval);
+}
+/* }}} */
+
+/*
+static void php_write_chat(PurpleConversation *conv, const char *who, const char *message,
+						   PurpleMessageFlags flags, time_t mtime)
+{
+	php_printf("%s + write_chat\n", message);
+}
+
+static void php_write_im(PurpleConversation *conv, const char *who, const char *message,
+						 PurpleMessageFlags flags, time_t mtime)
+{
+	php_printf("%s + write_im\n", message);
+	
+// 	purple_conv_im_send(purple_conversation_get_im_data(conv), "answer: you are an asshole ;) !!! \n");
+// 	purple_conv_im_write(purple_conversation_get_im_data(conv), who, "answer: you are an asshole ;) !!! \n", flags, mtime);
+// 	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
+}*/
+
+
+
+
+
 
 /*
  * Local variables:
