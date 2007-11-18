@@ -1,22 +1,37 @@
 /*
-  +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
-  +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2007 The PHP Group                                |
-  +----------------------------------------------------------------------+
-  | This source file is subject to version 3.01 of the PHP license,      |
-  | that is bundled with this package in the file LICENSE, and is        |
-  | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_01.txt                                  |
-  | If you did not receive a copy of the PHP license and are unable to   |
-  | obtain it through the world-wide-web, please send a note to          |
-  | license@php.net so we can mail you a copy immediately.               |
-  +----------------------------------------------------------------------+
-  | Author: Anatoliy Belsky                                              |
-  +----------------------------------------------------------------------+
-*/
+   This file is part of phpurple
 
-/* $Id: header,v 1.16.2.1.2.1 2007/01/01 19:32:09 iliaa Exp $ */
+   Copyright (C) 2007 Anatoliy Belsky
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+   In addition, as a special exception, the copyright holders of phpurple
+   give you permission to combine phpurple with code included in the
+   standard release of PHP under the PHP license (or modified versions of
+   such code, with unchanged license). You may copy and distribute such a
+   system following the terms of the GNU GPL for phpurple and the licenses
+   of the other code concerned, provided that you include the source code of
+   that other code when and as the GNU GPL requires distribution of source code.
+
+   You must obey the GNU General Public License in all respects for all of the
+   code used other than standard release of PHP. If you modify this file, you
+   may extend this exception to your version of the file, but you are not
+   obligated to do so. If you do not wish to do so, delete this exception
+   statement from your version.
+
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -56,6 +71,40 @@
  */
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
+
+static zval *purple_php_write_conv_function_name;
+
+
+/* {{{ just took this two functions from the readline extension */
+static zval *purple_php_string_zval(const char *str)
+{
+	zval *ret;
+	int len;
+	
+	MAKE_STD_ZVAL(ret);
+	
+	if (str) {
+		len = strlen(str);
+		ZVAL_STRINGL(ret, (char*)str, len, 1);
+	} else {
+		ZVAL_NULL(ret);
+	}
+
+	return ret;
+}
+
+static zval *purple_php_long_zval(long l)
+{
+	zval *ret;
+	MAKE_STD_ZVAL(ret);
+
+	Z_TYPE_P(ret) = IS_LONG;
+	Z_LVAL_P(ret) = l;
+	return ret;
+}
+/* }}} */
+
+
 
 static void purple_glib_io_destroy(gpointer data) 
 {
@@ -121,26 +170,7 @@ static PurpleEventLoopUiOps glib_eventloops =
 };
 
 /*** Conversation uiops ***/
-static void
-php_write_conv(PurpleConversation *conv, const char *who, const char *alias,
-            const char *message, PurpleMessageFlags flags, time_t mtime)
-{
-	const char *name;
-	if (alias && *alias)
-		name = alias;
-	else if (who && *who)
-		name = who;
-	else
-		name = NULL;
-	
-	php_printf("(%s) %s %s: %s\n",
-				purple_conversation_get_name(conv),
-				purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)),
-				name,
-				message
-			  );
-}
-
+/*
 static void php_write_chat(PurpleConversation *conv, const char *who, const char *message,
 						   PurpleMessageFlags flags, time_t mtime)
 {
@@ -155,15 +185,52 @@ static void php_write_im(PurpleConversation *conv, const char *who, const char *
 // 	purple_conv_im_send(purple_conversation_get_im_data(conv), "answer: you are an asshole ;) !!! \n");
 // 	purple_conv_im_write(purple_conversation_get_im_data(conv), who, "answer: you are an asshole ;) !!! \n", flags, mtime);
 // 	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
+}*/
+
+
+/* {{{ */
+static void
+purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
+            const char *message, PurpleMessageFlags flags, time_t mtime)
+{
+	const char *name;
+	zval *params[4];
+	zval *retval;
+	TSRMLS_FETCH();
+	
+	if (alias && *alias)
+		name = alias;
+	else if (who && *who)
+		name = who;
+	else
+		name = NULL;
+
+	params[0] = purple_php_string_zval(purple_conversation_get_name(conv));
+	params[1] = purple_php_string_zval(purple_utf8_strftime("(%H:%M:%S)", localtime(&mtime)));
+	params[2] = purple_php_string_zval(name);
+	params[3] = purple_php_string_zval(message);
+
+	if(call_user_function(	CG(function_table),
+	   						NULL,
+							purple_php_write_conv_function_name,
+							retval,
+							4,
+							params TSRMLS_CC
+						 ) != SUCCESS) {
+		zend_error(E_ERROR, "Function call failed");
+	}
+
+	zval_dtor(retval);
 }
+/* }}} */
 
 static PurpleConversationUiOps php_conv_uiops = 
 {
 	NULL,                      /* create_conversation  */
 	NULL,                      /* destroy_conversation */
-	php_write_chat,            /* write_chat           */
-	php_write_im,              /* write_im             */
-	php_write_conv,            /* write_conv           */
+	NULL,            /* write_chat           */
+	NULL,              /* write_im             */
+	purple_php_write_conv_function,            /* write_conv           */
 	NULL,                      /* chat_add_users       */
 	NULL,                      /* chat_rename_user     */
 	NULL,                      /* chat_remove_users    */
@@ -236,6 +303,7 @@ zend_function_entry purple_functions[] = {
 			
 	/*not purple functions*/
 	PHP_FE(purple_loop, NULL)
+	PHP_FE(purple_php_write_conv_function, NULL)
 		
 	{NULL, NULL, NULL}	/* Must be the last line in purple_functions[] */
 };
@@ -390,6 +458,7 @@ PHP_MINFO_FUNCTION(purple)
 }
 /* }}} */
 
+
 /* {{{ */
 PHP_FUNCTION(purple_loop)
 {
@@ -398,10 +467,31 @@ PHP_FUNCTION(purple_loop)
 }
 /* }}} */
 
+
 /* {{{ */
 PHP_FUNCTION(purple_prefs_load)
 {
 	RETURN_BOOL((long)purple_prefs_load());
+}
+/* }}} */
+
+/* {{{ */
+PHP_FUNCTION(purple_php_write_conv_function)
+{
+	zval *arg;
+	char *name;
+
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &arg)) {
+		RETURN_FALSE;
+	}
+
+	if (!zend_is_callable(arg, 0, &name)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s is not callable", name);
+		efree(name);
+		RETURN_FALSE;
+	}
+
+	purple_php_write_conv_function_name = purple_php_string_zval(name);
 }
 /* }}} */
 

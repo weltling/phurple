@@ -1,22 +1,37 @@
 /*
-  +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
-  +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2007 The PHP Group                                |
-  +----------------------------------------------------------------------+
-  | This source file is subject to version 3.01 of the PHP license,      |
-  | that is bundled with this package in the file LICENSE, and is        |
-  | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_01.txt                                  |
-  | If you did not receive a copy of the PHP license and are unable to   |
-  | obtain it through the world-wide-web, please send a note to          |
-  | license@php.net so we can mail you a copy immediately.               |
-  +----------------------------------------------------------------------+
-  | Author: Anatoliy Belsky                                              |
-  +----------------------------------------------------------------------+
-*/
+   This file is part of phpurple
 
-/* $Id: header,v 1.16.2.1.2.1 2007/01/01 19:32:09 iliaa Exp $ */
+   Copyright (C) 2007 Anatoliy Belsky
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+   In addition, as a special exception, the copyright holders of phpurple
+   give you permission to combine phpurple with code included in the
+   standard release of PHP under the PHP license (or modified versions of
+   such code, with unchanged license). You may copy and distribute such a
+   system following the terms of the GNU GPL for phpurple and the licenses
+   of the other code concerned, provided that you include the source code of
+   that other code when and as the GNU GPL requires distribution of source code.
+
+   You must obey the GNU General Public License in all respects for all of the
+   code used other than standard release of PHP. If you modify this file, you
+   may extend this exception to your version of the file, but you are not
+   obligated to do so. If you do not wish to do so, delete this exception
+   statement from your version.
+
+ */
 
 #ifndef PHP_PURPLE_H
 #define PHP_PURPLE_H
@@ -44,9 +59,7 @@
 
 typedef struct _PurpleGLibIOClosure PurpleGLibIOClosure;
 
-// GList *protocols_list;
-
-static PurpleAccount* accounts_list[ACCOUNT_LIST_LENGTH];
+static GList* accounts_list;
 
 static PurpleSavedStatus* saved_status;
 
@@ -97,7 +110,7 @@ PHP_FUNCTION(purple_pounces_load);
 
 /*not purple functions*/
 PHP_FUNCTION(purple_loop);
-
+PHP_FUNCTION(purple_php_write_conv_function);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
 	long  global_value;
