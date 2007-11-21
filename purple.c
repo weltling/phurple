@@ -87,12 +87,14 @@ static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInput
 static void
 purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
 							   const char *message, PurpleMessageFlags flags, time_t mtime);
+static void purple_php_signed_on_function(PurpleConnection *gc, gpointer null);
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
 static void clean_pid();
 #endif
 
 static zval *purple_php_write_conv_function_name;
+static PurpleSavedStatus* saved_status;
 
 #ifdef HAVE_SIGNAL_H
 static char *segfault_message;
@@ -113,6 +115,12 @@ static int ignore_sig_list[] = {
 	-1
 };
 #endif
+
+typedef struct _PurpleGLibIOClosure {
+	PurpleInputFunction function;
+	guint result;
+	gpointer data;
+} PurpleGLibIOClosure;
 
 static PurpleEventLoopUiOps glib_eventloops = 
 {
@@ -191,6 +199,7 @@ zend_function_entry purple_functions[] = {
 	PHP_FE(purple_account_new, NULL)
 	PHP_FE(purple_account_set_password, NULL)
 	PHP_FE(purple_account_set_enabled, NULL)
+	PHP_FE(purple_account_is_connected, NULL)
 	
 	PHP_FE(purple_util_set_user_dir, NULL)
 	
@@ -198,10 +207,16 @@ zend_function_entry purple_functions[] = {
 	PHP_FE(purple_savedstatus_activate, NULL)
 
 	PHP_FE(purple_conversation_get_name, NULL)
+	PHP_FE(purple_conversation_write, NULL)
+	PHP_FE(purple_conversation_new, NULL)
+	PHP_FE(purple_conv_im_send, NULL)
+	PHP_FE(purple_conversation_set_account, NULL)
 			
 	PHP_FE(purple_signal_connect, NULL)
 			
 	PHP_FE(purple_blist_load, NULL)
+	PHP_FE(purple_find_buddy, NULL)
+	PHP_FE(purple_blist_new, NULL)
 			
 	PHP_FE(purple_prefs_load, NULL)
 			
@@ -269,7 +284,8 @@ static void php_purple_init_globals(zend_purple_globals *purple_globals)
 PHP_MINIT_FUNCTION(purple)
 {
 	REGISTER_INI_ENTRIES();
-//     php_printf("%d\n", PURPLE_STATUS_AVAILABLE);
+
+	/* A primitive defining the basic structure of a status type */
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_UNSET",         PURPLE_STATUS_UNSET,         CONST_CS | CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_OFFLINE",       PURPLE_STATUS_OFFLINE,       CONST_CS | CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_AVAILABLE",     PURPLE_STATUS_AVAILABLE,     CONST_CS | CONST_PERSISTENT );
@@ -278,6 +294,43 @@ PHP_MINIT_FUNCTION(purple)
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_AWAY",          PURPLE_STATUS_AWAY,          CONST_CS | CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_EXTENDED_AWAY", PURPLE_STATUS_EXTENDED_AWAY, CONST_CS | CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT("PURPLE_STATUS_MOBILE",        PURPLE_STATUS_MOBILE,        CONST_CS | CONST_PERSISTENT );
+	/* A type of conversation */
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_TYPE_UNKNOWN",    PURPLE_CONV_TYPE_UNKNOWN,    CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_TYPE_IM",         PURPLE_CONV_TYPE_IM,         CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_TYPE_CHAT",       PURPLE_CONV_TYPE_CHAT,       CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_TYPE_MISC",       PURPLE_CONV_TYPE_MISC,       CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_TYPE_ANY",        PURPLE_CONV_TYPE_ANY,        CONST_CS | CONST_PERSISTENT );
+	/* Conversation update type */
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_ADD",      PURPLE_CONV_UPDATE_ADD,      CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_REMOVE",   PURPLE_CONV_UPDATE_REMOVE,   CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_ACCOUNT",  PURPLE_CONV_UPDATE_ACCOUNT,  CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_TYPING",   PURPLE_CONV_UPDATE_TYPING,   CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_UNSEEN",   PURPLE_CONV_UPDATE_UNSEEN,   CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_LOGGING",  PURPLE_CONV_UPDATE_LOGGING,  CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_TOPIC",    PURPLE_CONV_UPDATE_TOPIC,    CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_ACCOUNT_ONLINE",  PURPLE_CONV_ACCOUNT_ONLINE,  CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_ACCOUNT_OFFLINE", PURPLE_CONV_ACCOUNT_OFFLINE, CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_AWAY",     PURPLE_CONV_UPDATE_AWAY,     CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_ICON",     PURPLE_CONV_UPDATE_ICON,     CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_TITLE",    PURPLE_CONV_UPDATE_TITLE,    CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_CHATLEFT", PURPLE_CONV_UPDATE_CHATLEFT, CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_CONV_UPDATE_FEATURES", PURPLE_CONV_UPDATE_FEATURES, CONST_CS | CONST_PERSISTENT );
+	/* Flags applicable to a message */
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_SEND",         PURPLE_MESSAGE_SEND,         CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_RECV",         PURPLE_MESSAGE_RECV,         CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_SYSTEM",       PURPLE_MESSAGE_SYSTEM,       CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_AUTO_RESP",    PURPLE_MESSAGE_AUTO_RESP,    CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_ACTIVE_ONLY",  PURPLE_MESSAGE_ACTIVE_ONLY,  CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_NICK",         PURPLE_MESSAGE_NICK,         CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_NO_LOG",       PURPLE_MESSAGE_NO_LOG,       CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_WHISPER",      PURPLE_MESSAGE_WHISPER,      CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_ERROR",        PURPLE_MESSAGE_ERROR,        CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_DELAYED",      PURPLE_MESSAGE_DELAYED,      CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_RAW",          PURPLE_MESSAGE_RAW,          CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_IMAGES",       PURPLE_MESSAGE_IMAGES,       CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_NOTIFY",       PURPLE_MESSAGE_NOTIFY,       CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_NO_LINKIFY",   PURPLE_MESSAGE_NO_LINKIFY,   CONST_CS | CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT("PURPLE_MESSAGE_INVISIBLE",    PURPLE_MESSAGE_INVISIBLE,    CONST_CS | CONST_PERSISTENT );
 
 #ifdef HAVE_SIGNAL_H
 	int sig_indx;	/* for setting up signal catching */
@@ -386,6 +439,408 @@ PHP_FUNCTION(purple_prefs_load)
 }
 /* }}} */
 
+
+/*
+**
+**
+** Purple account functions
+**
+*/
+
+/* {{{ */
+PHP_FUNCTION(purple_account_new)
+{
+	char *username, *protocol_name, *protocol_id;
+	int username_len, protocol_name_len;
+	GList *iter, *accounts;
+	PurpleAccount *account = NULL;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &username, &username_len, &protocol_name, &protocol_name_len) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	iter = purple_plugins_get_protocols();
+	for (; iter; iter = iter->next) {
+		PurplePlugin *plugin = iter->data;
+		PurplePluginInfo *info = plugin->info;
+		if (info && info->name && 0 == strcmp(info->name, protocol_name)) {
+			protocol_id = estrdup(info->id);
+		}
+	}
+//     php_printf("%s %s\n", username, protocol_id);
+	account = purple_account_new(estrdup(username), estrdup(protocol_id));
+	purple_accounts_add(account);
+	if(NULL != account) {
+		accounts = purple_accounts_get_all();
+		RETURN_LONG((long)g_list_position(accounts, g_list_last(accounts)));
+	}
+	
+	RETURN_NULL();
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_account_set_password)
+{
+	int account_index, password_len;
+	char *password;
+	PurpleAccount *account = NULL;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls", &account_index, &password, &password_len) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
+	if(NULL != account) {
+		purple_account_set_password(account, estrdup(password));
+	}
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_account_set_enabled)
+{
+	int account_index, ui_id_len;
+	char *ui_id;
+	zend_bool enabled;
+	PurpleAccount *account = NULL;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lsb", &account_index, &ui_id, &ui_id_len, &enabled) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
+	if(NULL != account) {
+		purple_account_set_enabled(account, estrdup(ui_id), (gboolean) enabled);
+	}
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_account_is_connected)
+{
+	int account_index;
+	PurpleAccount *account = NULL;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &account_index) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
+	if(NULL != account) {
+		RETURN_BOOL(purple_account_is_connected(account));
+	}
+
+	RETURN_FALSE;
+}
+/* }}} */
+/*
+**
+**
+** End purple account functions
+**
+*/
+
+/*
+**
+**
+** Purple core functions
+**
+*/
+
+/* {{{ */
+PHP_FUNCTION(purple_core_get_version)
+{
+	char *version = estrdup(purple_core_get_version());
+	
+	RETURN_STRING(version, 0);
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_core_init)
+{
+	char *ui_id;
+	int ui_id_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &ui_id, &ui_id_len) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	ui_id = !ui_id_len ? INI_STR("purple.ui_id") : estrdup(ui_id);
+	
+	if (!purple_core_init(ui_id)) {
+//         abort();
+		RETURN_FALSE;
+	}
+
+	/* Load the preferences. */
+	purple_prefs_load();
+
+	/* Load the desired plugins. The client should save the list of loaded plugins in
+	 * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
+	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
+
+	/* Load the pounces. */
+	purple_pounces_load();
+	
+	RETURN_TRUE;
+}
+/* }}} */
+
+/*
+**
+**
+** End purple core functions
+**
+*/
+
+
+/*
+**
+**
+** Purple plugin functions
+**
+*/
+
+/* {{{ */
+PHP_FUNCTION(purple_plugins_get_protocols)
+{
+	GList *iter;
+	int i;
+	
+	array_init(return_value);
+	
+	iter = purple_plugins_get_protocols();
+	for (i = 0; iter; iter = iter->next, i++) {
+		PurplePlugin *plugin = iter->data;
+		PurplePluginInfo *info = plugin->info;
+		if (info && info->name) {
+			add_index_string(return_value, i, info->name, 1);
+		}
+	}
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_plugins_add_search_path)
+{
+	char *plugin_path;
+	int plugin_path_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &plugin_path, &plugin_path_len) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	plugin_path = !plugin_path_len ? INI_STR("purple.custom_plugin_path") : estrdup(plugin_path);
+	
+	purple_plugins_add_search_path(plugin_path);
+}
+/* }}} */
+
+
+
+/* {{{ */
+PHP_FUNCTION(purple_plugins_load_saved)
+{
+	char* key;
+	int key_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &key, &key_len) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	key = !key_len ? INI_STR("purple.plugin_save_pref") : estrdup(key);
+	
+	purple_plugins_load_saved(key);
+}
+
+/* }}} */
+
+/*
+**
+**
+** End purple plugin functions
+**
+*/
+
+
+/*
+**
+**
+** Purple signals functions
+**
+*/
+
+PHP_FUNCTION(purple_signal_connect)
+{
+	static int handle;
+	int signal_len;
+	int ret = -1;
+	char *signal;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &signal, &signal_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	if(0 == strcmp("signed-on", signal)) {
+		ret = purple_signal_connect(	purple_connections_get_handle(),
+										estrdup(signal),
+										&handle,
+										PURPLE_CALLBACK(purple_php_signed_on_function),
+										NULL
+									);
+	}
+
+	RETURN_LONG(ret);
+}
+
+/*
+**
+**
+** End purple signals functions
+**
+*/
+
+/*
+**
+**
+** Purple status functions
+**
+*/
+
+PHP_FUNCTION(purple_savedstatus_new)
+{
+	char *title;
+	int primitive_status, title_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &title, &title_len, &primitive_status) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	saved_status = purple_savedstatus_new(title, primitive_status);
+}
+
+
+PHP_FUNCTION(purple_savedstatus_activate)
+{
+	purple_savedstatus_activate(saved_status);	
+}
+
+/*
+**
+**
+** End purple status functions
+**
+*/
+
+/*
+**
+**
+** Purple util functions
+**
+*/
+
+/* {{{ */
+PHP_FUNCTION(purple_util_set_user_dir) {
+	char *user_dir;
+	int user_dir_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &user_dir, &user_dir_len) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	user_dir = !user_dir_len ? INI_STR("purple.custom_user_directory") : estrdup(user_dir);
+	
+	purple_util_set_user_dir(user_dir);
+}
+/* }}} */
+
+/*
+**
+**
+** End purple util functions
+**
+*/
+
+/*
+**
+**
+** Purple blist functions
+**
+*/
+
+/* {{{ */
+PHP_FUNCTION(purple_blist_load)
+{
+	purple_blist_load();
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_blist_new)
+{
+	purple_set_blist(purple_blist_new());
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_find_buddy)
+{
+	int account_index, name_len;
+	char *name;
+	PurpleBuddy *buddy;
+	PurpleAccount *account;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls", &account_index, &name, &name_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
+	buddy = purple_find_buddy(account, name);
+// 	php_printf("ba: %s\n", 	purple_buddy_get_alias_only(buddy));
+}
+/* }}} */
+/*
+**
+**
+** End purple blist functions
+**
+*/
+
+/*
+**
+**
+** Purple pounce functions
+**
+*/
+
+PHP_FUNCTION(purple_pounces_load)
+{
+	RETURN_BOOL(purple_pounces_load());
+}
+
+/*
+**
+**
+** End purple pounce functions
+**
+*/
+
+/*
+**
+**
+** Purple conversation functions
+**
+*/
+
 /* {{{ */
 PHP_FUNCTION(purple_php_write_conv_function)
 {
@@ -417,8 +872,8 @@ PHP_FUNCTION(purple_conversation_get_name)
 		RETURN_NULL();
 	}
 
-	conversation = g_list_nth_data (conversations_list, (guint)conversation_index);
-// php_printf("conversation name: %s\n", purple_conversation_get_name(conversation));
+	conversation = g_list_nth_data (purple_get_conversations(), (guint)conversation_index);
+
 	if(NULL != conversation) {
 		RETURN_STRING(purple_conversation_get_name(conversation), 1);
 	}
@@ -428,6 +883,101 @@ PHP_FUNCTION(purple_conversation_get_name)
 /* }}} */
 
 
+/* {{{ */
+PHP_FUNCTION(purple_conversation_new)
+{
+	int type, account_index, name_len;
+	char *name;
+	PurpleConversation *conv = NULL;
+	PurpleAccount *account = NULL;
+	GList *conversations = purple_get_conversations();
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lls", &type, &account_index, &name, &name_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+ 	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
+	if(NULL != account) {
+		conv = purple_conversation_new(type, account, estrdup(name));
+		RETURN_LONG((long)g_list_position(conversations, g_list_last(conversations)));
+	}
+
+	RETURN_NULL();
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_conversation_write)
+{
+	int conversation_index, flags, mtime, who_len, message_len;
+	char *who, *message;
+	PurpleConversation *conversation = NULL;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lssll", &conversation_index, &who, &who_len, &message, &message_len, &flags, &mtime) == FAILURE) {
+		RETURN_NULL();
+	}
+	
+	conversation = g_list_nth_data (purple_get_conversations(), (guint)conversation_index);
+	if(NULL != conversation) {
+// 		purple_conv_im_send (PURPLE_CONV_IM(conversation), estrdup("hello you fuck!\n"));
+		purple_conversation_write(conversation, estrdup(who), estrdup(message), flags, (time_t)mtime);
+	}
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_conv_im_send)
+{
+	int conversation_index, message_len;
+	char *message;
+	PurpleConversation *conversation = NULL;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls", &conversation_index, &message, &message_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	conversation = g_list_nth_data (purple_get_conversations(), (guint)conversation_index);
+	if(NULL != conversation) {
+		purple_conv_im_send (PURPLE_CONV_IM(conversation), estrdup(message));
+	}
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_conversation_set_account)
+{
+	int conversation_index, account_index;
+	PurpleConversation *conversation = NULL;
+	PurpleAccount *account = NULL;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &conversation_index, &account_index) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	conversation = g_list_nth_data (purple_get_conversations(), (guint)conversation_index);
+	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
+	if(NULL != conversation && NULL != account) {
+		purple_conversation_set_account(conversation, account);
+	}
+}
+/* }}} */
+
+
+/* {{{ */
+/*PHP_FUNCTION(purple_conv_im_write)
+{
+	
+}*/
+/* }}} */
+/*
+**
+**
+** End purple conversation functions
+**
+*/
 
 /*
 **
@@ -575,21 +1125,19 @@ static void
 purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
             const char *message, PurpleMessageFlags flags, time_t mtime)
 {
-	const int PARAMS_COUNT = 5;
+	const int PARAMS_COUNT = 6;
 	zval *params[PARAMS_COUNT];
 	zval *retval;
+	GList *conversations = purple_get_conversations();
 	
 	TSRMLS_FETCH();
 
-	if(NULL == g_list_find(conversations_list, conv)) {
-		conversations_list = g_list_append(conversations_list, conv);
-	}
-
-	params[0] = purple_php_long_zval((long)g_list_position(conversations_list, g_list_last(conversations_list)));
-	params[1] = purple_php_long_zval((long)mtime);
-	params[2] = purple_php_string_zval(who);
-	params[3] = purple_php_string_zval(alias);
-	params[4] = purple_php_string_zval(message);
+	params[0] = purple_php_long_zval((long)g_list_position(conversations, g_list_last(conversations)));
+	params[1] = purple_php_string_zval(who);
+	params[2] = purple_php_string_zval(alias);
+	params[3] = purple_php_string_zval(message);
+	params[4] = purple_php_long_zval((long)flags);
+	params[5] = purple_php_long_zval((long)mtime);
 
 	if(call_user_function(	CG(function_table),
 	   						NULL,
@@ -622,9 +1170,19 @@ static void php_write_im(PurpleConversation *conv, const char *who, const char *
 // 	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
 }*/
 
+static void
+purple_php_signed_on_function(PurpleConnection *gc, gpointer null)
+{/*
+	PurpleAccount *account = purple_connection_get_account(gc);
+	php_printf("Account connected: %s %s\n", account->username, account->protocol_id);   */
+}
 
 
-
+/*
+**
+** End helper functions
+**
+*/
 
 
 /*

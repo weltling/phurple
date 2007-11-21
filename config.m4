@@ -103,8 +103,6 @@ if test "$PHP_PURPLE" != "no"; then
   
   PHP_SUBST(PURPLE_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(purple, [ purple.c util.c plugin.c account.c status.c \
-                              signals.c connection.c core.c blist.c \
-                              pounce.c conversation.c ], $ext_shared)
+  PHP_NEW_EXTENSION(purple, [ purple.c ], $ext_shared)
 
 fi

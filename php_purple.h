@@ -55,16 +55,6 @@
 #include "whiteboard.h"
 #include "version.h"
 
-#define ACCOUNT_LIST_LENGTH 10
-
-typedef struct _PurpleGLibIOClosure PurpleGLibIOClosure;
-
-static GList* accounts_list;
-static GList* conversations_list;
-static PurpleSavedStatus* saved_status;
-
-// void* connections_handle;
-
 extern zend_module_entry purple_module_entry;
 #define phpext_purple_ptr &purple_module_entry
 
@@ -94,6 +84,7 @@ PHP_FUNCTION(purple_plugins_load_saved);
 PHP_FUNCTION(purple_account_new);
 PHP_FUNCTION(purple_account_set_password);
 PHP_FUNCTION(purple_account_set_enabled);
+PHP_FUNCTION(purple_account_is_connected);
 
 PHP_FUNCTION(purple_util_set_user_dir);
 
@@ -101,10 +92,16 @@ PHP_FUNCTION(purple_savedstatus_new);
 PHP_FUNCTION(purple_savedstatus_activate);
 
 PHP_FUNCTION(purple_conversation_get_name);
+PHP_FUNCTION(purple_conversation_write);
+PHP_FUNCTION(purple_conversation_new);
+PHP_FUNCTION(purple_conv_im_send);
+PHP_FUNCTION(purple_conversation_set_account);
 
 PHP_FUNCTION(purple_signal_connect);
 
 PHP_FUNCTION(purple_blist_load);
+PHP_FUNCTION(purple_find_buddy);
+PHP_FUNCTION(purple_blist_new);
 
 PHP_FUNCTION(purple_prefs_load);
 
@@ -136,19 +133,6 @@ ZEND_END_MODULE_GLOBALS(purple)
 #define PURPLE_G(v) (purple_globals.v)
 #endif
 
-/* Define some purple settings
-*/
-// #define PURPLE_CUSTOM_USER_DIRECTORY    "/dev/null"
-// #define PURPLE_CUSTOM_PLUGIN_PATH       ""
-// #define PURPLE_UI_ID                    "php"
-// #define PURPLE_DEBUG_ENABLED            TRUE
-
-struct _PurpleGLibIOClosure {
-	PurpleInputFunction function;
-	guint result;
-	gpointer data;
-};
-        
 #endif	/* PHP_PURPLE_H */
 
 
