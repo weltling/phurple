@@ -43,9 +43,9 @@
 #include "php_purple.h"
 
 #include <glib.h>
-// 
-// #include <string.h>
-// #include <unistd.h>
+ 
+/* #include <string.h>
+ #include <unistd.h>*/
 
 #include "account.h"
 #include "conversation.h"
@@ -77,6 +77,10 @@
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
+static zval *purple_php_write_conv_function_name;
+static zval *purple_php_signed_on_function_name;
+static PurpleSavedStatus* saved_status;
+
 static void php_ui_init();
 static zval *purple_php_string_zval(const char *str);
 static zval *purple_php_long_zval(long l);
@@ -92,9 +96,6 @@ static void purple_php_signed_on_function(PurpleConnection *gc, gpointer null);
 static void sighandler(int sig);
 static void clean_pid();
 #endif
-
-static zval *purple_php_write_conv_function_name;
-static PurpleSavedStatus* saved_status;
 
 #ifdef HAVE_SIGNAL_H
 static char *segfault_message;
@@ -213,6 +214,7 @@ zend_function_entry purple_functions[] = {
 	PHP_FE(purple_conversation_set_account, NULL)
 			
 	PHP_FE(purple_signal_connect, NULL)
+	PHP_FE(purple_php_signed_on_function, NULL)
 			
 	PHP_FE(purple_blist_load, NULL)
 	PHP_FE(purple_find_buddy, NULL)
@@ -221,6 +223,8 @@ zend_function_entry purple_functions[] = {
 	PHP_FE(purple_prefs_load, NULL)
 			
 	PHP_FE(purple_pounces_load, NULL)
+
+	PHP_FE(purple_connection_get_account, NULL)
 			
 	/*not purple functions*/
 	PHP_FE(purple_loop, NULL)
@@ -257,8 +261,8 @@ ZEND_GET_MODULE(purple)
 /* {{{ PHP_INI
  */
 PHP_INI_BEGIN()
-//     STD_PHP_INI_ENTRY("purple.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_purple_globals, purple_globals)
-//     STD_PHP_INI_ENTRY("purple.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
+/*    STD_PHP_INI_ENTRY("purple.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_purple_globals, purple_globals)
+     STD_PHP_INI_ENTRY("purple.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)*/
 	STD_PHP_INI_ENTRY("purple.custom_user_directory", "/dev/null", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
 	STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
 	STD_PHP_INI_ENTRY("purple.ui_id", "php", PHP_INI_ALL, OnUpdateString, global_string, zend_purple_globals, purple_globals)
@@ -439,6 +443,47 @@ PHP_FUNCTION(purple_prefs_load)
 }
 /* }}} */
 
+/*
+**
+**
+** Purple connection functions
+**
+*/
+
+
+/* {{{ */
+PHP_FUNCTION(purple_connection_get_account)
+{
+	int connection_index;
+	PurpleConnection *connection = NULL;
+	PurpleAccount *account = NULL;
+	GList *accounts = NULL;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &connection_index) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	connection = g_list_nth_data (purple_connections_get_all(), (guint)connection_index);
+	if(NULL != connection) {
+		account = purple_connection_get_account(connection);
+		if(NULL != account) {
+			accounts = purple_accounts_get_all();
+			RETURN_LONG((long)g_list_position(accounts, g_list_find(accounts, account)));
+		}
+	}
+
+	RETURN_NULL();
+}
+/* }}} */
+
+
+/*
+**
+**
+** End purple connection functions
+**
+*/
+
 
 /*
 **
@@ -467,7 +512,7 @@ PHP_FUNCTION(purple_account_new)
 			protocol_id = estrdup(info->id);
 		}
 	}
-//     php_printf("%s %s\n", username, protocol_id);
+
 	account = purple_account_new(estrdup(username), estrdup(protocol_id));
 	purple_accounts_add(account);
 	if(NULL != account) {
@@ -574,7 +619,7 @@ PHP_FUNCTION(purple_core_init)
 	ui_id = !ui_id_len ? INI_STR("purple.ui_id") : estrdup(ui_id);
 	
 	if (!purple_core_init(ui_id)) {
-//         abort();
+/*         abort();*/
 		RETURN_FALSE;
 	}
 
@@ -677,6 +722,8 @@ PHP_FUNCTION(purple_plugins_load_saved)
 **
 */
 
+
+/* {{{ */
 PHP_FUNCTION(purple_signal_connect)
 {
 	static int handle;
@@ -695,10 +742,34 @@ PHP_FUNCTION(purple_signal_connect)
 										PURPLE_CALLBACK(purple_php_signed_on_function),
 										NULL
 									);
+		/*here run user func*/
 	}
 
 	RETURN_LONG(ret);
 }
+/* }}} */
+
+
+/* {{{ */
+PHP_FUNCTION(purple_php_signed_on_function)
+{
+	zval *arg;
+	char *name;
+
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &arg)) {
+		RETURN_FALSE;
+	}
+
+	if (!zend_is_callable(arg, 0, &name)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s is not callable", name);
+		efree(name);
+		RETURN_FALSE;
+	}
+
+	purple_php_signed_on_function_name = purple_php_string_zval(name);
+}
+/* }}} */
+
 
 /*
 **
@@ -805,7 +876,6 @@ PHP_FUNCTION(purple_find_buddy)
 
 	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
 	buddy = purple_find_buddy(account, name);
-// 	php_printf("ba: %s\n", 	purple_buddy_get_alias_only(buddy));
 }
 /* }}} */
 /*
@@ -875,7 +945,7 @@ PHP_FUNCTION(purple_conversation_get_name)
 	conversation = g_list_nth_data (purple_get_conversations(), (guint)conversation_index);
 
 	if(NULL != conversation) {
-		RETURN_STRING(purple_conversation_get_name(conversation), 1);
+		RETURN_STRING(estrdup(purple_conversation_get_name(conversation)), 1);
 	}
 
 	RETURN_NULL();
@@ -890,7 +960,7 @@ PHP_FUNCTION(purple_conversation_new)
 	char *name;
 	PurpleConversation *conv = NULL;
 	PurpleAccount *account = NULL;
-	GList *conversations = purple_get_conversations();
+	GList *conversations = NULL;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lls", &type, &account_index, &name, &name_len) == FAILURE) {
 		RETURN_NULL();
@@ -899,6 +969,7 @@ PHP_FUNCTION(purple_conversation_new)
  	account = g_list_nth_data (purple_accounts_get_all(), (guint)account_index);
 	if(NULL != account) {
 		conv = purple_conversation_new(type, account, estrdup(name));
+		conversations = purple_get_conversations();
 		RETURN_LONG((long)g_list_position(conversations, g_list_last(conversations)));
 	}
 
@@ -920,7 +991,6 @@ PHP_FUNCTION(purple_conversation_write)
 	
 	conversation = g_list_nth_data (purple_get_conversations(), (guint)conversation_index);
 	if(NULL != conversation) {
-// 		purple_conv_im_send (PURPLE_CONV_IM(conversation), estrdup("hello you fuck!\n"));
 		purple_conversation_write(conversation, estrdup(who), estrdup(message), flags, (time_t)mtime);
 	}
 }
@@ -1165,18 +1235,54 @@ static void php_write_im(PurpleConversation *conv, const char *who, const char *
 {
 	php_printf("%s + write_im\n", message);
 	
-// 	purple_conv_im_send(purple_conversation_get_im_data(conv), "answer: you are an asshole ;) !!! \n");
-// 	purple_conv_im_write(purple_conversation_get_im_data(conv), who, "answer: you are an asshole ;) !!! \n", flags, mtime);
-// 	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
+	purple_conv_im_send(purple_conversation_get_im_data(conv), "answer: you are an asshole ;) !!! \n");
+	purple_conv_im_write(purple_conversation_get_im_data(conv), who, "answer: you are an asshole ;) !!! \n", flags, mtime);
+	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
 }*/
 
 static void
-purple_php_signed_on_function(PurpleConnection *gc, gpointer null)
-{/*
-	PurpleAccount *account = purple_connection_get_account(gc);
-	php_printf("Account connected: %s %s\n", account->username, account->protocol_id);   */
+purple_php_signed_on_function(PurpleConnection *connection, gpointer null)
+{
+	/* I'm not working with gpointer yet ... */
+	const int PARAMS_COUNT = 1;
+	zval *params[PARAMS_COUNT];
+	zval *retval;
+	GList *connections = NULL;
+	
+	TSRMLS_FETCH();
+	
+	connections = purple_connections_get_all();
+	params[0] = purple_php_long_zval((long)g_list_position(connections, g_list_find(connections, connection)));
+
+	if(call_user_function(	CG(function_table),
+							NULL,
+							purple_php_signed_on_function_name,
+							retval,
+							PARAMS_COUNT,
+							params TSRMLS_CC
+						) != SUCCESS) {
+		zend_error(E_ERROR, "Function call failed");
+	}
+
+	zval_dtor(retval);
+
+	/*PurpleAccount *account = purple_connection_get_account(connection);
+	PurpleConversation *conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, account, estrdup("aoxyz@hotmail.com"));
+	purple_conv_im_send(PURPLE_CONV_IM(conv), estrdup("fuck you!"));*/
 }
 
+
+char *lower(char *str)
+{
+	int size = sizeof(str);
+	int i = 0;
+
+	for(i=0; i<size; i++) {
+		str[i] = tolower(str[i]);
+	}
+
+	return str;
+}
 
 /*
 **

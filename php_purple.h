@@ -98,6 +98,7 @@ PHP_FUNCTION(purple_conv_im_send);
 PHP_FUNCTION(purple_conversation_set_account);
 
 PHP_FUNCTION(purple_signal_connect);
+PHP_FUNCTION(purple_php_signed_on_function);
 
 PHP_FUNCTION(purple_blist_load);
 PHP_FUNCTION(purple_find_buddy);
@@ -106,6 +107,8 @@ PHP_FUNCTION(purple_blist_new);
 PHP_FUNCTION(purple_prefs_load);
 
 PHP_FUNCTION(purple_pounces_load);
+
+PHP_FUNCTION(purple_connection_get_account);
 
 /*not purple functions*/
 PHP_FUNCTION(purple_loop);
