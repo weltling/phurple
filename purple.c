@@ -44,8 +44,8 @@
 
 #include <glib.h>
  
-/* #include <string.h>
- #include <unistd.h>*/
+#include <string.h>
+#include <ctype.h>
 
 #include "account.h"
 #include "conversation.h"
@@ -427,7 +427,8 @@ PHP_MINFO_FUNCTION(purple)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void puprple_loop(void)
+	Creates the main loop*/
 PHP_FUNCTION(purple_loop)
 {
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
@@ -436,7 +437,8 @@ PHP_FUNCTION(purple_loop)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto bool purple_prefs_load(void)
+	Loads the user preferences from the user dir*/
 PHP_FUNCTION(purple_prefs_load)
 {
 	RETURN_BOOL((long)purple_prefs_load());
@@ -451,7 +453,8 @@ PHP_FUNCTION(purple_prefs_load)
 */
 
 
-/* {{{ */
+/* {{{ proto int purple_connection_get_account(int connection)
+		Returns the connection's account*/
 PHP_FUNCTION(purple_connection_get_account)
 {
 	int connection_index;
@@ -492,7 +495,8 @@ PHP_FUNCTION(purple_connection_get_account)
 **
 */
 
-/* {{{ */
+/* {{{ proto int purple_account_new(string user_name, string protocol_name)
+	Creates a new account*/
 PHP_FUNCTION(purple_account_new)
 {
 	char *username, *protocol_name, *protocol_id;
@@ -503,7 +507,7 @@ PHP_FUNCTION(purple_account_new)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &username, &username_len, &protocol_name, &protocol_name_len) == FAILURE) {
 		RETURN_NULL();
 	}
-	
+
 	iter = purple_plugins_get_protocols();
 	for (; iter; iter = iter->next) {
 		PurplePlugin *plugin = iter->data;
@@ -525,7 +529,8 @@ PHP_FUNCTION(purple_account_new)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void purple_account_set_password(int account, string password)
+	Sets the account's password */
 PHP_FUNCTION(purple_account_set_password)
 {
 	int account_index, password_len;
@@ -544,7 +549,8 @@ PHP_FUNCTION(purple_account_set_password)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void purple_account_set_enabled(int account, string ui_id, bool enabled)
+	Sets whether or not this account is enabled for the specified UI */
 PHP_FUNCTION(purple_account_set_enabled)
 {
 	int account_index, ui_id_len;
@@ -564,7 +570,8 @@ PHP_FUNCTION(purple_account_set_enabled)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto bool purple_account_is_connected(int account)
+	Returns whether or not the account is connected*/
 PHP_FUNCTION(purple_account_is_connected)
 {
 	int account_index;
@@ -596,7 +603,8 @@ PHP_FUNCTION(purple_account_is_connected)
 **
 */
 
-/* {{{ */
+/* {{{ proto string purple_core_get_version(void)
+	Returns the libpurple core version string */
 PHP_FUNCTION(purple_core_get_version)
 {
 	char *version = estrdup(purple_core_get_version());
@@ -606,7 +614,8 @@ PHP_FUNCTION(purple_core_get_version)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto bool purple_core_init([string ui_id])
+	Initalizes the libpurple core */
 PHP_FUNCTION(purple_core_init)
 {
 	char *ui_id;
@@ -623,16 +632,6 @@ PHP_FUNCTION(purple_core_init)
 		RETURN_FALSE;
 	}
 
-	/* Load the preferences. */
-	purple_prefs_load();
-
-	/* Load the desired plugins. The client should save the list of loaded plugins in
-	 * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
-	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
-
-	/* Load the pounces. */
-	purple_pounces_load();
-	
 	RETURN_TRUE;
 }
 /* }}} */
@@ -652,7 +651,8 @@ PHP_FUNCTION(purple_core_init)
 **
 */
 
-/* {{{ */
+/* {{{ proto array purple_plugins_get_protocols(void)
+	Returns a list of all valid protocol plugins */
 PHP_FUNCTION(purple_plugins_get_protocols)
 {
 	GList *iter;
@@ -672,7 +672,8 @@ PHP_FUNCTION(purple_plugins_get_protocols)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void purple_plugins_add_search_path([string plugin_path])
+	Add a new directory to search for plugins */
 PHP_FUNCTION(purple_plugins_add_search_path)
 {
 	char *plugin_path;
@@ -690,7 +691,8 @@ PHP_FUNCTION(purple_plugins_add_search_path)
 
 
 
-/* {{{ */
+/* {{{ proto void purple_plugins_load_saved([string key])
+	Attempts to load all the plugins in the specified preference key that were loaded when purple last quit */
 PHP_FUNCTION(purple_plugins_load_saved)
 {
 	char* key;
@@ -723,7 +725,8 @@ PHP_FUNCTION(purple_plugins_load_saved)
 */
 
 
-/* {{{ */
+/* {{{ proto int purple_signal_connect(string signal)
+	Connects a signal handler to a signal for a particular object */
 PHP_FUNCTION(purple_signal_connect)
 {
 	static int handle;
@@ -750,7 +753,8 @@ PHP_FUNCTION(purple_signal_connect)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void purple_php_signed_on_function(string name)
+	Registers a user php function as the signed-on callback function */
 PHP_FUNCTION(purple_php_signed_on_function)
 {
 	zval *arg;
@@ -785,6 +789,7 @@ PHP_FUNCTION(purple_php_signed_on_function)
 **
 */
 
+/* {{{ */
 PHP_FUNCTION(purple_savedstatus_new)
 {
 	char *title;
@@ -796,6 +801,7 @@ PHP_FUNCTION(purple_savedstatus_new)
 
 	saved_status = purple_savedstatus_new(title, primitive_status);
 }
+/* }}} */
 
 
 PHP_FUNCTION(purple_savedstatus_activate)
@@ -817,7 +823,8 @@ PHP_FUNCTION(purple_savedstatus_activate)
 **
 */
 
-/* {{{ */
+/* {{{ proto void purple_util_set_user_dir([string user_dir])
+	Define a custom purple settings directory, overriding the default (user's home directory/.purple) */
 PHP_FUNCTION(purple_util_set_user_dir) {
 	char *user_dir;
 	int user_dir_len;
@@ -846,7 +853,8 @@ PHP_FUNCTION(purple_util_set_user_dir) {
 **
 */
 
-/* {{{ */
+/* {{{ proto void purple_blist_load(void)
+		Loads the buddy list from ~/.purple/blist.xml */
 PHP_FUNCTION(purple_blist_load)
 {
 	purple_blist_load();
@@ -911,7 +919,8 @@ PHP_FUNCTION(purple_pounces_load)
 **
 */
 
-/* {{{ */
+/* {{{ proto void purple_php_write_conv_function(string name)
+	Registers a user php function as a callback function for write_conv */
 PHP_FUNCTION(purple_php_write_conv_function)
 {
 	zval *arg;
@@ -932,7 +941,8 @@ PHP_FUNCTION(purple_php_write_conv_function)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto string purple_conversation_get_name(int conversation)
+	Returns the specified conversation's name*/
 PHP_FUNCTION(purple_conversation_get_name)
 {
 	int conversation_index;
@@ -953,7 +963,8 @@ PHP_FUNCTION(purple_conversation_get_name)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto int purple_conversation_new(int type, int account, string name)
+	Creates a new conversation of the specified type */
 PHP_FUNCTION(purple_conversation_new)
 {
 	int type, account_index, name_len;
@@ -978,7 +989,8 @@ PHP_FUNCTION(purple_conversation_new)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void purple_conversation_write(int conversation, string who, string message, int flags, int time)
+	Writes to a conversation window*/
 PHP_FUNCTION(purple_conversation_write)
 {
 	int conversation_index, flags, mtime, who_len, message_len;
@@ -997,7 +1009,8 @@ PHP_FUNCTION(purple_conversation_write)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void purple_conv_im_send(int conversation, string message)
+	Sends a message to this IM conversation */
 PHP_FUNCTION(purple_conv_im_send)
 {
 	int conversation_index, message_len;
@@ -1016,7 +1029,8 @@ PHP_FUNCTION(purple_conv_im_send)
 /* }}} */
 
 
-/* {{{ */
+/* {{{ proto void purple_conversation_set_account(int conversation, int account)
+	Sets the specified conversation's purple_account */
 PHP_FUNCTION(purple_conversation_set_account)
 {
 	int conversation_index, account_index;
@@ -1271,18 +1285,6 @@ purple_php_signed_on_function(PurpleConnection *connection, gpointer null)
 	purple_conv_im_send(PURPLE_CONV_IM(conv), estrdup("fuck you!"));*/
 }
 
-
-char *lower(char *str)
-{
-	int size = sizeof(str);
-	int i = 0;
-
-	for(i=0; i<size; i++) {
-		str[i] = tolower(str[i]);
-	}
-
-	return str;
-}
 
 /*
 **
