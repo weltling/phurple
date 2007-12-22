@@ -74,49 +74,31 @@ PHP_RINIT_FUNCTION(purple);
 PHP_RSHUTDOWN_FUNCTION(purple);
 PHP_MINFO_FUNCTION(purple);
 
-PHP_FUNCTION(purple_core_get_version);
-PHP_FUNCTION(purple_core_init);
+PHP_METHOD(Purple, __construct);
+PHP_METHOD(Purple, getCoreVersion);
+PHP_METHOD(Purple, initCore);
+PHP_METHOD(Purple, connectToSignal);
 
-PHP_FUNCTION(purple_plugins_get_protocols);
-PHP_FUNCTION(purple_plugins_add_search_path);
-PHP_FUNCTION(purple_plugins_load_saved);
+PHP_METHOD(Account, __construct);
+PHP_METHOD(Account, setPassword);
+PHP_METHOD(Account, setEnabled);
 
-PHP_FUNCTION(purple_account_new);
-PHP_FUNCTION(purple_account_set_password);
-PHP_FUNCTION(purple_account_set_enabled);
-PHP_FUNCTION(purple_account_is_connected);
+PHP_METHOD(Connection, __construct);
+PHP_METHOD(Connection, getAccount);
 
-PHP_FUNCTION(purple_util_set_user_dir);
+PHP_METHOD(Conversation, __construct);
+PHP_METHOD(Conversation, getName);
+PHP_METHOD(Conversation, sendIM);
 
-PHP_FUNCTION(purple_savedstatus_new);
-PHP_FUNCTION(purple_savedstatus_activate);
-
-PHP_FUNCTION(purple_conversation_get_name);
-PHP_FUNCTION(purple_conversation_write);
-PHP_FUNCTION(purple_conversation_new);
-PHP_FUNCTION(purple_conv_im_send);
-PHP_FUNCTION(purple_conversation_set_account);
-
-PHP_FUNCTION(purple_signal_connect);
-PHP_FUNCTION(purple_php_signed_on_function);
-
-PHP_FUNCTION(purple_blist_load);
-PHP_FUNCTION(purple_find_buddy);
-PHP_FUNCTION(purple_blist_new);
-
-PHP_FUNCTION(purple_prefs_load);
-
-PHP_FUNCTION(purple_pounces_load);
-
-PHP_FUNCTION(purple_connection_get_account);
-
-/*not purple functions*/
 PHP_FUNCTION(purple_loop);
-PHP_FUNCTION(purple_php_write_conv_function);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
-	long  global_value;
-	char *global_string;
+	long  debug_enabled;
+	char *custom_user_directory;
+	char *custom_plugin_path;
+	char *ui_id;
+	char *plugin_save_pref;
+	zval *purple_php_callback_obj;
 ZEND_END_MODULE_GLOBALS(purple)
 
 
