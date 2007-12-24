@@ -301,8 +301,12 @@ PHP_MINIT_FUNCTION(purple)
 	/* initalizing classes */
 	zend_class_entry ce;
 	/* classes definitions */
-	
+
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::Purple", Purple_methods);
+#else
 	INIT_CLASS_ENTRY(ce, "Purple", Purple_methods);
+#endif
 	Purple_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 /*	Bucket *p;
@@ -312,8 +316,12 @@ PHP_MINIT_FUNCTION(purple)
 		php_printf("pListTail has key %s\n", p->arKey);
 		p = p->pListLast;
 	}*/
-	
+
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::Conversation", Conversation_methods);
+#else
 	INIT_CLASS_ENTRY(ce, "Conversation", Conversation_methods);
+#endif
 	Conversation_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(Conversation_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
 	/* A type of conversation */
@@ -338,13 +346,20 @@ PHP_MINIT_FUNCTION(purple)
 	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_NOTIFY", sizeof("MESSAGE_NOTIFY")-1, PURPLE_MESSAGE_NOTIFY TSRMLS_CC);
 	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_NO_LINKIFY", sizeof("MESSAGE_NO_LINKIFY")-1, PURPLE_MESSAGE_NO_LINKIFY TSRMLS_CC);
 	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_INVISIBLE", sizeof("MESSAGE_INVISIBLE")-1, PURPLE_MESSAGE_INVISIBLE TSRMLS_CC);
-	
+
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::Account", Account_methods);
+#else
 	INIT_CLASS_ENTRY(ce, "Account", Account_methods);
+#endif
 	Account_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(Account_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
 	
-
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::Connection", Connection_methods);
+#else
 	INIT_CLASS_ENTRY(ce, "Connection", Connection_methods);
+#endif
 	Connection_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(Connection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
 	/* end initalizing classes */
