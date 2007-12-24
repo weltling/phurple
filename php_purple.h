@@ -90,6 +90,9 @@ PHP_METHOD(Conversation, __construct);
 PHP_METHOD(Conversation, getName);
 PHP_METHOD(Conversation, sendIM);
 
+PHP_METHOD(Callback, writeConv);
+PHP_METHOD(Callback, onSignedOn);
+
 PHP_FUNCTION(purple_loop);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)

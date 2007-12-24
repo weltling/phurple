@@ -77,12 +77,6 @@
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
-static zval *purple_php_callback_obj;
-
-static zval *purple_php_write_conv_function_name;
-static zval *purple_php_signed_on_function_name;
-static PurpleSavedStatus* saved_status;
-
 static void purple_php_ui_init();
 static zval *purple_php_string_zval(const char *str);
 static zval *purple_php_long_zval(long l);
@@ -138,8 +132,6 @@ static PurpleEventLoopUiOps glib_eventloops =
 #else
 	NULL,
 #endif
-	
-	/* padding */
 	NULL,
 	NULL,
 	NULL
@@ -175,8 +167,6 @@ static PurpleCoreUiOps php_core_uiops =
 	NULL,
 	purple_php_ui_init,
 	NULL,
-	
-	/* padding */
 	NULL,
 	NULL,
 	NULL,
@@ -198,7 +188,7 @@ static int le_purple;
 
 
 /* classes definitions*/
-static zend_class_entry *Purple_ce, *Conversation_ce, *Account_ce, *Connection_ce;
+static zend_class_entry *Purple_ce, *Conversation_ce, *Account_ce, *Connection_ce, *Callback_ce;
 
 
 /* {{{ purple_functions[]
@@ -242,6 +232,13 @@ zend_function_entry Account_methods[] = {
 zend_function_entry Connection_methods[] = {
 	PHP_ME(Connection, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Connection, getAccount, NULL, ZEND_ACC_PUBLIC)
+	{NULL, NULL, NULL}
+};
+
+/* callback methods */
+zend_function_entry Callback_methods[] = {
+	PHP_ME(Callback, writeConv, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Callback, onSignedOn, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -300,6 +297,7 @@ PHP_MINIT_FUNCTION(purple)
 
 	/* initalizing classes */
 	zend_class_entry ce;
+	
 	/* classes definitions */
 
 #if ZEND_MODULE_API_NO >= 20071006
@@ -308,14 +306,7 @@ PHP_MINIT_FUNCTION(purple)
 	INIT_CLASS_ENTRY(ce, "Purple", Purple_methods);
 #endif
 	Purple_ce = zend_register_internal_class(&ce TSRMLS_CC);
-
-/*	Bucket *p;
-	HashTable *ht = &Purple_ce->function_table;
-	p = ht->pListTail;
-	while (p != NULL) {
-		php_printf("pListTail has key %s\n", p->arKey);
-		p = p->pListLast;
-	}*/
+	/*Purple_ce->ce_flags |= ZEND_ACC_FINAL;*/
 
 #if ZEND_MODULE_API_NO >= 20071006
 	INIT_CLASS_ENTRY(ce, "Purple::Conversation", Conversation_methods);
@@ -362,6 +353,15 @@ PHP_MINIT_FUNCTION(purple)
 #endif
 	Connection_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(Connection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
+
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::Callback", Callback_methods);
+#else
+	INIT_CLASS_ENTRY(ce, "Callback", Callback_methods);
+#endif
+	Callback_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	Callback_ce->ce_flags |= ZEND_ACC_EXPLICIT_ABSTRACT_CLASS;
+
 	/* end initalizing classes */
 	
 #ifdef HAVE_SIGNAL_H
@@ -482,13 +482,22 @@ PHP_FUNCTION(purple_loop)
 PHP_METHOD(Purple, __construct)
 {
 	zval *tmp;
+	zend_class_entry *ce = NULL;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "o", &tmp) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	*PURPLE_G(purple_php_callback_obj) = *tmp;
-	zval_copy_ctor(PURPLE_G(purple_php_callback_obj));
+	ce = zend_get_class_entry(tmp TSRMLS_DC);
+
+	if(ce && ce->parent && 0 == strcmp("Callback", ce->parent->name)) {
+		*PURPLE_G(purple_php_callback_obj) = *tmp;
+		zval_copy_ctor(PURPLE_G(purple_php_callback_obj));
+		return;
+	}
+	
+	zend_throw_exception(NULL, "The callback object class must inherit from the Purple::Callback class",0 TSRMLS_CC);
+	return;
 }
 
 /*
@@ -775,7 +784,6 @@ PHP_METHOD(Purple, connectToSignal)
 										PURPLE_CALLBACK(purple_php_signed_on_function),
 										NULL
 									);
-		/*here run user func*/
 	}
 
 	RETURN_LONG(ret);
@@ -975,6 +983,32 @@ PHP_METHOD(Conversation, sendIM)
 
 /*
 **
+**
+** Purple callback methods
+**
+*/
+
+PHP_METHOD(Callback, writeConv)
+{
+
+}
+
+PHP_METHOD(Callback, onSignedOn)
+{
+
+}
+
+/*
+**
+**
+** End purple callback methods
+**
+*/
+
+
+
+/*
+**
 ** Helper functions
 **
 */
@@ -1128,38 +1162,36 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 	zval *callback = PURPLE_G(purple_php_callback_obj);
 	zend_class_entry *ce = Z_OBJCE_P(callback);
 	HashTable *function_table = &ce->function_table;
+
 	
-	if(zend_hash_find(function_table, estrdup("writeConv"), sizeof("writeConv")-1, NULL)) {
+	MAKE_STD_ZVAL(conversation);
+	Z_TYPE_P(conversation) = IS_OBJECT;
+	object_init_ex(conversation, Conversation_ce);
+	zend_update_property_long(	Conversation_ce,
+								conversation,
+								"index",
+								sizeof("index")-1,
+								(long)g_list_position(conversations, g_list_find(conversations, conv))
+								);
 
-		MAKE_STD_ZVAL(conversation);
-		Z_TYPE_P(conversation) = IS_OBJECT;
-		object_init_ex(conversation, Conversation_ce);
-		zend_update_property_long(	Conversation_ce,
-									conversation,
-									"index",
-									sizeof("index")-1,
-									(long)g_list_position(conversations, g_list_find(conversations, conv))
-									);
-				
-		params[0] = conversation;
-		params[1] = purple_php_string_zval(who);
-		params[2] = purple_php_string_zval(alias);
-		params[3] = purple_php_string_zval(message);
-		params[4] = purple_php_long_zval((long)flags);
-		params[5] = purple_php_long_zval((long)mtime);
-		
-		if(call_user_function(	CG(function_table),
-								&callback,
-								purple_php_string_zval("writeConv"),
-								retval,
-								PARAMS_COUNT,
-								params TSRMLS_CC
-							) != SUCCESS) {
-			zend_error(E_ERROR, "Method call failed");
-		}
+	params[0] = conversation;
+	params[1] = purple_php_string_zval(who);
+	params[2] = purple_php_string_zval(alias);
+	params[3] = purple_php_string_zval(message);
+	params[4] = purple_php_long_zval((long)flags);
+	params[5] = purple_php_long_zval((long)mtime);
 
-		zval_dtor(retval);
+	if(call_user_function(	CG(function_table),
+							&callback,
+							purple_php_string_zval("writeConv"),
+							retval,
+							PARAMS_COUNT,
+							params TSRMLS_CC
+						) != SUCCESS) {
+		zend_error(E_ERROR, "Method call failed");
 	}
+
+	zval_dtor(retval);
 }
 /* }}} */
 
@@ -1194,38 +1226,32 @@ purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 	zend_class_entry *ce = Z_OBJCE_P(callback);
 	HashTable *function_table = &ce->function_table;
 	
-	if(zend_hash_find(function_table, estrdup("onSignedOn"), sizeof("onSignedOn")-1, NULL)) {
 
-		connections = purple_connections_get_all();
-		
-		MAKE_STD_ZVAL(connection);
-		Z_TYPE_P(connection) = IS_OBJECT;
-		object_init_ex(connection, Connection_ce);
-		zend_update_property_long(	Connection_ce,
-									connection,
-									"index",
-									sizeof("index")-1,
-									(long)g_list_position(connections, g_list_find(connections, conn))
-									);
+	connections = purple_connections_get_all();
 
-		params[0] = connection;
-		
-		if(call_user_function(	CG(function_table),
-								&callback,
-								purple_php_string_zval("onSignedOn"),
-								retval,
-								PARAMS_COUNT,
-								params TSRMLS_CC
-							) != SUCCESS) {
-			zend_error(E_ERROR, "Method call failed");
-		}
+	MAKE_STD_ZVAL(connection);
+	Z_TYPE_P(connection) = IS_OBJECT;
+	object_init_ex(connection, Connection_ce);
+	zend_update_property_long(	Connection_ce,
+								connection,
+								"index",
+								sizeof("index")-1,
+								(long)g_list_position(connections, g_list_find(connections, conn))
+								);
 
-		zval_dtor(retval);
+	params[0] = connection;
+
+	if(call_user_function(	CG(function_table),
+							&callback,
+							purple_php_string_zval("onSignedOn"),
+							retval,
+							PARAMS_COUNT,
+							params TSRMLS_CC
+						) != SUCCESS) {
+		zend_error(E_ERROR, "Method call failed");
 	}
 
-	/*PurpleAccount *account = purple_connection_get_account(connection);
-	PurpleConversation *conv = purple_conversation_new(PURPLE_CONV_TYPE_IM, account, estrdup("aoxyz@hotmail.com"));
-	purple_conv_im_send(PURPLE_CONV_IM(conv), estrdup("fuck you!"));*/
+	zval_dtor(retval);
 }
 
 /*
