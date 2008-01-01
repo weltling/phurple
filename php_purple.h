@@ -74,10 +74,14 @@ PHP_RINIT_FUNCTION(purple);
 PHP_RSHUTDOWN_FUNCTION(purple);
 PHP_MINFO_FUNCTION(purple);
 
-PHP_METHOD(Purple, __construct);
-PHP_METHOD(Purple, getCoreVersion);
-PHP_METHOD(Purple, initCore);
-PHP_METHOD(Purple, connectToSignal);
+PHP_METHOD(Client, __construct);
+PHP_METHOD(Client, getInstance);
+PHP_METHOD(Client, getCoreVersion);
+PHP_METHOD(Client, initCore);
+PHP_METHOD(Client, connectToSignal);
+PHP_METHOD(Client, writeConv);
+PHP_METHOD(Client, onSignedOn);
+PHP_METHOD(Client, runLoop);
 
 PHP_METHOD(Account, __construct);
 PHP_METHOD(Account, setPassword);
@@ -90,9 +94,6 @@ PHP_METHOD(Conversation, __construct);
 PHP_METHOD(Conversation, getName);
 PHP_METHOD(Conversation, sendIM);
 
-PHP_METHOD(Callback, writeConv);
-PHP_METHOD(Callback, onSignedOn);
-
 PHP_FUNCTION(purple_loop);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
@@ -101,7 +102,7 @@ ZEND_BEGIN_MODULE_GLOBALS(purple)
 	char *custom_plugin_path;
 	char *ui_id;
 	char *plugin_save_pref;
-	zval *purple_php_callback_obj;
+	zval *purple_php_client_obj;
 ZEND_END_MODULE_GLOBALS(purple)
 
 
