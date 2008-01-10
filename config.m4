@@ -19,89 +19,122 @@ dnl Make sure that the comment is aligned:
 
 if test "$PHP_PURPLE" != "no"; then
 
-  dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl
-  dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl
-  dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl
-    
-  SEARCH_PATH="/usr/local /usr /opt/gnome"     # you might want to change this
-  SEARCH_FOR="include/glib-2.0"  # you most likely want to change this
-  # search default path list
-    AC_MSG_CHECKING([for glib files in default path])
-    for i in $SEARCH_PATH ; do
-      if test -r $i/$SEARCH_FOR; then
-        GLIB_DIR=$i
-        AC_MSG_RESULT(found in $i)
-      fi
-    done
+	dnl check for glib
+	
+	SEARCH_PATH="/usr/local /usr /opt/gnome"
+	SEARCH_FOR="include/glib-2.0"
+	# search default path list
+	AC_MSG_CHECKING([for glib files in default path])
+	for i in $SEARCH_PATH ; do
+		if test -r $i/$SEARCH_FOR; then
+			GLIB_DIR=$i
+			AC_MSG_RESULT(found in $i)
+			break
+		fi
+	done
+	
+	if test -z "$GLIB_DIR"; then
+		AC_MSG_RESULT([not found])
+		AC_MSG_ERROR([Please reinstall the glib distribution])
+	fi
+
+	LIBNAME=glib-2.0
+	LIBSYMBOL=g_hash_table_new
+
+	PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
+	[
+		PHP_ADD_INCLUDE($GLIB_DIR/include/glib-2.0)
+		PHP_ADD_INCLUDE($GLIB_DIR/lib/glib-2.0/include)
+		PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $GLIB_DIR/lib, GLIB_SHARED_LIBADD)
+		AC_DEFINE(HAVE_GLIBLIB,1,[ ])
+	],[
+		AC_MSG_ERROR([wrong glib lib version or lib not found])
+	],[
+		-L$GLIB_DIR/lib -lglib-2.0
+	])
   
-  if test -z "$GLIB_DIR"; then
-    AC_MSG_RESULT([not found])
-    AC_MSG_ERROR([Please reinstall the glib distribution])
-  fi
+	PHP_SUBST(GLIB_SHARED_LIBADD)
 
-  PHP_ADD_INCLUDE($GLIB_DIR/include/glib-2.0)
-  PHP_ADD_INCLUDE($GLIB_DIR/lib/glib-2.0/include)
+	dnl end check for glib
 
-  LIBNAME=glib-2.0 # you may want to change this
-  LIBSYMBOL=g_hash_table_new # you most likely want to change this 
 
-  PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
-  [
-    PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $GLIB_DIR/lib, GLIB_SHARED_LIBADD)
-    AC_DEFINE(HAVE_PURPLELIB,1,[ ])
-  ],[
-    AC_MSG_ERROR([wrong glib lib version or lib not found])
-  ],[
-    -L$PURPLE_DIR/lib -lm -ldl
-  ])
+	dnl check for pcre
+
+	SEARCH_PATH="/usr/local /usr"
+	SEARCH_FOR="include/pcre.h"
+	# search default path list
+	AC_MSG_CHECKING([for pcre files in default path])
+	for i in $SEARCH_PATH ; do
+		if test -r $i/$SEARCH_FOR; then
+			PCRE_DIR=$i
+			AC_MSG_RESULT(found in $i)
+			break
+		fi
+	done
+	
+	if test -z "$PCRE_DIR"; then
+		AC_MSG_RESULT([not found])
+		AC_MSG_ERROR([Please reinstall the pcre distribution])
+	fi
+
+	LIBNAME=pcre
+	LIBSYMBOL=pcre_exec
+
+	PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
+	[
+		PHP_ADD_INCLUDE($PCRE_DIR/include)
+		PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $PCRE_DIR/lib, PCRE_SHARED_LIBADD)
+		AC_DEFINE(HAVE_PCRELIB,1,[ ])
+	],[
+		AC_MSG_ERROR([wrong pcre lib version or lib not found])
+	],[
+		-L$PCRE_DIR/lib -lpcre
+	])
   
-  PHP_SUBST(GLIB_SHARED_LIBADD)
-
-  dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl
-  dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl
-  dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl dnl
+	PHP_SUBST(PCRE_SHARED_LIBADD)
+	
+	dnl end check for pcre
 
 
-  dnl Write more examples of tests here...
+	dnl check for libpurple
 
-  dnl # --with-purple -> check with-path
-  SEARCH_PATH="/usr/local /usr"     # you might want to change this
-  SEARCH_FOR="include/libpurple"  # you most likely want to change this
-  if test -r $PHP_PURPLE/$SEARCH_FOR; then # path given as parameter
-    PURPLE_DIR=$PHP_PURPLE
-  else # search default path list
-    AC_MSG_CHECKING([for purple files in default path])
-    for i in $SEARCH_PATH ; do
-      if test -r $i/$SEARCH_FOR; then
-        PURPLE_DIR=$i
-        AC_MSG_RESULT(found in $i)
-      fi
-    done
-  fi
+	SEARCH_PATH="/usr/local /usr"
+	SEARCH_FOR="include/libpurple"
+	if test -r $PHP_PURPLE/$SEARCH_FOR; then # path given as parameter
+		PURPLE_DIR=$PHP_PURPLE
+	else # search default path list
+		AC_MSG_CHECKING([for purple files in default path])
+		for i in $SEARCH_PATH ; do
+			if test -r $i/$SEARCH_FOR; then
+				PURPLE_DIR=$i
+				AC_MSG_RESULT(found in $i)
+				break
+			fi
+		done
+	fi
   
-  if test -z "$PURPLE_DIR"; then
-    AC_MSG_RESULT([not found])
-    AC_MSG_ERROR([Please reinstall the purple distribution])
-  fi
+	if test -z "$PURPLE_DIR"; then
+		AC_MSG_RESULT([not found])
+		AC_MSG_ERROR([Please reinstall the purple distribution])
+	fi
 
-  dnl # --with-purple -> add include path
-  PHP_ADD_INCLUDE($PURPLE_DIR/include/libpurple)
+	LIBNAME=purple
+	LIBSYMBOL=purple_core_init
 
-  dnl # --with-purple -> check for lib and symbol presence
-  LIBNAME=purple # you may want to change this
-  LIBSYMBOL=purple_core_init # you most likely want to change this 
+	PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
+	[
+		PHP_ADD_INCLUDE($PURPLE_DIR/include/libpurple)
+		PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $PURPLE_DIR/lib, PURPLE_SHARED_LIBADD)
+		AC_DEFINE(HAVE_PURPLELIB,1,[ ])
+	],[
+		AC_MSG_ERROR([wrong purple lib version or lib not found])
+	],[
+		-L$PURPLE_DIR/lib -lpurple
+	])
+	
+	PHP_SUBST(PURPLE_SHARED_LIBADD)
 
-  PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
-  [
-    PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $PURPLE_DIR/lib, PURPLE_SHARED_LIBADD)
-    AC_DEFINE(HAVE_PURPLELIB,1,[ ])
-  ],[
-    AC_MSG_ERROR([wrong purple lib version or lib not found])
-  ],[
-    -L$PURPLE_DIR/lib -lm -ldl
-  ])
-  
-  PHP_SUBST(PURPLE_SHARED_LIBADD)
+	dnl end check for libpurple
 
   PHP_NEW_EXTENSION(purple, [ purple.c ], $ext_shared)
 

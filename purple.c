@@ -40,9 +40,11 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+
 #include "php_purple.h"
 
 #include <glib.h>
+#include <pcre.h>
  
 #include <string.h>
 #include <ctype.h>
@@ -91,6 +93,8 @@ static void purple_php_signed_on_function(PurpleConnection *gc, gpointer null);
 zval* call_user_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, zval* params[]);
 zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... TSRMLS_DC);
 void purple_php_dump_zval(zval *var);
+char *purple_php_tolower(const char *s);
+char *purple_php_get_protocol_id_by_name(const char *name);
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
 static void clean_pid();
@@ -213,6 +217,7 @@ zend_function_entry Client_methods[] = {
 	PHP_ME(Client, writeConv, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, onSignedOn, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, runLoop, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Client, addAccount, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -304,53 +309,55 @@ PHP_MINIT_FUNCTION(purple)
 #else
 	INIT_CLASS_ENTRY(ce, "Client", Client_methods);
 #endif
-	Client_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	Client_ce = zend_register_internal_class(&ce TSRMLS_DC);
+	/*zend_declare_property_string(Client_ce, "ui_id", sizeof("ui_id")-1, INI_STR("purple.ui_id"), ZEND_ACC_PRIVATE TSRMLS_DC);*/
 
+	/* A type of conversation */
+	zend_declare_class_constant_long(Client_ce, "CONV_TYPE_UNKNOWN", sizeof("CONV_TYPE_UNKNOWN")-1, PURPLE_CONV_TYPE_UNKNOWN TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "CONV_TYPE_IM", sizeof("CONV_TYPE_IM")-1, PURPLE_CONV_TYPE_IM TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "CONV_TYPE_CHAT", sizeof("CONV_TYPE_CHAT")-1, PURPLE_CONV_TYPE_CHAT TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "CONV_TYPE_MISC", sizeof("CONV_TYPE_MISC")-1, PURPLE_CONV_TYPE_MISC TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "CONV_TYPE_ANY", sizeof("CONV_TYPE_ANY")-1, PURPLE_CONV_TYPE_ANY TSRMLS_DC);
+	/* Flags applicable to a message */
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_SEND", sizeof("MESSAGE_SEND")-1, PURPLE_MESSAGE_SEND TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_RECV", sizeof("MESSAGE_RECV")-1, PURPLE_MESSAGE_RECV TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_SYSTEM", sizeof("MESSAGE_SYSTEM")-1, PURPLE_MESSAGE_SYSTEM TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_AUTO_RESP", sizeof("MESSAGE_AUTO_RESP")-1, PURPLE_MESSAGE_AUTO_RESP TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_ACTIVE_ONLY", sizeof("MESSAGE_ACTIVE_ONLY")-1, PURPLE_MESSAGE_ACTIVE_ONLY TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_NICK", sizeof("MESSAGE_NICK")-1, PURPLE_MESSAGE_NICK TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_NO_LOG", sizeof("MESSAGE_NO_LOG")-1, PURPLE_MESSAGE_NO_LOG TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_WHISPER", sizeof("MESSAGE_WHISPER")-1, PURPLE_MESSAGE_WHISPER TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_ERROR", sizeof("MESSAGE_ERROR")-1, PURPLE_MESSAGE_ERROR TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_DELAYED", sizeof("MESSAGE_DELAYED")-1, PURPLE_MESSAGE_DELAYED TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_RAW", sizeof("MESSAGE_RAW")-1, PURPLE_MESSAGE_RAW TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_IMAGES", sizeof("MESSAGE_IMAGES")-1, PURPLE_MESSAGE_IMAGES TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_NOTIFY", sizeof("MESSAGE_NOTIFY")-1, PURPLE_MESSAGE_NOTIFY TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_NO_LINKIFY", sizeof("MESSAGE_NO_LINKIFY")-1, PURPLE_MESSAGE_NO_LINKIFY TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "MESSAGE_INVISIBLE", sizeof("MESSAGE_INVISIBLE")-1, PURPLE_MESSAGE_INVISIBLE TSRMLS_DC);
+	
 #if ZEND_MODULE_API_NO >= 20071006
 	INIT_CLASS_ENTRY(ce, "Purple::Conversation", Conversation_methods);
 #else
 	INIT_CLASS_ENTRY(ce, "Conversation", Conversation_methods);
 #endif
-	Conversation_ce = zend_register_internal_class(&ce TSRMLS_CC);
-	zend_declare_property_long(Conversation_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
-	/* A type of conversation */
-	zend_declare_class_constant_long(Conversation_ce, "TYPE_UNKNOWN", sizeof("TYPE_UNKNOWN")-1, PURPLE_CONV_TYPE_UNKNOWN TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "TYPE_IM", sizeof("TYPE_IM")-1, PURPLE_CONV_TYPE_IM TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "TYPE_CHAT", sizeof("TYPE_CHAT")-1, PURPLE_CONV_TYPE_CHAT TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "TYPE_MISC", sizeof("TYPE_MISC")-1, PURPLE_CONV_TYPE_MISC TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "TYPE_ANY", sizeof("TYPE_ANY")-1, PURPLE_CONV_TYPE_ANY TSRMLS_CC);
-	/* Flags applicable to a message */
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_SEND", sizeof("MESSAGE_SEND")-1, PURPLE_MESSAGE_SEND TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_RECV", sizeof("MESSAGE_RECV")-1, PURPLE_MESSAGE_RECV TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_SYSTEM", sizeof("MESSAGE_SYSTEM")-1, PURPLE_MESSAGE_SYSTEM TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_AUTO_RESP", sizeof("MESSAGE_AUTO_RESP")-1, PURPLE_MESSAGE_AUTO_RESP TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_ACTIVE_ONLY", sizeof("MESSAGE_ACTIVE_ONLY")-1, PURPLE_MESSAGE_ACTIVE_ONLY TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_NICK", sizeof("MESSAGE_NICK")-1, PURPLE_MESSAGE_NICK TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_NO_LOG", sizeof("MESSAGE_NO_LOG")-1, PURPLE_MESSAGE_NO_LOG TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_WHISPER", sizeof("MESSAGE_WHISPER")-1, PURPLE_MESSAGE_WHISPER TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_ERROR", sizeof("MESSAGE_ERROR")-1, PURPLE_MESSAGE_ERROR TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_DELAYED", sizeof("MESSAGE_DELAYED")-1, PURPLE_MESSAGE_DELAYED TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_RAW", sizeof("MESSAGE_RAW")-1, PURPLE_MESSAGE_RAW TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_IMAGES", sizeof("MESSAGE_IMAGES")-1, PURPLE_MESSAGE_IMAGES TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_NOTIFY", sizeof("MESSAGE_NOTIFY")-1, PURPLE_MESSAGE_NOTIFY TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_NO_LINKIFY", sizeof("MESSAGE_NO_LINKIFY")-1, PURPLE_MESSAGE_NO_LINKIFY TSRMLS_CC);
-	zend_declare_class_constant_long(Conversation_ce, "MESSAGE_INVISIBLE", sizeof("MESSAGE_INVISIBLE")-1, PURPLE_MESSAGE_INVISIBLE TSRMLS_CC);
+	Conversation_ce = zend_register_internal_class(&ce TSRMLS_DC);
+	zend_declare_property_long(Conversation_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_DC);
 
 #if ZEND_MODULE_API_NO >= 20071006
 	INIT_CLASS_ENTRY(ce, "Purple::Account", Account_methods);
 #else
 	INIT_CLASS_ENTRY(ce, "Account", Account_methods);
 #endif
-	Account_ce = zend_register_internal_class(&ce TSRMLS_CC);
-	zend_declare_property_long(Account_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
+	Account_ce = zend_register_internal_class(&ce TSRMLS_DC);
+	zend_declare_property_long(Account_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_DC);
 	
 #if ZEND_MODULE_API_NO >= 20071006
 	INIT_CLASS_ENTRY(ce, "Purple::Connection", Connection_methods);
 #else
 	INIT_CLASS_ENTRY(ce, "Connection", Connection_methods);
 #endif
-	Connection_ce = zend_register_internal_class(&ce TSRMLS_CC);
-	zend_declare_property_long(Connection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
+	Connection_ce = zend_register_internal_class(&ce TSRMLS_DC);
+	zend_declare_property_long(Connection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_DC);
 
 	/* end initalizing classes */
 	
@@ -390,13 +397,30 @@ PHP_MINIT_FUNCTION(purple)
 	}
 #endif
 
-    /* purple initialization stuff
-    */
+    /*
+	 * purple initialization stuff
+	 */
 	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
     purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
 	purple_core_set_ui_ops(&php_core_uiops);
 	purple_eventloop_set_ui_ops(&glib_eventloops);
 	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
+
+	if (!purple_core_init(INI_STR("purple.ui_id"))) {
+#ifdef HAVE_SIGNAL_H
+		g_free(segfault_message);
+#endif
+		return FAILURE;
+	}
+
+	purple_set_blist(purple_blist_new());
+	purple_blist_load();
+	purple_prefs_load();
+
+	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
+
+	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
+	purple_savedstatus_activate(saved_status);
 
 	/* init globals */
 	ZEND_INIT_MODULE_GLOBALS(purple, globals_ctor, globals_dtor);
@@ -454,6 +478,46 @@ PHP_MINFO_FUNCTION(purple)
 /* }}} */
 
 
+/*
+**
+**
+** Purple client methods
+**
+*/
+
+
+/* {{{ proto int connectToSignal(string signal)
+	Connects a signal handler to a signal for a particular object */
+PHP_METHOD(Client, connectToSignal)
+{
+	static int handle;
+	int signal_len;
+	int ret = -1;
+	char *signal;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &signal, &signal_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	if(0 == strcmp("signed-on", signal)) {
+		ret = purple_signal_connect(	purple_connections_get_handle(),
+										estrdup(signal),
+										&handle,
+										PURPLE_CALLBACK(purple_php_signed_on_function),
+										NULL
+									);
+	}
+
+	RETURN_LONG(ret);
+}
+/* }}} */
+
+
+/* {{{ proto void purple_php_signed_on_function(string name)
+	Registers a user php function as the signed-on callback function */
+/* }}} */
+
+
 /* {{{ proto void Client::loop(void)
 	Creates the main loop*/
 PHP_METHOD(Client, runLoop)
@@ -469,17 +533,149 @@ PHP_METHOD(Client, runLoop)
 
 /* }}} */
 
-PHP_METHOD(Client, __construct)
-{/*
-	zval *tmp;
 
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "o", &tmp) == FAILURE) {
+/* {{{ proto object Client::addAccount(string dsn)*/
+PHP_METHOD(Client, addAccount)
+{
+	char *account_dsn, *protocol, *nick, *password;
+	const char *error;
+	int account_dsn_len, erroffset, offsets[12], rc;
+	pcre *re;
+	PurpleAccount *account = NULL;
+	GList *accounts;
+	zval *ui_id;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_dsn, &account_dsn_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	re = pcre_compile("(.+)://(.+):(.+)", 0, &error, &erroffset, NULL);
+
+	if (re == NULL)
+	{
+		zend_throw_exception(NULL, "PCRE compilation failed at offset %d: %s", erroffset, error, 0 TSRMLS_CC);
+		return;
+	}
+
+	rc = pcre_exec(re, NULL, account_dsn, account_dsn_len, 0, 0, offsets, 12);
+
+	if(rc < 0)
+	{
+		switch(rc)
+			{
+			case PCRE_ERROR_NOMATCH:
+				zend_throw_exception(NULL, "The account string must match \"protocol://user:password\" pattern", 0 TSRMLS_CC);
+			break;
+
+			default:
+				zend_throw_exception(NULL, "The account string must match \"protocol://user:password pattern\". Matching error %d", rc, 0 TSRMLS_CC);
+			break;
+			}
+		pcre_free(re);
+		return;
+	}
+
+	protocol = emalloc(offsets[3] - offsets[2]);
+	g_sprintf(protocol, "%.*s", offsets[3] - offsets[2], account_dsn + offsets[2]);
+	nick = emalloc(offsets[5] - offsets[4]);
+	g_sprintf(nick, "%.*s", offsets[5] - offsets[4], account_dsn + offsets[4]);
+	password = emalloc(offsets[7] - offsets[6]);
+	g_sprintf(password, "%.*s", offsets[7] - offsets[6], account_dsn + offsets[6]);
+
+	account = purple_account_new(estrdup(nick), purple_php_get_protocol_id_by_name(protocol));
+	
+	if(NULL != account) {
+
+		purple_account_set_password(account, password);
+
+		ui_id = zend_read_property(Z_OBJCE_P(getThis()), getThis(), "ui_id", sizeof("ui_id")-1, 0 TSRMLS_DC);
+		purple_account_set_enabled(account, Z_STRVAL_P(ui_id), 1);
+
+		purple_accounts_add(account);
+		
+		accounts = purple_accounts_get_all();
+
+		MAKE_STD_ZVAL(return_value);
+		Z_TYPE_P(return_value) = IS_OBJECT;
+		object_init_ex(return_value, Account_ce);
+		zend_update_property_long(	Account_ce,
+									return_value,
+									"index",
+									sizeof("index")-1,
+									(long)g_list_position(accounts, g_list_find(accounts, account))
+									);
+
+		efree(protocol);
+		efree(nick);
+		efree(password);
+		
+		return;
+		
+	}
+
+		efree(protocol);
+		efree(nick);
+		efree(password);
+
+		RETURN_NULL();
+}
+/* }}} */
+
+
+/* {{{ proto string Purple::getCoreVersion(void)
+	Returns the libpurple core version string */
+PHP_METHOD(Client, getCoreVersion)
+{	
+	char *version = estrdup(purple_core_get_version());
+
+	RETURN_STRING(version, 0);
+}
+/* }}} */
+
+
+/* {{{ proto bool Purple::initCore([string ui_id])
+	Initalizes the libpurple core */
+PHP_METHOD(Client, initCore)
+{
+	char *ui_id;
+	int ui_id_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &ui_id, &ui_id_len) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	*PURPLE_G(purple_php_callback_obj) = *tmp;
-	*PURPLE_G(purple_php_client_obj) = *getThis();
-	zval_copy_ctor(PURPLE_G(purple_php_client_obj));*/
+	ui_id = !ui_id_len ? INI_STR("purple.ui_id") : estrdup(ui_id);
+
+	if (!purple_core_init(ui_id)) {
+#ifdef HAVE_SIGNAL_H
+		g_free(segfault_message);
+#endif
+		RETURN_FALSE;
+	}
+
+	purple_set_blist(purple_blist_new());
+	purple_blist_load();
+	
+	/* Load the preferences. */
+	purple_prefs_load();
+
+	/* Load the desired plugins. The client should save the list of loaded plugins in
+	 * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
+	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
+
+	/* Load the pounces. */
+	/*purple_pounces_load();*/
+
+	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
+	purple_savedstatus_activate(saved_status);
+
+	RETURN_TRUE;
+}
+/* }}} */
+
+PHP_METHOD(Client, __construct)
+{
+	
 }
 
 
@@ -499,12 +695,20 @@ PHP_METHOD(Client, getInstance)
 		if(ce && (*ce)->parent && 0 == strcmp("Client", (*ce)->parent->name)) {
 			object_init_ex(tmp, *ce);
 		} else {
-			zend_throw_exception(NULL, "The PurpleClient class must be existent and inherit from the Client class (for php version < 5.3)", 0 TSRMLS_CC);
+			zend_throw_exception(NULL, "The Client child class must be named PurpleClient for php < 5.3", 0 TSRMLS_CC);
 			return;
 		}
 		/* object_init_ex(tmp, EG(current_execute_data->fbc->common.scope)); would be beautiful but works not as expected */
 		
 #endif
+
+		zend_update_property_string(	Z_OBJCE_P(tmp),
+										tmp,
+										"ui_id",
+										sizeof("ui_id")-1,
+										INI_STR("purple.ui_id") TSRMLS_DC
+										);
+		
 		*PURPLE_G(purple_php_client_obj) = *tmp;
 		zval_copy_ctor(PURPLE_G(purple_php_client_obj));
 
@@ -515,6 +719,38 @@ PHP_METHOD(Client, getInstance)
 	*return_value = *PURPLE_G(purple_php_client_obj);
 	return;
 }
+
+/*
+**
+**
+** End purple client methods
+**
+*/
+
+
+/*
+**
+**
+** Purple client callback methods
+**
+*/
+
+PHP_METHOD(Client, writeConv)
+{
+
+}
+
+PHP_METHOD(Client, onSignedOn)
+{
+
+}
+
+/*
+**
+**
+** End purple client callback methods
+**
+*/
 
 
 /*
@@ -589,16 +825,7 @@ PHP_METHOD(Account, __construct)
 		RETURN_NULL();
 	}
 
-	iter = purple_plugins_get_protocols();
-	for (; iter; iter = iter->next) {
-		PurplePlugin *plugin = iter->data;
-		PurplePluginInfo *info = plugin->info;
-		if (info && info->name && 0 == strcmp(info->name, protocol_name)) {
-			protocol_id = estrdup(info->id);
-		}
-	}
-
-	account = purple_account_new(estrdup(username), estrdup(protocol_id));
+	account = purple_account_new(estrdup(username), purple_php_get_protocol_id_by_name(protocol_name));
 	purple_accounts_add(account);
 	if(NULL != account) {
 		accounts = purple_accounts_get_all();
@@ -679,68 +906,6 @@ PHP_METHOD(Account, setEnabled)
 **
 */
 
-/*
-**
-**
-** Purple core methods
-**
-*/
-
-/* {{{ proto string Purple::getCoreVersion(void)
-	Returns the libpurple core version string */
-PHP_METHOD(Client, getCoreVersion)
-{	
-	char *version = estrdup(purple_core_get_version());
-
-	RETURN_STRING(version, 0);
-}
-/* }}} */
-
-
-/* {{{ proto bool Purple::initCore([string ui_id])
-	Initalizes the libpurple core */
-PHP_METHOD(Client, initCore)
-{
-	char *ui_id;
-	int ui_id_len;
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &ui_id, &ui_id_len) == FAILURE) {
-		RETURN_NULL();
-	}
-
-	ui_id = !ui_id_len ? INI_STR("purple.ui_id") : estrdup(ui_id);
-
-	if (!purple_core_init(ui_id)) {
-		RETURN_FALSE;
-	}
-
-	/* create an empty blist */
-	purple_set_blist(purple_blist_new());
-	
-	/* Load the preferences. */
-	purple_prefs_load();
-
-	/* Load the desired plugins. The client should save the list of loaded plugins in
-	 * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
-	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
-
-	/* Load the pounces. */
-	purple_pounces_load();
-
-	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
-	purple_savedstatus_activate(saved_status);
-	
-	RETURN_TRUE;
-}
-/* }}} */
-
-/*
-**
-**
-** End purple core methods
-**
-*/
-
 
 /*
 **
@@ -768,71 +933,6 @@ PHP_METHOD(Client, initCore)
 **
 **
 ** End purple plugin methods
-**
-*/
-
-
-/*
-**
-**
-** Purple signals methods
-**
-*/
-
-
-/* {{{ proto int connectToSignal(string signal)
-	Connects a signal handler to a signal for a particular object */
-PHP_METHOD(Client, connectToSignal)
-{
-	static int handle;
-	int signal_len;
-	int ret = -1;
-	char *signal;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &signal, &signal_len) == FAILURE) {
-		RETURN_NULL();
-	}
-
-	if(0 == strcmp("signed-on", signal)) {
-		ret = purple_signal_connect(	purple_connections_get_handle(),
-										estrdup(signal),
-										&handle,
-										PURPLE_CALLBACK(purple_php_signed_on_function),
-										NULL
-									);
-	}
-
-	RETURN_LONG(ret);
-}
-/* }}} */
-
-
-/* {{{ proto void purple_php_signed_on_function(string name)
-	Registers a user php function as the signed-on callback function */
-/* }}} */
-
-
-/*
-**
-**
-** End purple signals methods
-**
-*/
-
-/*
-**
-**
-** Purple status methods
-**
-*/
-
-/* {{{ */
-/* }}} */
-
-/*
-**
-**
-** End purple status methods
 **
 */
 
@@ -994,30 +1094,6 @@ PHP_METHOD(Conversation, sendIM)
 **
 **
 ** End purple conversation methods
-**
-*/
-
-/*
-**
-**
-** Purple callback methods
-**
-*/
-
-PHP_METHOD(Client, writeConv)
-{
-
-}
-
-PHP_METHOD(Client, onSignedOn)
-{
-
-}
-
-/*
-**
-**
-** End purple callback methods
 **
 */
 
@@ -1224,7 +1300,7 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 	zend_hash_find(function_table, "writeconv", sizeof("writeconv"), (void **) &fcic.function_handler);
 	fcic.calling_scope = ce;
 	fcic.object_pp = &client;
-	
+
 	if(!zend_call_function(&fci, &fcic TSRMLS_DC)) {php_printf("hello\n");
 		zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "Couldn't execute method %s::writeConv", ce->name);
 	}
@@ -1342,7 +1418,7 @@ purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 */
 
 
-/* {{{ 
+/* {{{
  Only returns the returned zval if retval_ptr != NULL */
 zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... TSRMLS_DC)
 {
@@ -1461,6 +1537,44 @@ void purple_php_dump_zval(zval *var)
             php_printf("Unknown ");
     }
 }
+
+/* {{{ */
+char *purple_php_tolower(const char *s)
+{
+	int  i = 0;
+	char *r = estrdup(s);
+
+	while (r[i])
+	{
+		r[i] = tolower(r[i]);
+		i++;
+	}
+
+	return r;
+}
+/* }}} */
+
+
+/* {{{ */
+char *purple_php_get_protocol_id_by_name(const char *protocol_name)
+{
+	GList *iter;
+
+	iter = purple_plugins_get_protocols();
+
+	for (; iter; iter = iter->next) {
+		PurplePlugin *plugin = iter->data;
+		PurplePluginInfo *info = plugin->info;
+		if (info && info->name && 0 == strcmp(purple_php_tolower(info->name), purple_php_tolower(protocol_name))) {
+			return estrdup(info->id);
+		}
+	}
+
+	return "";
+}
+/* }}} */
+
+
 
 /*
  * Local variables:

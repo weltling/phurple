@@ -82,6 +82,7 @@ PHP_METHOD(Client, connectToSignal);
 PHP_METHOD(Client, writeConv);
 PHP_METHOD(Client, onSignedOn);
 PHP_METHOD(Client, runLoop);
+PHP_METHOD(Client, addAccount);
 
 PHP_METHOD(Account, __construct);
 PHP_METHOD(Account, setPassword);
