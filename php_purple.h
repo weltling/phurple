@@ -78,7 +78,6 @@ PHP_METHOD(Client, __construct);
 PHP_METHOD(Client, getInstance);
 PHP_METHOD(Client, initInternal);
 PHP_METHOD(Client, getCoreVersion);
-PHP_METHOD(Client, initCore);
 PHP_METHOD(Client, connectToSignal);
 PHP_METHOD(Client, writeConv);
 PHP_METHOD(Client, onSignedOn);

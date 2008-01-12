@@ -213,7 +213,6 @@ zend_function_entry Client_methods[] = {
 	PHP_ME(Client, getInstance, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Client, initInternal, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, getCoreVersion, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Client, initCore, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Client, connectToSignal, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Client, writeConv, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, onSignedOn, NULL, ZEND_ACC_PROTECTED)
@@ -313,7 +312,6 @@ PHP_MINIT_FUNCTION(purple)
 	INIT_CLASS_ENTRY(ce, "Client", Client_methods);
 #endif
 	Client_ce = zend_register_internal_class(&ce TSRMLS_DC);
-	/*zend_declare_property_string(Client_ce, "ui_id", sizeof("ui_id")-1, INI_STR("purple.ui_id"), ZEND_ACC_PRIVATE TSRMLS_DC);*/
 
 	/* A type of conversation */
 	zend_declare_class_constant_long(Client_ce, "CONV_TYPE_UNKNOWN", sizeof("CONV_TYPE_UNKNOWN")-1, PURPLE_CONV_TYPE_UNKNOWN TSRMLS_DC);
@@ -409,7 +407,7 @@ PHP_MINIT_FUNCTION(purple)
 	purple_eventloop_set_ui_ops(&glib_eventloops);
 	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
 
-	if (!purple_core_init((const char *) estrdup(INI_STR("purple.ui_id")))) {
+	if (!purple_core_init(INI_STR("purple.ui_id"))) {
 #ifdef HAVE_SIGNAL_H
 		g_free(segfault_message);
 #endif
@@ -541,7 +539,6 @@ PHP_METHOD(Client, addAccount)
 	pcre *re;
 	PurpleAccount *account = NULL;
 	GList *accounts;
-	zval *ui_id;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_dsn, &account_dsn_len) == FAILURE) {
 		RETURN_FALSE;
@@ -586,8 +583,7 @@ PHP_METHOD(Client, addAccount)
 
 		purple_account_set_password(account, estrdup(password));
 
-		ui_id = zend_read_property(Z_OBJCE_P(getThis()), getThis(), "ui_id", sizeof("ui_id")-1, 0 TSRMLS_DC);
-		purple_account_set_enabled(account, Z_STRVAL_P(ui_id), 1);
+		purple_account_set_enabled(account, INI_STR("purple.ui_id"), 1);
 
 		purple_accounts_add(account);
 
@@ -631,46 +627,6 @@ PHP_METHOD(Client, getCoreVersion)
 /* }}} */
 
 
-/* {{{ proto bool Purple::initCore([string ui_id])
-	Initalizes the libpurple core */
-PHP_METHOD(Client, initCore)
-{
-	char *ui_id;
-	int ui_id_len;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &ui_id, &ui_id_len) == FAILURE) {
-		RETURN_NULL();
-	}
-
-	ui_id = !ui_id_len ? INI_STR("purple.ui_id") : estrdup(ui_id);
-
-	if (!purple_core_init(ui_id)) {
-#ifdef HAVE_SIGNAL_H
-		g_free(segfault_message);
-#endif
-		RETURN_FALSE;
-	}
-
-	purple_set_blist(purple_blist_new());
-	purple_blist_load();
-	
-	/* Load the preferences. */
-	purple_prefs_load();
-
-	/* Load the desired plugins. The client should save the list of loaded plugins in
-	 * the preferences using purple_plugins_save_loaded(PLUGIN_SAVE_PREF) */
-	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
-
-	/* Load the pounces. */
-	/*purple_pounces_load();*/
-
-	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
-	purple_savedstatus_activate(saved_status);
-
-	RETURN_TRUE;
-}
-/* }}} */
-
 PHP_METHOD(Client, __construct)
 {
 
@@ -699,14 +655,6 @@ PHP_METHOD(Client, getInstance)
 		/* object_init_ex(tmp, EG(current_execute_data->fbc->common.scope)); would be beautiful but works not as expected */
 		
 #endif
-
-		zend_update_property_string(	Z_OBJCE_P(tmp),
-										tmp,
-										"ui_id",
-										sizeof("ui_id")-1,
-										INI_STR("purple.ui_id") TSRMLS_DC
-										);
-		
 		*PURPLE_G(purple_php_client_obj) = *tmp;
 		zval_copy_ctor(PURPLE_G(purple_php_client_obj));
 
@@ -939,13 +887,11 @@ PHP_METHOD(Account, setPassword)
 	Sets whether or not this account is enabled for the specified UI */
 PHP_METHOD(Account, setEnabled)
 {
-	int ui_id_len;
-	char *ui_id;
 	zend_bool enabled;
 	PurpleAccount *account = NULL;
 	zval *account_index;
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sb", &ui_id, &ui_id_len, &enabled) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &enabled) == FAILURE) {
 		RETURN_NULL();
 	}
 
@@ -954,7 +900,7 @@ PHP_METHOD(Account, setEnabled)
 	
 	account = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
 	if(NULL != account) {
-		purple_account_set_enabled(account, estrdup(ui_id), (gboolean) enabled);
+		purple_account_set_enabled(account, INI_STR("purple.ui_id"), (gboolean) enabled);
 	}
 }
 /* }}} */
