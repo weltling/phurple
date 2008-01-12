@@ -76,6 +76,7 @@ PHP_MINFO_FUNCTION(purple);
 
 PHP_METHOD(Client, __construct);
 PHP_METHOD(Client, getInstance);
+PHP_METHOD(Client, initInternal);
 PHP_METHOD(Client, getCoreVersion);
 PHP_METHOD(Client, initCore);
 PHP_METHOD(Client, connectToSignal);
@@ -83,6 +84,8 @@ PHP_METHOD(Client, writeConv);
 PHP_METHOD(Client, onSignedOn);
 PHP_METHOD(Client, runLoop);
 PHP_METHOD(Client, addAccount);
+PHP_METHOD(Client, getProtocols);
+PHP_METHOD(Client, setUserDir);
 
 PHP_METHOD(Account, __construct);
 PHP_METHOD(Account, setPassword);
