@@ -90,11 +90,12 @@ static void
 purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
 							   const char *message, PurpleMessageFlags flags, time_t mtime);
 static void purple_php_signed_on_function(PurpleConnection *gc, gpointer null);
-zval* call_user_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, zval* params[]);
-zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... TSRMLS_DC);
-void purple_php_dump_zval(zval *var);
-char *purple_php_tolower(const char *s);
-char *purple_php_get_protocol_id_by_name(const char *name);
+static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... TSRMLS_CC);
+static void purple_php_dump_zval(zval *var);
+static char *purple_php_tolower(const char *s);
+static char *purple_php_get_protocol_id_by_name(const char *name);
+static void purple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
+static void purple_php_g_loop_callback(void);
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
 static void clean_pid();
@@ -195,7 +196,7 @@ static int le_purple;
 
 
 /* classes definitions*/
-static zend_class_entry *Client_ce, *Conversation_ce, *Account_ce, *Connection_ce;
+static zend_class_entry *Client_ce, *Conversation_ce, *Account_ce, *Connection_ce, *Buddy_ce, *BuddyList_ce;
 
 
 /* {{{ purple_functions[]
@@ -216,10 +217,11 @@ zend_function_entry Client_methods[] = {
 	PHP_ME(Client, connectToSignal, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Client, writeConv, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, onSignedOn, NULL, ZEND_ACC_PROTECTED)
-	PHP_ME(Client, runLoop, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Client, runLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(Client, addAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Client, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Client, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(Client, loopCallback, NULL, ZEND_ACC_PROTECTED)
 	{NULL, NULL, NULL}
 };
 
@@ -248,6 +250,17 @@ zend_function_entry Connection_methods[] = {
 	{NULL, NULL, NULL}
 };
 
+/* buddy class methods */
+zend_function_entry Buddy_methods[] = {
+	PHP_ME(Buddy, __construct, NULL, ZEND_ACC_PUBLIC)
+	{NULL, NULL, NULL}
+};
+
+/* buddy list class methods */
+zend_function_entry BuddyList_methods[] = {
+	PHP_ME(Buddy, __construct, NULL, ZEND_ACC_PUBLIC)
+	{NULL, NULL, NULL}
+};
 
 /* {{{ purple_module_entry
  */
@@ -350,7 +363,7 @@ PHP_MINIT_FUNCTION(purple)
 	INIT_CLASS_ENTRY(ce, "Account", Account_methods);
 #endif
 	Account_ce = zend_register_internal_class(&ce TSRMLS_DC);
-	zend_declare_property_long(Account_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_DC);
+	zend_declare_property_long(Account_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_DC);
 	
 #if ZEND_MODULE_API_NO >= 20071006
 	INIT_CLASS_ENTRY(ce, "Purple::Connection", Connection_methods);
@@ -358,8 +371,23 @@ PHP_MINIT_FUNCTION(purple)
 	INIT_CLASS_ENTRY(ce, "Connection", Connection_methods);
 #endif
 	Connection_ce = zend_register_internal_class(&ce TSRMLS_DC);
-	zend_declare_property_long(Connection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_DC);
+	zend_declare_property_long(Connection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_DC);
 
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::Buddy", Buddy_methods);
+#else
+	INIT_CLASS_ENTRY(ce, "Buddy", Buddy_methods);
+#endif
+	Buddy_ce = zend_register_internal_class(&ce TSRMLS_DC);
+	zend_declare_property_long(Buddy_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_DC);
+
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::BuddyList", BuddyList_methods);
+#else
+	INIT_CLASS_ENTRY(ce, "BuddyList", BuddyList_methods);
+#endif
+	BuddyList_ce = zend_register_internal_class(&ce TSRMLS_DC);
+	
 	/* end initalizing classes */
 	
 #ifdef HAVE_SIGNAL_H
@@ -423,6 +451,9 @@ PHP_MINIT_FUNCTION(purple)
 	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
 	purple_savedstatus_activate(saved_status);
 
+	
+	/*g_log_set_handler ("purple", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, purple_php_g_log_handler, NULL);*/
+	
 	/* init globals */
 	ZEND_INIT_MODULE_GLOBALS(purple, globals_ctor, globals_dtor);
 	
@@ -486,6 +517,12 @@ PHP_MINFO_FUNCTION(purple)
 **
 */
 
+/* {{{ */
+PHP_METHOD(Client, __construct)
+{
+
+}
+/* }}} */
 
 /* {{{ proto int connectToSignal(string signal)
 	Connects a signal handler to a signal for a particular object */
@@ -514,10 +551,12 @@ PHP_METHOD(Client, connectToSignal)
 /* }}} */
 
 
-/* {{{ proto void Client::loop(void)
+/* {{{ proto void Client::runLoop(void)
 	Creates the main loop*/
 PHP_METHOD(Client, runLoop)
 {
+	purple_php_g_loop_callback();
+	
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(loop);
 }
@@ -626,13 +665,6 @@ PHP_METHOD(Client, getCoreVersion)
 }
 /* }}} */
 
-
-PHP_METHOD(Client, __construct)
-{
-
-}
-
-
 PHP_METHOD(Client, getInstance)
 {
 	zval *tmp;
@@ -709,13 +741,6 @@ PHP_METHOD(Client, getProtocols)
 }
 /* }}} */
 
-/* {{{ */
-PHP_METHOD(Client, initInternal)
-{
-
-}
-/* }}}*/
-
 /* {{{ proto void Client::setUserDir([string $userDir])
 	Define a custom purple settings directory, overriding the default (user's home directory/.purple) */
 PHP_METHOD(Client, setUserDir) {
@@ -729,6 +754,18 @@ PHP_METHOD(Client, setUserDir) {
 	user_dir = !user_dir_len ? INI_STR("purple.custom_user_directory") : estrdup(user_dir);
 	
 	purple_util_set_user_dir(user_dir);
+}
+/* }}} */
+
+/* {{{ */
+PHP_METHOD(Client, initInternal)
+{
+}
+/* }}}*/
+
+/* {{{ */
+PHP_METHOD(Client, loopCallback)
+{
 }
 /* }}} */
 
@@ -1078,6 +1115,46 @@ PHP_METHOD(Conversation, sendIM)
 */
 
 
+/*
+**
+**
+** Purple Buddy methods
+**
+*/
+
+/* {{{ */
+PHP_METHOD(Buddy, __construct)
+{
+}
+/* }}} */
+
+/*
+**
+**
+** End purple Buddy methods
+**
+*/
+
+
+/*
+**
+**
+** Purple BuddyList methods
+**
+*/
+
+/* {{{ */
+PHP_METHOD(BuddyList, __construct)
+{
+}
+/* }}} */
+
+/*
+**
+**
+** End purple BuddyList methods
+**
+*/
 
 /*
 **
@@ -1272,7 +1349,7 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 						&tmp2,
 	  					&tmp3,
 						&tmp4,
-	  					&tmp5 TSRMLS_DC
+	  					&tmp5 TSRMLS_CC
 					  );
 
 	zval_ptr_dtor(&tmp1);
@@ -1333,7 +1410,7 @@ purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 	  					sizeof("onsignedon")-1,
 						NULL,
 	  					1,
-						&connection TSRMLS_DC);
+						&connection TSRMLS_CC);
 	
 	zval_ptr_dtor(&connection);
 }
@@ -1347,7 +1424,7 @@ purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 
 /* {{{
  Only returns the returned zval if retval_ptr != NULL */
-zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... TSRMLS_DC)
+static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... TSRMLS_CC)
 {
 	int result, i;
 	zend_fcall_info fci;
@@ -1430,7 +1507,7 @@ zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_functi
 }
 /* }}} */
 
-void purple_php_dump_zval(zval *var)
+static void purple_php_dump_zval(zval *var)
 {
 
     switch (Z_TYPE_P(var)) {
@@ -1466,7 +1543,7 @@ void purple_php_dump_zval(zval *var)
 }
 
 /* {{{ */
-char *purple_php_tolower(const char *s)
+static char *purple_php_tolower(const char *s)
 {
 	int  i = 0;
 	char *r = estrdup(s);
@@ -1483,7 +1560,7 @@ char *purple_php_tolower(const char *s)
 
 
 /* {{{ */
-char *purple_php_get_protocol_id_by_name(const char *protocol_name)
+static char *purple_php_get_protocol_id_by_name(const char *protocol_name)
 {
 	GList *iter;
 
@@ -1501,7 +1578,26 @@ char *purple_php_get_protocol_id_by_name(const char *protocol_name)
 }
 /* }}} */
 
+static void purple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+{
+}
 
+static void purple_php_g_loop_callback(void)
+{
+	TSRMLS_FETCH();
+
+	zval *client = PURPLE_G(purple_php_client_obj);
+	zend_class_entry *ce = Z_OBJCE_P(client);
+
+	call_custom_method(	&client,
+						ce,
+	  					NULL,
+						"loopcallback",
+	  					sizeof("loopcallback")-1,
+						NULL,
+	  					0,
+						NULL TSRMLS_CC);
+}
 
 /*
  * Local variables:

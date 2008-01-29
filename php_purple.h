@@ -85,6 +85,8 @@ PHP_METHOD(Client, runLoop);
 PHP_METHOD(Client, addAccount);
 PHP_METHOD(Client, getProtocols);
 PHP_METHOD(Client, setUserDir);
+PHP_METHOD(Client, loopCallback);
+PHP_METHOD(Client, loopTickCallback);
 
 PHP_METHOD(Account, __construct);
 PHP_METHOD(Account, setPassword);
@@ -97,7 +99,9 @@ PHP_METHOD(Conversation, __construct);
 PHP_METHOD(Conversation, getName);
 PHP_METHOD(Conversation, sendIM);
 
-PHP_FUNCTION(purple_loop);
+PHP_METHOD(Buddy, __construct);
+
+PHP_METHOD(BuddyList, __construct);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
 	long  debug_enabled;
