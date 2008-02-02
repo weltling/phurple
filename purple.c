@@ -89,6 +89,9 @@ static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInput
 static void
 purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
 							   const char *message, PurpleMessageFlags flags, time_t mtime);
+static void
+purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message,
+							 PurpleMessageFlags flags, time_t mtime);
 static void purple_php_signed_on_function(PurpleConnection *gc, gpointer null);
 static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... TSRMLS_CC);
 static void purple_php_dump_zval(zval *var);
@@ -151,7 +154,7 @@ static PurpleConversationUiOps php_conv_uiops =
 	NULL,                      /* create_conversation  */
 	NULL,                      /* destroy_conversation */
 	NULL,            /* write_chat           */
-	NULL,              /* write_im             */
+	purple_php_write_im_function,              /* write_im             */
 	purple_php_write_conv_function,            /* write_conv           */
 	NULL,                      /* chat_add_users       */
 	NULL,                      /* chat_rename_user     */
@@ -196,7 +199,7 @@ static int le_purple;
 
 
 /* classes definitions*/
-static zend_class_entry *Client_ce, *Conversation_ce, *Account_ce, *Connection_ce, *Buddy_ce, *BuddyList_ce;
+static zend_class_entry *Client_ce, *Conversation_ce, *Account_ce, *Connection_ce, *Buddy_ce, *BuddyList_ce, *BuddyGroup_ce;
 
 
 /* {{{ purple_functions[]
@@ -216,6 +219,7 @@ zend_function_entry Client_methods[] = {
 	PHP_ME(Client, getCoreVersion, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Client, connectToSignal, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Client, writeConv, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(Client, writeIM, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, onSignedOn, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, runLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(Client, addAccount, NULL, ZEND_ACC_PUBLIC)
@@ -253,12 +257,29 @@ zend_function_entry Connection_methods[] = {
 /* buddy class methods */
 zend_function_entry Buddy_methods[] = {
 	PHP_ME(Buddy, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Buddy, getName, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Buddy, getAlias, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Buddy, getGroup, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Buddy, getAccount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Buddy, updateStatus, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
 /* buddy list class methods */
 zend_function_entry BuddyList_methods[] = {
-	PHP_ME(Buddy, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyList, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyList, addBuddy, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyList, addGroup, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyList, getGroups, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyList, getBuddies, NULL, ZEND_ACC_PUBLIC)
+	{NULL, NULL, NULL}
+};
+
+zend_function_entry BuddyGroup_methods[] = {
+	PHP_ME(BuddyGroup, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyGroup, getAccounts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyGroup, getSize, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyGroup, getOnlineCount, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -380,6 +401,7 @@ PHP_MINIT_FUNCTION(purple)
 #endif
 	Buddy_ce = zend_register_internal_class(&ce TSRMLS_DC);
 	zend_declare_property_long(Buddy_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_DC);
+	zend_declare_property_long(Buddy_ce, "accountIndex", sizeof("accountIndex")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_DC);
 
 #if ZEND_MODULE_API_NO >= 20071006
 	INIT_CLASS_ENTRY(ce, "Purple::BuddyList", BuddyList_methods);
@@ -387,6 +409,14 @@ PHP_MINIT_FUNCTION(purple)
 	INIT_CLASS_ENTRY(ce, "BuddyList", BuddyList_methods);
 #endif
 	BuddyList_ce = zend_register_internal_class(&ce TSRMLS_DC);
+
+#if ZEND_MODULE_API_NO >= 20071006
+	INIT_CLASS_ENTRY(ce, "Purple::BuddyGroup", BuddyGroup_methods);
+#else
+	INIT_CLASS_ENTRY(ce, "BuddyGroup", BuddyGroup_methods);
+#endif
+	BuddyGroup_ce = zend_register_internal_class(&ce TSRMLS_DC);
+
 	
 	/* end initalizing classes */
 	
@@ -789,6 +819,11 @@ PHP_METHOD(Client, writeConv)
 
 }
 
+PHP_METHOD(Client, writeIM)
+{
+
+}
+
 PHP_METHOD(Client, onSignedOn)
 {
 
@@ -1128,6 +1163,35 @@ PHP_METHOD(Buddy, __construct)
 }
 /* }}} */
 
+PHP_METHOD(Buddy, getName)
+{
+
+}
+
+PHP_METHOD(Buddy, getAlias)
+{
+	zval *index;
+	
+	index = zend_read_property(Buddy_ce, getThis(), "index", sizeof("index")-1, 0);
+
+	
+}
+
+PHP_METHOD(Buddy, getGroup)
+{
+
+}
+
+PHP_METHOD(Buddy, getAccount)
+{
+
+}
+
+PHP_METHOD(Buddy, updateStatus)
+{
+
+}
+
 /*
 **
 **
@@ -1149,10 +1213,65 @@ PHP_METHOD(BuddyList, __construct)
 }
 /* }}} */
 
+PHP_METHOD(BuddyList, addBuddy)
+{
+
+}
+
+PHP_METHOD(BuddyList, addGroup)
+{
+
+}
+
+PHP_METHOD(BuddyList, getGroups)
+{
+
+}
+
+PHP_METHOD(BuddyList, getBuddies)
+{
+
+}
+
 /*
 **
 **
 ** End purple BuddyList methods
+**
+*/
+
+
+/*
+**
+**
+** Purple BuddyGroup methods
+**
+*/
+
+PHP_METHOD(BuddyGroup, __construct)
+{
+
+}
+
+PHP_METHOD(BuddyGroup, getAccounts)
+{
+	
+}
+
+PHP_METHOD(BuddyGroup, getSize)
+{
+
+}
+
+PHP_METHOD(BuddyGroup, getOnlineCount)
+{
+
+}
+
+/*
+**
+**
+** End purple BuddyGroup methods
 **
 */
 
@@ -1307,9 +1426,7 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 	const int PARAMS_COUNT = 6;
 	zval ***params, *conversation, *retval, *tmp1, *tmp2, *tmp3, *tmp4, *tmp5;
 	GList *conversations = purple_get_conversations();
-	zend_fcall_info fci;
-	zend_fcall_info_cache fcic;
-	
+
 	TSRMLS_FETCH();
 
 	MAKE_STD_ZVAL(conversation);
@@ -1319,7 +1436,7 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 								conversation,
 								"index",
 								sizeof("index")-1,
-								(long)g_list_position(conversations, g_list_find(conversations, conv))
+								(long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
 								);
 /*
 	MAKE_STD_ZVAL(datetime);
@@ -1362,22 +1479,79 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 }
 /* }}} */
 
-/*
-static void php_write_chat(PurpleConversation *conv, const char *who, const char *message,
-						   PurpleMessageFlags flags, time_t mtime)
-{
-	php_printf("%s + write_chat\n", message);
-}
 
-static void php_write_im(PurpleConversation *conv, const char *who, const char *message,
-						 PurpleMessageFlags flags, time_t mtime)
+/* {{{ */
+static void
+purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message,
+							 PurpleMessageFlags flags, time_t mtime)
 {
-	php_printf("%s + write_im\n", message);
+	const int PARAMS_COUNT = 5;
+	zval ***params, *conversation, *buddy, *retval, *tmp1, *tmp2, *tmp3;
+	GList *conversations = purple_get_conversations();
+
+	TSRMLS_FETCH();
+
+	MAKE_STD_ZVAL(conversation);
+	Z_TYPE_P(conversation) = IS_OBJECT;
+	object_init_ex(conversation, Conversation_ce);
+	zend_update_property_long(	Conversation_ce,
+								conversation,
+								"index",
+								sizeof("index")-1,
+								(long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
+								);
+/*
+	MAKE_STD_ZVAL(datetime);
+	Z_TYPE_P(datetime) = IS_OBJECT;
+
+	object_and_properties_init(datetime, DateTime, );*/
+
+	zval *client = PURPLE_G(purple_php_client_obj);
+	zend_class_entry *ce = Z_OBJCE_P(client);
+	HashTable *function_table = &ce->function_table;
+
+	MAKE_STD_ZVAL(buddy);
+	Z_TYPE_P(buddy) = IS_OBJECT;
+	object_init_ex(buddy, Buddy_ce);
+	zend_update_property_string(	Buddy_ce,
+							buddy,
+							"index",
+							sizeof("index")-1,
+							estrdup(!who ? "unknown" : who) TSRMLS_CC
+							);
+
+	zend_update_property_long(	Buddy_ce,
+								buddy,
+								"accountIndex",
+								sizeof("accountIndex")-1,
+								(long)g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))) TSRMLS_CC
+								);
 	
-	purple_conv_im_send(purple_conversation_get_im_data(conv), "answer: you are an asshole ;) !!! \n");
-	purple_conv_im_write(purple_conversation_get_im_data(conv), who, "answer: you are an asshole ;) !!! \n", flags, mtime);
-	common_send(conv, g_strdup("answer: you are an asshole ;) !!! \n"), flags);
-}*/
+    tmp1 = purple_php_string_zval(message);
+    tmp2 = purple_php_long_zval((long)flags);
+    tmp3 = purple_php_long_zval((long)mtime);
+	
+	call_custom_method(	&client,
+						ce,
+	  					NULL,
+						"writeim",
+	  					sizeof("writeim")-1,
+						NULL,
+	  					PARAMS_COUNT,
+						&conversation,
+					  	&buddy,
+						&tmp1,
+	  					&tmp2,
+						&tmp3 TSRMLS_CC
+					  );
+
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+	zval_ptr_dtor(&tmp3);
+	
+}
+/* }}} */
+
 
 static void
 purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
@@ -1400,7 +1574,7 @@ purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 								connection,
 								"index",
 								sizeof("index")-1,
-								(long)g_list_position(connections, g_list_find(connections, conn))
+								(long)g_list_position(connections, g_list_find(connections, conn)) TSRMLS_CC
 								);
 
 	call_custom_method(	&client,

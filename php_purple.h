@@ -80,6 +80,7 @@ PHP_METHOD(Client, initInternal);
 PHP_METHOD(Client, getCoreVersion);
 PHP_METHOD(Client, connectToSignal);
 PHP_METHOD(Client, writeConv);
+PHP_METHOD(Client, writeIM);
 PHP_METHOD(Client, onSignedOn);
 PHP_METHOD(Client, runLoop);
 PHP_METHOD(Client, addAccount);
@@ -100,8 +101,22 @@ PHP_METHOD(Conversation, getName);
 PHP_METHOD(Conversation, sendIM);
 
 PHP_METHOD(Buddy, __construct);
+PHP_METHOD(Buddy, getName);
+PHP_METHOD(Buddy, getAlias);
+PHP_METHOD(Buddy, getGroup);
+PHP_METHOD(Buddy, getAccount);
+PHP_METHOD(Buddy, updateStatus);
 
 PHP_METHOD(BuddyList, __construct);
+PHP_METHOD(BuddyList, addBuddy);
+PHP_METHOD(BuddyList, addGroup);
+PHP_METHOD(BuddyList, getGroups);
+PHP_METHOD(BuddyList, getBuddies);
+
+PHP_METHOD(BuddyGroup, __construct);
+PHP_METHOD(BuddyGroup, getAccounts);
+PHP_METHOD(BuddyGroup, getSize);
+PHP_METHOD(BuddyGroup, getOnlineCount);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
 	long  debug_enabled;
