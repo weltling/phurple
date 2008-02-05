@@ -57,45 +57,6 @@ if test "$PHP_PURPLE" != "no"; then
 
 	dnl end check for glib
 
-
-	dnl check for pcre
-
-	SEARCH_PATH="/usr/local /usr"
-	SEARCH_FOR="include/pcre.h"
-	# search default path list
-	AC_MSG_CHECKING([for pcre files in default path])
-	for i in $SEARCH_PATH ; do
-		if test -r $i/$SEARCH_FOR; then
-			PCRE_DIR=$i
-			AC_MSG_RESULT(found in $i)
-			break
-		fi
-	done
-	
-	if test -z "$PCRE_DIR"; then
-		AC_MSG_RESULT([not found])
-		AC_MSG_ERROR([Please reinstall the pcre distribution])
-	fi
-
-	LIBNAME=pcre
-	LIBSYMBOL=pcre_exec
-
-	PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
-	[
-		PHP_ADD_INCLUDE($PCRE_DIR/include)
-		PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $PCRE_DIR/lib, PCRE_SHARED_LIBADD)
-		AC_DEFINE(HAVE_PCRELIB,1,[ ])
-	],[
-		AC_MSG_ERROR([wrong pcre lib version or lib not found])
-	],[
-		-L$PCRE_DIR/lib -lpcre
-	])
-  
-	PHP_SUBST(PCRE_SHARED_LIBADD)
-	
-	dnl end check for pcre
-
-
 	dnl check for libpurple
 
 	SEARCH_PATH="/usr/local /usr"
