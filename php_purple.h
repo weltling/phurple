@@ -1,59 +1,19 @@
 /*
-   This file is part of phpurple
+Copyright (c) 2007-2008, Anatoliy Belsky
+All rights reserved.
 
-   Copyright (C) 2007 Anatoliy Belsky
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+    * Source code and binaries may NOT be SOLD in any manner without the explicit written consent of the copyright holder.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-   In addition, as a special exception, the copyright holders of phpurple
-   give you permission to combine phpurple with code included in the
-   standard release of PHP under the PHP license (or modified versions of
-   such code, with unchanged license). You may copy and distribute such a
-   system following the terms of the GNU GPL for phpurple and the licenses
-   of the other code concerned, provided that you include the source code of
-   that other code when and as the GNU GPL requires distribution of source code.
-
-   You must obey the GNU General Public License in all respects for all of the
-   code used other than standard release of PHP. If you modify this file, you
-   may extend this exception to your version of the file, but you are not
-   obligated to do so. If you do not wish to do so, delete this exception
-   statement from your version.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
 #ifndef PHP_PURPLE_H
 #define PHP_PURPLE_H
-
-#include <glib.h>
-#include "account.h"
-#include "conversation.h"
-#include "core.h"
-#include "debug.h"
-#include "eventloop.h"
-#include "ft.h"
-#include "log.h"
-#include "notify.h"
-#include "prefs.h"
-#include "prpl.h"
-#include "pounce.h"
-#include "savedstatuses.h"
-#include "sound.h"
-#include "status.h"
-#include "util.h"
-#include "whiteboard.h"
-#include "version.h"
 
 extern zend_module_entry purple_module_entry;
 #define phpext_purple_ptr &purple_module_entry
@@ -106,6 +66,7 @@ PHP_METHOD(Buddy, getAlias);
 PHP_METHOD(Buddy, getGroup);
 PHP_METHOD(Buddy, getAccount);
 PHP_METHOD(Buddy, updateStatus);
+PHP_METHOD(Buddy, isOnline);
 
 PHP_METHOD(BuddyList, __construct);
 PHP_METHOD(BuddyList, addBuddy);
@@ -125,6 +86,11 @@ ZEND_BEGIN_MODULE_GLOBALS(purple)
 	char *ui_id;
 	char *plugin_save_pref;
 	zval *purple_php_client_obj;
+	struct php_purple_object_storage
+	{
+		HashTable buddy;
+		HashTable group;
+	} ppos; /*php purple object storage*/
 ZEND_END_MODULE_GLOBALS(purple)
 
 
@@ -143,6 +109,8 @@ ZEND_END_MODULE_GLOBALS(purple)
 #else
 #define PURPLE_G(v) (purple_globals.v)
 #endif
+
+#define PURPLE_MK_OBJ(o, c) 	MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
 
 #endif	/* PHP_PURPLE_H */
 
