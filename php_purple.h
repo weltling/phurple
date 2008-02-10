@@ -59,6 +59,7 @@ PHP_METHOD(Connection, getAccount);
 PHP_METHOD(Conversation, __construct);
 PHP_METHOD(Conversation, getName);
 PHP_METHOD(Conversation, sendIM);
+PHP_METHOD(Conversation, getAccount);
 
 PHP_METHOD(Buddy, __construct);
 PHP_METHOD(Buddy, getName);
@@ -73,6 +74,7 @@ PHP_METHOD(BuddyList, addBuddy);
 PHP_METHOD(BuddyList, addGroup);
 PHP_METHOD(BuddyList, getGroups);
 PHP_METHOD(BuddyList, getBuddies);
+PHP_METHOD(BuddyList, findBuddy);
 
 PHP_METHOD(BuddyGroup, __construct);
 PHP_METHOD(BuddyGroup, getAccounts);
