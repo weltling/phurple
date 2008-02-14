@@ -24,7 +24,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include <glib.h>
 
- 
 #include <string.h>
 #include <ctype.h>
 
@@ -66,9 +65,6 @@ static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition
 static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
 							gpointer data);
 static void
-purple_php_send_message(PurpleConversation *conv, const char *who, const char *message,
-							 PurpleMessageFlags flags, time_t mtime, char *method);
-static void
 purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
 							   const char *message, PurpleMessageFlags flags, time_t mtime);
 static void
@@ -86,7 +82,6 @@ static int purple_php_hash_index_find(HashTable *ht, void *element);
 static void sighandler(int sig);
 static void clean_pid();
 #endif
-
 
 #ifdef HAVE_SIGNAL_H
 static char *segfault_message = "";
@@ -199,8 +194,8 @@ zend_function_entry Client_methods[] = {
 	PHP_ME(Client, __construct, NULL, ZEND_ACC_FINAL | ZEND_ACC_PROTECTED)
 	PHP_ME(Client, getInstance, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(Client, initInternal, NULL, ZEND_ACC_PROTECTED)
-	PHP_ME(Client, getCoreVersion, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(Client, connectToSignal, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Client, getCoreVersion, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
+	PHP_ME(Client, connectToSignal, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(Client, writeConv, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, writeIM, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(Client, onSignedOn, NULL, ZEND_ACC_PROTECTED)
@@ -228,6 +223,8 @@ zend_function_entry Account_methods[] = {
 	PHP_ME(Account, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Account, setPassword, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(Account, setEnabled, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Account, addBuddy, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(Account, removeBuddy, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -258,6 +255,7 @@ zend_function_entry BuddyList_methods[] = {
 	PHP_ME(BuddyList, getGroups, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(BuddyList, getBuddies, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(BuddyList, findBuddy, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(BuddyList, load, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
 };
 
@@ -266,6 +264,7 @@ zend_function_entry BuddyGroup_methods[] = {
 	PHP_ME(BuddyGroup, getAccounts, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(BuddyGroup, getSize, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(BuddyGroup, getOnlineCount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(BuddyGroup, getName, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -321,10 +320,11 @@ PHP_MINIT_FUNCTION(purple)
 {
 	REGISTER_INI_ENTRIES();
 
+	g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_LEVEL_CRITICAL | G_LOG_FLAG_RECURSION, purple_php_g_log_handler, NULL);
+	
 	/* initalizing php purple object storage */
 	zend_hash_init(&PURPLE_G(ppos).buddy, 20, NULL, NULL, 0);
 	zend_hash_init(&PURPLE_G(ppos).group, 20, NULL, NULL, 0);
-
 	
 	/* initalizing classes */
 	zend_class_entry ce;
@@ -360,6 +360,13 @@ PHP_MINIT_FUNCTION(purple)
 	zend_declare_class_constant_long(Client_ce, "MESSAGE_NOTIFY", sizeof("MESSAGE_NOTIFY")-1, PURPLE_MESSAGE_NOTIFY TSRMLS_DC);
 	zend_declare_class_constant_long(Client_ce, "MESSAGE_NO_LINKIFY", sizeof("MESSAGE_NO_LINKIFY")-1, PURPLE_MESSAGE_NO_LINKIFY TSRMLS_DC);
 	zend_declare_class_constant_long(Client_ce, "MESSAGE_INVISIBLE", sizeof("MESSAGE_INVISIBLE")-1, PURPLE_MESSAGE_INVISIBLE TSRMLS_DC);
+	/* Flags applicable to a status */
+	zend_declare_class_constant_long(Client_ce, "PURPLE_STATUS_OFFLINE", sizeof("PURPLE_STATUS_OFFLINE")-1, PURPLE_STATUS_OFFLINE TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "PURPLE_STATUS_AVAILABLE", sizeof("PURPLE_STATUS_AVAILABLE")-1, PURPLE_STATUS_AVAILABLE TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "PURPLE_STATUS_UNAVAILABLE", sizeof("PURPLE_STATUS_UNAVAILABLE")-1, PURPLE_STATUS_UNAVAILABLE TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "PURPLE_STATUS_INVISIBLE", sizeof("PURPLE_STATUS_INVISIBLE")-1, PURPLE_STATUS_INVISIBLE TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "PURPLE_STATUS_AWAY", sizeof("PURPLE_STATUS_AWAY")-1, PURPLE_STATUS_AWAY TSRMLS_DC);
+	zend_declare_class_constant_long(Client_ce, "PURPLE_STATUS_MOBILE", sizeof("PURPLE_STATUS_MOBILE")-1, PURPLE_STATUS_MOBILE TSRMLS_DC);
 	
 #if ZEND_MODULE_API_NO >= 20071006
 	INIT_CLASS_ENTRY(ce, "Purple::Conversation", Conversation_methods);
@@ -449,6 +456,7 @@ PHP_MINIT_FUNCTION(purple)
     /*
 	 * purple initialization stuff
 	 */
+	
 	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
     purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
 	purple_core_set_ui_ops(&php_core_uiops);
@@ -464,15 +472,13 @@ PHP_MINIT_FUNCTION(purple)
 
 	purple_set_blist(purple_blist_new());
 	purple_blist_load();
+	
 	purple_prefs_load();
 
 	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
 
 	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
 	purple_savedstatus_activate(saved_status);
-
-	
-	/*g_log_set_handler ("purple", G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, purple_php_g_log_handler, NULL);*/
 	
 	/* init globals */
 	ZEND_INIT_MODULE_GLOBALS(purple, globals_ctor, globals_dtor);
@@ -603,7 +609,7 @@ PHP_METHOD(Client, addAccount)
 		RETURN_FALSE;
 	}
 
-	re = pcre_compile("([a-zA-Z0-9]+)://([^:]+):([^@]+)@?([^:]*):?(.*)", 0, &error, &erroffset, NULL);
+	re = pcre_compile("([a-zA-Z]+)://([^:]+):([^@]+)@?([a-zA-Z0-9-.]*):?([0-9]*)", 0, &error, &erroffset, NULL);
 
 	if (re == NULL)
 	{
@@ -721,8 +727,6 @@ PHP_METHOD(Client, getInstance)
 		/* object_init_ex(tmp, EG(current_execute_data->fbc->common.scope)); would be beautiful but works not as expected */
 		
 #endif
-		PURPLE_G(purple_php_client_obj)->is_ref = 1;
-		PURPLE_G(purple_php_client_obj)->refcount++;
 		*return_value = *PURPLE_G(purple_php_client_obj);
 
 		call_custom_method(	&PURPLE_G(purple_php_client_obj),
@@ -761,7 +765,6 @@ PHP_METHOD(Client, getProtocols)
 	}
 	
 	*return_value = *protocols;
-	zval_copy_ctor(return_value);
 
 	efree(protocols);
 	g_list_free(iter);
@@ -787,19 +790,6 @@ PHP_METHOD(Client, setUserDir) {
 }
 /* }}} */
 
-/* {{{ */
-PHP_METHOD(Client, initInternal)
-{
-}
-/* }}}*/
-
-/* {{{ */
-PHP_METHOD(Client, loopCallback)
-{
-}
-/* }}} */
-
-
 /*
 **
 **
@@ -817,18 +807,27 @@ PHP_METHOD(Client, loopCallback)
 
 PHP_METHOD(Client, writeConv)
 {
-
 }
 
 PHP_METHOD(Client, writeIM)
 {
-
 }
 
 PHP_METHOD(Client, onSignedOn)
 {
-
 }
+
+/* {{{ */
+PHP_METHOD(Client, initInternal)
+{
+}
+/* }}}*/
+
+/* {{{ */
+PHP_METHOD(Client, loopCallback)
+{
+}
+/* }}} */
 
 /*
 **
@@ -897,7 +896,7 @@ PHP_METHOD(Connection, getAccount)
 **
 */
 
-/* {{{ proto Object __construct(string user_name, string protocol_name)
+/* {{{ proto Object Account::__construct(string user_name, string protocol_name)
 	Creates a new account*/
 PHP_METHOD(Account, __construct)
 {
@@ -930,7 +929,7 @@ PHP_METHOD(Account, __construct)
 /* }}} */
 
 
-/* {{{ proto void setPassword(int account, string password)
+/* {{{ proto void Account::setPassword(int account, string password)
 	Sets the account's password */
 PHP_METHOD(Account, setPassword)
 {
@@ -978,6 +977,66 @@ PHP_METHOD(Account, setEnabled)
 }
 /* }}} */
 
+/* {{{ proto void Account::addBuddy(Buddy buddy)
+	Adds a buddy to the server-side buddy list for the specified account. */
+PHP_METHOD(Account, addBuddy)
+{
+	PurpleAccount *paccount = NULL;
+	PurpleBuddy *pbuddy = NULL;
+	zval *account_index, *buddy_index, *buddy;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &buddy, Buddy_ce) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	ALLOC_INIT_ZVAL(account_index);
+	ZVAL_LONG(account_index, Z_LVAL_P(zend_read_property(Account_ce, getThis(), "index", sizeof("index")-1, 0)));
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
+	if(NULL != paccount) {
+		struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+
+		buddy_index = zend_read_property(Buddy_ce, buddy, "index", sizeof("index")-1, 0);
+		zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(buddy_index), (void**)&pbuddy);
+
+		if(pbuddy) {
+			purple_account_add_buddy(paccount, pbuddy);
+			RETURN_TRUE;
+		}
+	}
+
+	RETURN_FALSE;
+}
+/* }}} */
+
+PHP_METHOD(Account, removeBuddy)
+{
+	PurpleAccount *paccount = NULL;
+	PurpleBuddy *pbuddy = NULL;
+	zval *account_index, *buddy_index, *buddy;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &buddy, Buddy_ce) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	ALLOC_INIT_ZVAL(account_index);
+	ZVAL_LONG(account_index, Z_LVAL_P(zend_read_property(Account_ce, getThis(), "index", sizeof("index")-1, 0)));
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
+	if(NULL != paccount) {
+		struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+
+		buddy_index = zend_read_property(Buddy_ce, buddy, "index", sizeof("index")-1, 0);
+		zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(buddy_index), (void**)&pbuddy);
+
+		if(pbuddy) {
+			purple_account_remove_buddy(paccount, pbuddy, purple_buddy_get_group(pbuddy));
+			RETURN_TRUE;
+		}
+	}
+
+	RETURN_FALSE;
+}
 
 /* {{{ proto bool purple_account_is_connected(int account)
 	Returns whether or not the account is connected*/
@@ -1274,10 +1333,7 @@ PHP_METHOD(Buddy, getAlias)
 	zend_hash_index_find(&PURPLE_G(ppos).buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
 
 	if(pbuddy) {
-		const char *alias = purple_buddy_get_alias_only(pbuddy);
-		if(alias) {
-			RETURN_STRING(estrdup(alias), 0);
-		}
+		RETURN_STRING(estrdup(purple_buddy_get_alias_only(pbuddy)), 0);
 	}
 	
 	RETURN_NULL();
@@ -1318,8 +1374,6 @@ PHP_METHOD(Buddy, getGroup)
 											);
 			}
 
-			tmp->is_ref = 1;
-			tmp->refcount++;
 			*return_value = *tmp;
 
 			return;
@@ -1453,9 +1507,6 @@ PHP_METHOD(BuddyList, findBuddy)
 											);
 			}
 
-			buddy->is_ref = 1;
-			zval_add_ref(&buddy);
-
 			*return_value = *buddy;
 
 			return;
@@ -1463,6 +1514,14 @@ PHP_METHOD(BuddyList, findBuddy)
 	}
 
 	RETURN_NULL();
+}
+
+
+PHP_METHOD(BuddyList, load)
+{
+	purple_blist_load();
+
+	purple_set_blist(purple_get_blist());
 }
 
 /*
@@ -1496,6 +1555,11 @@ PHP_METHOD(BuddyGroup, getSize)
 }
 
 PHP_METHOD(BuddyGroup, getOnlineCount)
+{
+
+}
+
+PHP_METHOD(BuddyGroup, getName)
 {
 
 }
@@ -1655,23 +1719,6 @@ static void
 purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
             const char *message, PurpleMessageFlags flags, time_t mtime)
 {
-	purple_php_send_message(conv, who, message, flags, mtime, "writeconv");
-}
-/* }}} */
-
-/* {{{ */
-static void
-purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message,
-							 PurpleMessageFlags flags, time_t mtime)
-{
-	purple_php_send_message(conv, who, message, flags, mtime, "writeim");
-}
-/* }}} */
-
-static void
-purple_php_send_message(PurpleConversation *conv, const char *who, const char *message,
-							 PurpleMessageFlags flags, time_t mtime, char *method)
-{
 	const int PARAMS_COUNT = 5;
 	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
 	GList *conversations = purple_get_conversations();
@@ -1690,7 +1737,6 @@ purple_php_send_message(PurpleConversation *conv, const char *who, const char *m
 
 	zval *client = PURPLE_G(purple_php_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
-	HashTable *function_table = &ce->function_table;
 	
 	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
 	if(paccount) {
@@ -1730,12 +1776,95 @@ purple_php_send_message(PurpleConversation *conv, const char *who, const char *m
     tmp1 = purple_php_string_zval(message);
     tmp2 = purple_php_long_zval((long)flags);
 	tmp3 = purple_php_long_zval((long)mtime);
-	
+
 	call_custom_method(	&client,
 						ce,
 	  					NULL,
-						method,
-	  					sizeof(method)-1,
+						"writeconv",
+	  					sizeof("writeconv")-1,
+						NULL,
+	  					PARAMS_COUNT,
+						&conversation,
+					  	&buddy,
+						&tmp1,
+	  					&tmp2,
+						&tmp3 TSRMLS_CC
+					  );
+
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+	zval_ptr_dtor(&tmp3);
+}
+/* }}} */
+
+/* {{{ */
+static void
+purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message,
+							 PurpleMessageFlags flags, time_t mtime)
+{
+	const int PARAMS_COUNT = 5;
+	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
+	GList *conversations = purple_get_conversations();
+	PurpleBuddy *pbuddy = NULL;
+	PurpleAccount *paccount = NULL;
+
+	TSRMLS_FETCH();
+
+	PURPLE_MK_OBJ(conversation, Conversation_ce);
+	zend_update_property_long(	Conversation_ce,
+								conversation,
+								"index",
+								sizeof("index")-1,
+								(long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
+								);
+
+	zval *client = PURPLE_G(purple_php_client_obj);
+	zend_class_entry *ce = Z_OBJCE_P(client);
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
+	if(paccount) {
+		pbuddy = purple_find_buddy(paccount, !who ? purple_conversation_get_name(conv) : who);
+		
+		if(pbuddy) {
+			struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+			int ind = purple_php_hash_index_find(&pp->buddy, pbuddy);
+			PURPLE_MK_OBJ(buddy, Buddy_ce);
+			
+			if(ind == FAILURE) {
+				ulong nextid = zend_hash_next_free_element(&pp->buddy);
+				zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
+				zend_update_property_long(	Buddy_ce,
+											buddy,
+											"index",
+											sizeof("index")-1,
+											(long)nextid TSRMLS_CC
+											);
+			} else {
+				zend_update_property_long(	Buddy_ce,
+											buddy,
+											"index",
+											sizeof("index")-1,
+											(long)ind TSRMLS_CC
+											);
+			}
+		} else {
+			if(who) {
+				ZVAL_STRING(buddy, estrdup(who), 1);
+			} else {
+				ALLOC_INIT_ZVAL(buddy);
+			}
+		}
+	}
+	
+    tmp1 = purple_php_string_zval(message);
+    tmp2 = purple_php_long_zval((long)flags);
+	tmp3 = purple_php_long_zval((long)mtime);
+
+	call_custom_method(	&client,
+						ce,
+	  					NULL,
+						"writeim",
+	  					sizeof("writeim")-1,
 						NULL,
 	  					PARAMS_COUNT,
 						&conversation,
@@ -1762,7 +1891,6 @@ purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 
 	zval *client = PURPLE_G(purple_php_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
-	HashTable *function_table = &ce->function_table;
 	
 	connections = purple_connections_get_all();
 
@@ -1963,8 +2091,10 @@ static int purple_php_hash_index_find(HashTable *ht, void *element)
 }
 
 
-static void purple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+static void
+purple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
 {
+	/*call here some php callback*/
 }
 
 static void purple_php_g_loop_callback(void)
@@ -1980,8 +2110,7 @@ static void purple_php_g_loop_callback(void)
 						"loopcallback",
 	  					sizeof("loopcallback")-1,
 						NULL,
-	  					0,
-						NULL TSRMLS_CC);
+	  					0 TSRMLS_CC);
 }
 
 /*

@@ -52,6 +52,8 @@ PHP_METHOD(Client, loopTickCallback);
 PHP_METHOD(Account, __construct);
 PHP_METHOD(Account, setPassword);
 PHP_METHOD(Account, setEnabled);
+PHP_METHOD(Account, addBuddy);
+PHP_METHOD(Account, removeBuddy);
 
 PHP_METHOD(Connection, __construct);
 PHP_METHOD(Connection, getAccount);
@@ -75,11 +77,13 @@ PHP_METHOD(BuddyList, addGroup);
 PHP_METHOD(BuddyList, getGroups);
 PHP_METHOD(BuddyList, getBuddies);
 PHP_METHOD(BuddyList, findBuddy);
+PHP_METHOD(BuddyList, load);
 
 PHP_METHOD(BuddyGroup, __construct);
 PHP_METHOD(BuddyGroup, getAccounts);
 PHP_METHOD(BuddyGroup, getSize);
 PHP_METHOD(BuddyGroup, getOnlineCount);
+PHP_METHOD(BuddyGroup, getName);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
 	long  debug_enabled;
