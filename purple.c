@@ -503,6 +503,7 @@ PHP_MSHUTDOWN_FUNCTION(purple)
 }
 /* }}} */
 
+
 /* Remove if there's nothing to do at request start */
 /* {{{ PHP_RINIT_FUNCTION
  */
@@ -512,6 +513,7 @@ PHP_RINIT_FUNCTION(purple)
 }
 /* }}} */
 
+
 /* Remove if there's nothing to do at request end */
 /* {{{ PHP_RSHUTDOWN_FUNCTION
  */
@@ -520,6 +522,7 @@ PHP_RSHUTDOWN_FUNCTION(purple)
 	return SUCCESS;
 }
 /* }}} */
+
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -550,7 +553,8 @@ PHP_METHOD(PurpleClient, __construct)
 }
 /* }}} */
 
-/* {{{ proto int connectToSignal(string signal)
+
+/* {{{ proto int PurpleClient::connectToSignal(string signal)
 	Connects a signal handler to a signal for a particular object */
 PHP_METHOD(PurpleClient, connectToSignal)
 {
@@ -577,7 +581,7 @@ PHP_METHOD(PurpleClient, connectToSignal)
 /* }}} */
 
 
-/* {{{ proto void Client::runLoop(void)
+/* {{{ proto void PurpleClient::runLoop(void)
 	Creates the main loop*/
 PHP_METHOD(PurpleClient, runLoop)
 {
@@ -589,13 +593,8 @@ PHP_METHOD(PurpleClient, runLoop)
 /* }}} */
 
 
-/* {{{ proto bool purple_prefs_load(void)
-	Loads the user preferences from the user dir*/
-
-/* }}} */
-
-
-/* {{{ proto object Client::addAccount(string dsn)*/
+/* {{{ proto object PurpleClient::addAccount(string dsn)
+	adds a new account to the current client*/
 PHP_METHOD(PurpleClient, addAccount)
 {
 	char *account_dsn, *protocol, *nick, *password, *host, *port;
@@ -695,7 +694,7 @@ PHP_METHOD(PurpleClient, addAccount)
 /* }}} */
 
 
-/* {{{ proto string Purple::getCoreVersion(void)
+/* {{{ proto string PurpleClient::getCoreVersion(void)
 	Returns the libpurple core version string */
 PHP_METHOD(PurpleClient, getCoreVersion)
 {	
@@ -705,6 +704,9 @@ PHP_METHOD(PurpleClient, getCoreVersion)
 }
 /* }}} */
 
+
+/* {{{ proto object PurpleClient::getInstance(void)
+	creates new PurpleClient instance*/
 PHP_METHOD(PurpleClient, getInstance)
 {
 	zval_ptr_dtor(&return_value);
@@ -745,8 +747,10 @@ PHP_METHOD(PurpleClient, getInstance)
 	
 	return;
 }
+/* }}} */
 
-/* {{{ proto array Client::getProtocols(void)
+
+/* {{{ proto array PurpleClient::getProtocols(void)
 	Returns a list of all valid protocol plugins */
 PHP_METHOD(PurpleClient, getProtocols)
 {
@@ -773,7 +777,8 @@ PHP_METHOD(PurpleClient, getProtocols)
 }
 /* }}} */
 
-/* {{{ proto void Client::setUserDir([string $userDir])
+
+/* {{{ proto void PurpleClient::setUserDir([string $userDir])
 	Define a custom purple settings directory, overriding the default (user's home directory/.purple) */
 PHP_METHOD(PurpleClient, setUserDir) {
 	char *user_dir;
@@ -805,25 +810,39 @@ PHP_METHOD(PurpleClient, setUserDir) {
 **
 */
 
+/* {{{ proto void PurpleClient::writeConv(PurpleConversation conversation, PurplePuddy buddy, string message, int flags, timestamp time)
+	this callback method writes to the conversation, if implemented*/
 PHP_METHOD(PurpleClient, writeConv)
 {
 }
+/* }}} */
 
+
+/* {{{ proto void PurpleClient::writeIM(PurpleConversation conversation, PurplePuddy buddy, string message, int flags, timestamp time)
+	this callback method writes to the conversation, if implemented*/
 PHP_METHOD(PurpleClient, writeIM)
 {
 }
+/* }}} */
 
+/* }}} proto void PurpleClient::onSignedOn(string)
+	this callback is called at the moment, where the client gets singed on, if implemented */
 PHP_METHOD(PurpleClient, onSignedOn)
 {
 }
+/* }}} */
 
-/* {{{ */
+
+/* {{{ proto void PurpleClient::initInternal(void)
+	thes callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff*/
 PHP_METHOD(PurpleClient, initInternal)
 {
 }
 /* }}}*/
 
-/* {{{ */
+
+/* {{{ proto void PurpleClient::loopCallback(void)
+	this callback method is called within the PurpleClient::runLoop */
 PHP_METHOD(PurpleClient, loopCallback)
 {
 }
@@ -844,12 +863,16 @@ PHP_METHOD(PurpleClient, loopCallback)
 **
 */
 
+/* {{{ proto object PurpleConnection::__construct()
+	constructor*/
 PHP_METHOD(PurpleConnection, __construct)
 {
 	
 }
+/* }}} */
 
-/* {{{ proto Account Connection::getAccount()
+
+/* {{{ proto PurpleAccount PurpleConnection::getAccount()
 		Returns the connection's account*/
 PHP_METHOD(PurpleConnection, getAccount)
 {
@@ -896,7 +919,7 @@ PHP_METHOD(PurpleConnection, getAccount)
 **
 */
 
-/* {{{ proto Object Account::__construct(string user_name, string protocol_name)
+/* {{{ proto object PurpleAccount::__construct(string user_name, string protocol_name)
 	Creates a new account*/
 PHP_METHOD(PurpleAccount, __construct)
 {
@@ -929,7 +952,7 @@ PHP_METHOD(PurpleAccount, __construct)
 /* }}} */
 
 
-/* {{{ proto void Account::setPassword(int account, string password)
+/* {{{ proto void PurpleAccount::setPassword(int account, string password)
 	Sets the account's password */
 PHP_METHOD(PurpleAccount, setPassword)
 {
@@ -955,8 +978,8 @@ PHP_METHOD(PurpleAccount, setPassword)
 /* }}} */
 
 
-/* {{{ proto void purple_account_set_enabled(int account, string ui_id, bool enabled)
-	Sets whether or not this account is enabled for the specified UI */
+/* {{{ proto void PurpleAccount::setEnabled(bool enabled)
+	Sets whether or not this account is enabled for some UI */
 PHP_METHOD(PurpleAccount, setEnabled)
 {
 	zend_bool enabled;
@@ -977,8 +1000,9 @@ PHP_METHOD(PurpleAccount, setEnabled)
 }
 /* }}} */
 
-/* {{{ proto void Account::addBuddy(Buddy buddy)
-	Adds a buddy to the server-side buddy list for the specified account. */
+
+/* {{{ proto bool PurpleAccount::addBuddy(PurpleBuddy buddy)
+	Adds a buddy to the server-side buddy list for the specified account */
 PHP_METHOD(PurpleAccount, addBuddy)
 {
 	PurpleAccount *paccount = NULL;
@@ -1009,6 +1033,8 @@ PHP_METHOD(PurpleAccount, addBuddy)
 }
 /* }}} */
 
+/* {{{ proto bool PurpleAccount::removeBuddy(PurpleBuddy buddy)
+	Removes a buddy from the server-side buddy list for the specified account */
 PHP_METHOD(PurpleAccount, removeBuddy)
 {
 	PurpleAccount *paccount = NULL;
@@ -1037,10 +1063,13 @@ PHP_METHOD(PurpleAccount, removeBuddy)
 
 	RETURN_FALSE;
 }
+/* }}} */
+
 
 /* {{{ proto bool purple_account_is_connected(int account)
 	Returns whether or not the account is connected*/
 /* }}} */
+
 /*
 **
 **
@@ -1048,48 +1077,6 @@ PHP_METHOD(PurpleAccount, removeBuddy)
 **
 */
 
-/*
-**
-**
-** Purple util methods
-**
-*/
-
-/* {{{ proto void purple_util_set_user_dir([string user_dir])
-	Define a custom purple settings directory, overriding the default (user's home directory/.purple) */
-/* }}} */
-
-/*
-**
-**
-** End purple util methods
-**
-*/
-
-/*
-**
-**
-** Purple blist methods
-**
-*/
-
-/* {{{ proto void purple_blist_load(void)
-		Loads the buddy list from ~/.purple/blist.xml */
-/* }}} */
-
-
-/* {{{ */
-/* }}} */
-
-
-/* {{{ */
-/* }}} */
-/*
-**
-**
-** End purple blist methods
-**
-*/
 
 /*
 **
@@ -1105,6 +1092,7 @@ PHP_METHOD(PurpleAccount, removeBuddy)
 **
 */
 
+
 /*
 **
 **
@@ -1112,7 +1100,7 @@ PHP_METHOD(PurpleAccount, removeBuddy)
 **
 */
 
-/* {{{ proto int Conversation::__construct(int type, Object account, string name)
+/* {{{ proto int PurpleConversation::__construct(int type, PurpleAccount account, string name)
 	Creates a new conversation of the specified type */
 PHP_METHOD(PurpleConversation, __construct)
 {
@@ -1148,7 +1136,7 @@ PHP_METHOD(PurpleConversation, __construct)
 /* }}} */
 
 
-/* {{{ proto string Conversation::getName(void)
+/* {{{ proto string PurpleConversation::getName(void)
 	Returns the specified conversation's name*/
 PHP_METHOD(PurpleConversation, getName)
 {
@@ -1167,7 +1155,8 @@ PHP_METHOD(PurpleConversation, getName)
 }
 /* }}} */
 
-/* {{{ proto void sendIM(string message)
+
+/* {{{ proto void PurpleConversation::sendIM(string message)
 	Sends a message to this IM conversation */
 PHP_METHOD(PurpleConversation, sendIM)
 {
@@ -1190,7 +1179,9 @@ PHP_METHOD(PurpleConversation, sendIM)
 }
 /* }}} */
 
-/* {{{ */
+
+/* {{{ proto PurpleAccount PurpleConversation::getAccount(void)
+	Gets the account of this conversation*/
 PHP_METHOD(PurpleConversation, getAccount)
 {
 	PurpleConversation *conversation = NULL;
@@ -1223,13 +1214,6 @@ PHP_METHOD(PurpleConversation, getAccount)
 	Sets the specified conversation's purple_account */
 /* }}} */
 
-
-/* {{{ */
-/*PHP_FUNCTION(purple_conv_im_write)
-{
-	
-}*/
-/* }}} */
 /*
 **
 **
@@ -1245,7 +1229,8 @@ PHP_METHOD(PurpleConversation, getAccount)
 **
 */
 
-/* {{{ */
+/* {{{ proto object PurpleBuddy::__construct(PurpleAccount account, string name, string alias)
+	Creates new buddy*/
 PHP_METHOD(PurpleBuddy, __construct)
 {
 	PurpleAccount *paccount = NULL;
@@ -1306,6 +1291,9 @@ PHP_METHOD(PurpleBuddy, __construct)
 }
 /* }}} */
 
+
+/* {{{ proto string PurpleBuddy::getName(void)
+	Gets buddy name*/
 PHP_METHOD(PurpleBuddy, getName)
 {
 	zval *index;
@@ -1323,7 +1311,11 @@ PHP_METHOD(PurpleBuddy, getName)
 	
 	RETURN_NULL();
 }
+/* }}} */
 
+
+/* {{{ proto string PurpleBuddy::getAlias(void)
+	gets buddy alias */
 PHP_METHOD(PurpleBuddy, getAlias)
 {
 	zval *index;
@@ -1339,7 +1331,11 @@ PHP_METHOD(PurpleBuddy, getAlias)
 	RETURN_NULL();
 	
 }
+/* }}} */
 
+
+/* {{{ PurpleGroup PurpleBuddy::getGroup(void)
+	gets buddy's group */
 PHP_METHOD(PurpleBuddy, getGroup)
 {
 	zval *index, *tmp;
@@ -1383,17 +1379,29 @@ PHP_METHOD(PurpleBuddy, getGroup)
 	RETURN_NULL();
 	
 }
+/* }}} */
 
+
+/* {{{ proto PurpleAccount PurpleBuddy::getAccount(void)
+	gets buddy's account */
 PHP_METHOD(PurpleBuddy, getAccount)
 {
 
 }
+/* }}} */
 
+
+/* {{{ proto void PurpleBuddy::updateStatus(int status)
+	updates the buddy status */
 PHP_METHOD(PurpleBuddy, updateStatus)
 {
 
 }
+/* }}} */
 
+
+/* {{{ bool PurpleBuddy::isOnline(void)
+	checks weither the buddy is online */
 PHP_METHOD(PurpleBuddy, isOnline)
 {
 	zval *index;
@@ -1406,6 +1414,7 @@ PHP_METHOD(PurpleBuddy, isOnline)
 
 	RETVAL_BOOL(PURPLE_BUDDY_IS_ONLINE(pbuddy));
 }
+/* }}} */
 
 /*
 **
@@ -1422,12 +1431,16 @@ PHP_METHOD(PurpleBuddy, isOnline)
 **
 */
 
-/* {{{ */
+/* {{{ proto PurpleBuddyList PurpleBuddyList::__construct(void)
+	should newer be called*/
 PHP_METHOD(PurpleBuddyList, __construct)
 {
 }
 /* }}} */
 
+
+/* {{{ proto bool PurpleBuddyList::addBuddy(PurpleBuddy buddy[, PurpleGroup group])
+	adds the buddy to the blist (optionally to the given group in the blist, not implemented yet)*/
 PHP_METHOD(PurpleBuddyList, addBuddy)
 {
 	zval *buddy, *group, *index;
@@ -1449,22 +1462,38 @@ PHP_METHOD(PurpleBuddyList, addBuddy)
 
 	RETURN_FALSE;
 }
+/* }}} */
 
+
+/* {{{ proto bool PurpleBuddyList::addGroup(string name)
+	Adds new group to the blist */
 PHP_METHOD(PurpleBuddyList, addGroup)
 {
 
 }
+/* }}} */
 
+
+/* {{{ proto array PurpleBuddyList::getGroups(void)
+	gets all the the groups in the blist */
 PHP_METHOD(PurpleBuddyList, getGroups)
 {
 
 }
+/* }}} */
 
+
+/* {{{ proto array PurpleBuddyList::getBuddies(void)
+	gets all the buddies in the blist */
 PHP_METHOD(PurpleBuddyList, getBuddies)
 {
 
 }
+/* }}} */
 
+
+/* {{{ proto PurpleBuddy PurpleBuddyList::findBuddy(PurpleAccount account, string name)\
+	returns the buddy, if found */
 PHP_METHOD(PurpleBuddyList, findBuddy)
 {
 	zval *account, *index, *buddy;
@@ -1515,14 +1544,18 @@ PHP_METHOD(PurpleBuddyList, findBuddy)
 
 	RETURN_NULL();
 }
+/* }}} */
 
 
+/* {{{ proto void PurpleBuddyList::load(void)
+	loads the blist.xml from the homedir */
 PHP_METHOD(PurpleBuddyList, load)
 {
 	purple_blist_load();
 
 	purple_set_blist(purple_get_blist());
 }
+/* }}} */
 
 /*
 **
@@ -1539,30 +1572,49 @@ PHP_METHOD(PurpleBuddyList, load)
 **
 */
 
+/* {{{ proto object PurpleBuddyGroup::__construct(void)
+	constructor*/
 PHP_METHOD(PurpleBuddyGroup, __construct)
 {
 
 }
+/* }}} */
 
+
+/* {{{ proto array PurpleBuddyGroup::getAccounts(void)
+	gets all the accounts related to the group */
 PHP_METHOD(PurpleBuddyGroup, getAccounts)
 {
 	
 }
+/* }}} */
 
+
+/* proto int PupleBuddyGroup::getSize(void)
+	gets the count of the buddies in the group */
 PHP_METHOD(PurpleBuddyGroup, getSize)
 {
 
 }
+/* }}} */
 
+
+/* proto int PurpleBuddyGroup::getOnlineCount(void)
+	gets the count of the buddies in the group with the status online*/
 PHP_METHOD(PurpleBuddyGroup, getOnlineCount)
 {
 
 }
+/* }}} */
 
+
+/* {{{ proto string PurpleBuddyGroup::getName(void)
+	gets the name of the group */
 PHP_METHOD(PurpleBuddyGroup, getName)
 {
 
 }
+/* }}} */
 
 /*
 **
@@ -1577,13 +1629,17 @@ PHP_METHOD(PurpleBuddyGroup, getName)
 **
 */
 
+/* {{{ */
 static void
 purple_php_ui_init()
 {
 	purple_conversations_set_ui_ops(&php_conv_uiops);
 }
+/* }}} */
+
 
 #ifdef HAVE_SIGNAL_H
+/* {{{ */
 static void
 clean_pid()
 {
@@ -1603,7 +1659,10 @@ clean_pid()
 	/* Restore signal catching */
 	signal(SIGALRM, sighandler);
 }
+/* }}} */
 
+
+/* {{{ */
 static void
 sighandler(int sig)
 {
@@ -1634,6 +1693,7 @@ sighandler(int sig)
 		exit(0);
 	}
 }
+/* }}} */
 #endif
 
 
@@ -1654,7 +1714,10 @@ static zval *purple_php_string_zval(const char *str)
 
 	return ret;
 }
+/* }}} */
 
+
+/* {{{ */
 static zval *purple_php_long_zval(long l)
 {
 	zval *ret;
@@ -1667,12 +1730,16 @@ static zval *purple_php_long_zval(long l)
 }
 /* }}} */
 
+
+/* {{{ */
 static void purple_glib_io_destroy(gpointer data)
 {
 	g_free(data);
 }
+/* }}} */
 
 
+/* {{{ */
 static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
 {
 	PurpleGLibIOClosure *closure = data;
@@ -1688,8 +1755,10 @@ static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition
 	
 	return TRUE;
 }
+/* }}} */
 
 
+/* {{{ */
 static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
                                gpointer data)
 {
@@ -1712,6 +1781,7 @@ static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInput
 	g_io_channel_unref(channel);
 	return closure->result;
 }
+/* }}} */
 
 
 /* {{{ */
@@ -1797,6 +1867,7 @@ purple_php_write_conv_function(PurpleConversation *conv, const char *who, const 
 }
 /* }}} */
 
+
 /* {{{ */
 static void
 purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message,
@@ -1879,8 +1950,10 @@ purple_php_write_im_function(PurpleConversation *conv, const char *who, const ch
 	zval_ptr_dtor(&tmp3);
 
 }
+/* }}} */
 
 
+/* {{{ */
 static void
 purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 {
@@ -1913,12 +1986,7 @@ purple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 	
 	zval_ptr_dtor(&connection);
 }
-
-/*
-**
-** End helper functions
-**
-*/
+/* }}} */
 
 
 /* {{{
@@ -2006,6 +2074,8 @@ static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend
 }
 /* }}} */
 
+
+/* {{{ */
 static void purple_php_dump_zval(zval *var)
 {
 
@@ -2040,6 +2110,8 @@ static void purple_php_dump_zval(zval *var)
             php_printf("Unknown ");
     }
 }
+/* }}} */
+
 
 /* {{{ */
 static char *purple_php_tolower(const char *s)
@@ -2077,6 +2149,8 @@ static char *purple_php_get_protocol_id_by_name(const char *protocol_name)
 }
 /* }}} */
 
+
+/* {{{ */
 static int purple_php_hash_index_find(HashTable *ht, void *element)
 {
 	ulong i;
@@ -2089,14 +2163,19 @@ static int purple_php_hash_index_find(HashTable *ht, void *element)
 
 	return FAILURE;
 }
+/* }}} */
 
 
+/* {{{ */
 static void
 purple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
 {
 	/*call here some php callback*/
 }
+/* }}} */
 
+
+/* {{{ */
 static void purple_php_g_loop_callback(void)
 {
 	TSRMLS_FETCH();
@@ -2112,6 +2191,13 @@ static void purple_php_g_loop_callback(void)
 						NULL,
 	  					0 TSRMLS_CC);
 }
+/* }}} */
+
+/*
+**
+** End helper functions
+**
+*/
 
 /*
  * Local variables:
