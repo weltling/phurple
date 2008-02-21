@@ -1246,7 +1246,7 @@ PHP_METHOD(PurpleBuddy, __construct)
 	paccount = g_list_nth_data (purple_accounts_get_all(), Z_LVAL_P(zend_read_property(PurpleAccount_ce, account, "index", sizeof("index")-1, 0)));
 
 	if(paccount) {
-		pbuddy = purple_find_buddy(paccount, name = NULL ? name : "");
+		pbuddy = purple_find_buddy(paccount, name);
 		struct php_purple_object_storage *pp = &PURPLE_G(ppos);
 
 		if(pbuddy) {
@@ -1273,7 +1273,7 @@ PHP_METHOD(PurpleBuddy, __construct)
 
 			return;
 		} else {
-			pbuddy = purple_buddy_new(paccount, estrdup(name), alias == NULL ? alias : "");
+			pbuddy = purple_buddy_new(paccount, name, alias ? alias : NULL);
 			ulong nextid = zend_hash_next_free_element(&pp->buddy);
 			zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
 			zend_update_property_long(	PurpleBuddy_ce,
@@ -1304,7 +1304,7 @@ PHP_METHOD(PurpleBuddy, getName)
 
 	if(pbuddy) {
 		const char *name = purple_buddy_get_name(pbuddy);
-		if(name) {php_printf("pass auf: %s\n", estrdup(name));
+		if(name) {
 			RETURN_STRING(estrdup(name), 0);
 		}
 	}
@@ -1325,7 +1325,8 @@ PHP_METHOD(PurpleBuddy, getAlias)
 	zend_hash_index_find(&PURPLE_G(ppos).buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
 
 	if(pbuddy) {
-		RETURN_STRING(estrdup(purple_buddy_get_alias_only(pbuddy)), 0);
+		char const *alias = purple_buddy_get_alias_only(pbuddy);
+		RETURN_STRING( alias != NULL && (*alias != '\0') ? estrdup(alias) : "", 0);
 	}
 	
 	RETURN_NULL();
@@ -1386,7 +1387,33 @@ PHP_METHOD(PurpleBuddy, getGroup)
 	gets buddy's account */
 PHP_METHOD(PurpleBuddy, getAccount)
 {
+	zval *index;
+	PurpleBuddy *pbuddy = NULL;
+	PurpleAccount *paccount = NULL;
+	struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+	GList *accounts = NULL;
+			
+	index = zend_read_property(PurpleBuddy_ce, getThis(), "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
 
+	if(pbuddy) {
+		PURPLE_MK_OBJ(return_value, PurpleAccount_ce);
+
+		paccount = purple_buddy_get_account(pbuddy);
+		if(paccount) {
+			accounts = purple_accounts_get_all();
+
+			zend_update_property_long(	PurpleAccount_ce,
+										return_value,
+										"index",
+										sizeof("index")-1,
+										(long)g_list_position(accounts, g_list_last(accounts))
+									);
+			return;
+		}
+	}
+
+	RETURN_NULL();
 }
 /* }}} */
 
@@ -1576,7 +1603,55 @@ PHP_METHOD(PurpleBuddyList, load)
 	constructor*/
 PHP_METHOD(PurpleBuddyGroup, __construct)
 {
+	PurpleGroup *pgroup = NULL;
+	char *name;
+	int name_len;
 
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+	pgroup = purple_find_group(name);
+
+	if(pgroup) {
+
+		int ind = purple_php_hash_index_find(&pp->group, pgroup);
+
+		if(ind == FAILURE) {
+			ulong nextid = zend_hash_next_free_element(&pp->group);
+			zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
+			zend_update_property_long(	PurpleBuddyGroup_ce,
+										getThis(),
+										"index",
+										sizeof("index")-1,
+										(long)nextid TSRMLS_CC
+										);
+		} else {
+			zend_update_property_long(	PurpleBuddyGroup_ce,
+										getThis(),
+										"index",
+										sizeof("index")-1,
+										(long)ind TSRMLS_CC
+										);
+		}
+
+		return;
+	} else {
+		pgroup = purple_group_new(name);
+		ulong nextid = zend_hash_next_free_element(&pp->group);
+		zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
+		zend_update_property_long(	PurpleBuddyGroup_ce,
+									getThis(),
+									"index",
+									sizeof("index")-1,
+									(long)nextid TSRMLS_CC
+									);
+
+		return;
+	}
+
+	RETURN_NULL();
 }
 /* }}} */
 
@@ -1612,7 +1687,20 @@ PHP_METHOD(PurpleBuddyGroup, getOnlineCount)
 	gets the name of the group */
 PHP_METHOD(PurpleBuddyGroup, getName)
 {
+	PurpleGroup *pgroup = NULL;
+	zval *index;
 
+	index = zend_read_property(PurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&PURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+
+	if(pgroup) {
+		const char *name = purple_group_get_name(pgroup);
+		if(name) {
+			RETURN_STRING(estrdup(name), 0);
+		}
+	}
+	
+	RETURN_NULL();
 }
 /* }}} */
 
