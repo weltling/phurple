@@ -74,8 +74,6 @@ PHP_METHOD(PurpleBuddy, isOnline);
 PHP_METHOD(PurpleBuddyList, __construct);
 PHP_METHOD(PurpleBuddyList, addBuddy);
 PHP_METHOD(PurpleBuddyList, addGroup);
-PHP_METHOD(PurpleBuddyList, getGroups);
-PHP_METHOD(PurpleBuddyList, getBuddies);
 PHP_METHOD(PurpleBuddyList, findBuddy);
 PHP_METHOD(PurpleBuddyList, load);
 

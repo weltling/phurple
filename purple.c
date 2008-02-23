@@ -252,8 +252,6 @@ zend_function_entry PurpleBuddyList_methods[] = {
 	PHP_ME(PurpleBuddyList, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(PurpleBuddyList, addBuddy, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleBuddyList, addGroup, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PurpleBuddyList, getGroups, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PurpleBuddyList, getBuddies, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleBuddyList, findBuddy, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleBuddyList, load, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
@@ -1471,7 +1469,8 @@ PHP_METHOD(PurpleBuddyList, __construct)
 PHP_METHOD(PurpleBuddyList, addBuddy)
 {
 	zval *buddy, *group, *index;
-	PurpleBuddy *pbuddy;
+	PurpleBuddy *pbuddy = NULL;
+	PurpleGroup *pgroup = NULL;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O|O", &buddy, PurpleBuddy_ce, &group, PurpleBuddyGroup_ce) == FAILURE) {
 		RETURN_NULL();
@@ -1482,8 +1481,11 @@ PHP_METHOD(PurpleBuddyList, addBuddy)
 	index = zend_read_property(PurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0);
 	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
 
-	if(pbuddy) {
-		purple_blist_add_buddy(pbuddy, NULL, NULL, NULL);
+	index = zend_read_property(PurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+	
+	if(pbuddy && pgroup) {
+		purple_blist_add_buddy(pbuddy, NULL, pgroup, NULL);
 		RETURN_TRUE;
 	}
 
@@ -1496,30 +1498,29 @@ PHP_METHOD(PurpleBuddyList, addBuddy)
 	Adds new group to the blist */
 PHP_METHOD(PurpleBuddyList, addGroup)
 {
+	zval *group, *index;
+	PurpleGroup *pgroup;
 
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PurpleBuddyGroup_ce) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+	
+	index = zend_read_property(PurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+
+	if(pgroup) {
+		purple_blist_add_group(pgroup, NULL);
+		RETURN_TRUE;
+	}
+
+	RETURN_FALSE;
 }
 /* }}} */
 
 
-/* {{{ proto array PurpleBuddyList::getGroups(void)
-	gets all the the groups in the blist */
-PHP_METHOD(PurpleBuddyList, getGroups)
-{
-
-}
-/* }}} */
-
-
-/* {{{ proto array PurpleBuddyList::getBuddies(void)
-	gets all the buddies in the blist */
-PHP_METHOD(PurpleBuddyList, getBuddies)
-{
-
-}
-/* }}} */
-
-
-/* {{{ proto PurpleBuddy PurpleBuddyList::findBuddy(PurpleAccount account, string name)\
+/* {{{ proto PurpleBuddy PurpleBuddyList::findBuddy(PurpleAccount account, string name)
 	returns the buddy, if found */
 PHP_METHOD(PurpleBuddyList, findBuddy)
 {
@@ -1660,25 +1661,76 @@ PHP_METHOD(PurpleBuddyGroup, __construct)
 	gets all the accounts related to the group */
 PHP_METHOD(PurpleBuddyGroup, getAccounts)
 {
+	PurpleGroup *pgroup = NULL;
+	zval *index, *account;
+
+	index = zend_read_property(PurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&PURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
 	
+	if(pgroup) {
+		GSList *iter = purple_group_get_accounts(pgroup);
+		
+		if(iter && g_slist_length(iter)) {
+			array_init(return_value);
+			PURPLE_MK_OBJ(account, PurpleAccount_ce);
+			
+			for (; iter; iter = iter->next) {
+				PurpleAccount *paccount = iter->data;
+				
+				if (paccount) {
+					zend_update_property_long(	PurpleAccount_ce,
+												account,
+												"index",
+												sizeof("index")-1,
+												(long)g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)paccount)) TSRMLS_CC
+												);
+					add_next_index_zval(return_value, account);
+				}
+			}
+
+			return;
+		}
+	}
+	
+	RETURN_NULL();
 }
 /* }}} */
 
 
-/* proto int PupleBuddyGroup::getSize(void)
+/* {{{ proto int PurpleBuddyGroup::getSize(void)
 	gets the count of the buddies in the group */
 PHP_METHOD(PurpleBuddyGroup, getSize)
 {
+	PurpleGroup *pgroup = NULL;
+	zval *index;
+	
+	index = zend_read_property(PurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&PURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
 
+	if(pgroup) {
+			RETURN_LONG(purple_blist_get_group_size(pgroup, (gboolean)TRUE));
+	}
+	
+	RETURN_NULL();
 }
 /* }}} */
 
 
-/* proto int PurpleBuddyGroup::getOnlineCount(void)
+/* {{{ proto int PurpleBuddyGroup::getOnlineCount(void)
 	gets the count of the buddies in the group with the status online*/
 PHP_METHOD(PurpleBuddyGroup, getOnlineCount)
 {
+	PurpleGroup *pgroup = NULL;
+	zval *index;
 
+	index = zend_read_property(PurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&PURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+
+	if(pgroup) {
+			RETURN_LONG(purple_blist_get_group_online_count(pgroup));
+	}
+	
+	RETURN_NULL();
 }
 /* }}} */
 

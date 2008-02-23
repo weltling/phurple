@@ -1,0 +1,1484 @@
+<?xml version="1.0" encoding="utf-8"?>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+  <bookinfo>
+    <title>PHPurple Reference</title>
+    <author>
+      <firstname>Anatoliy</firstname>
+      <surname>Belsky</surname>
+    </author>
+	      <copyright>
+        <year>2007-2008</year>
+        <holder>Anatoliy Belsky</holder>
+      </copyright>
+    <legalnotice xml:id="copyright">
+		<title>Copyright</title> 
+      <para>
+			Redistribution and use in source and binary forms, with or without modification, are
+			permitted provided that the following conditions are met:
+			</para>
+      <itemizedlist>
+        <listitem>
+          <para>Redistributions of source code must retain the above copyright notice, this
+			list of conditions and the following disclaimer.</para>
+        </listitem>
+        <listitem>
+          <para>Redistributions in binary form must reproduce the above copyright notice, this
+			list of conditions and the following disclaimer in the documentation and/or other
+			materials provided with the distribution.</para>
+        </listitem>
+        <listitem>
+          <para>Source code and binaries may NOT be SOLD in any manner without the explicit
+			written consent of the copyright holder.</para>
+        </listitem>
+      </itemizedlist>
+      <para>
+			THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+			EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+			MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+			THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+			SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+			OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+			HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+			TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+			SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+		</para>
+    </legalnotice>
+  </bookinfo>
+  <part>
+    <title>Common</title>
+    <preface id="intro">
+      <title>Introduction</title>
+      <para>PHPurple is the libpurple php binding, which makes the use of the instant
+			messaging  protocols such AIM (ICQ, Oscar), MSN, Yahoo etc. within php possible.
+			Learn more about the libpurple at <ulink url="http://developer.pidgin.im/wiki/WhatIsLibpurple"><citetitle>http://developer.pidgin.im/wiki/WhatIsLibpurple</citetitle></ulink>.
+			libpurple docs can be found at <ulink url="http://developer.pidgin.im/doxygen/dev/html/files.html"><citetitle>
+			http://developer.pidgin.im/doxygen/dev/html/files.html</citetitle></ulink>
+		</para>
+    </preface>
+    <chapter id="requirements">
+      <title>Requirements</title>
+	  <para>
+		First of all, you need PHP >=5.2.2, which is known as minimal compatible. Actually I'm developing on the version 5.2.5.
+		PHPurple requilres the libpurple >= 2.2.1 and GLib >= 2.0 installed on your system as shared library. Also the pcre should be compiled in (which is usually the case).
+	  </para>
+    </chapter>
+    <chapter id="installation">
+      <title>Installation</title>
+	  <para>
+		  If you compile the libpurple from scratch, you could use the following configure options:
+	  </para>
+  <para><code>user@host~# ./configure --enable-gnutls=yes --enable-nss=no --disable-gtkui --disable-consoleui --disable-screensaver --disable-sm --without-x --prefix=/usr</code></para>
+<para>This will compile only libpurple. Otherwise, if you have already pidgin installed, the libpurple is normally present in the /usr/lib or /usr/local/lib.</para>
+<para></para>
+<para>While within PHPurple dir, invoke:</para>
+<para><code> user@host~# phpize &amp;&amp; ./configure --enable-purple &amp;&amp; make &amp;&amp; make install</code></para>
+<para>Since the extension is installed, you can simply add a line in your php.ini with which it'll be loaded by default. An other way would be to use the dl() php function at the top of your script</para>
+<example><programlisting>&lt;?php
+	if(!extension_loaded('purple')) {
+		dl('purple.' . PHP_SHLIB_SUFFIX);
+	}
+?&gt;</programlisting></example>
+    </chapter>
+    <chapter id="runtime">
+      <title>Runtime Configuration</title>
+    </chapter>
+    <chapter id="examples">
+      <title>Examples</title>
+    </chapter>
+  </part>
+  <part>
+    <title>Classes Reference</title>
+    <reference id="client">
+      <title>PurpleClient</title>
+      <refentry xml:id="purpleclient-__construct">
+        <refnamediv>
+          <refname>PurpleClient::__construct</refname>
+          <refpurpose>Constructor</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>PurpleClient</type>
+            <methodname>final protected PurpleClient::__construct</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Constructor
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-getinstance">
+        <refnamediv>
+          <refname>PurpleClient::getInstance</refname>
+          <refpurpose>Creates new PurpleClient instance</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>PurpleClient</type>
+            <methodname>public static PurpleClient::getInstance</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Creates new PurpleClient instance
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-addaccount">
+        <refnamediv>
+          <refname>PurpleClient::addAccount</refname>
+          <refpurpose>adds a new account to the current client</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>object</type>
+            <methodname>public PurpleClient::addAccount</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>dsn</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   adds a new account to the current client
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>dsn</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-connecttosignal">
+        <refnamediv>
+          <refname>PurpleClient::connectToSignal</refname>
+          <refpurpose>Connects a signal handler to a signal for a particular object</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>int</type>
+            <methodname>final public PurpleClient::connectToSignal</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>signal</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Connects a signal handler to a signal for a particular object
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>signal</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-getcoreversion">
+        <refnamediv>
+          <refname>PurpleClient::getCoreVersion</refname>
+          <refpurpose>Returns the libpurple core version string</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>string</type>
+            <methodname>final public PurpleClient::getCoreVersion</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns the libpurple core version string
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-getprotocols">
+        <refnamediv>
+          <refname>PurpleClient::getProtocols</refname>
+          <refpurpose>Returns a list of all valid protocol plugins</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>array</type>
+            <methodname>final public static PurpleClient::getProtocols</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns a list of all valid protocol plugins
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-initinternal">
+        <refnamediv>
+          <refname>PurpleClient::initInternal</refname>
+          <refpurpose>thes callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>protected PurpleClient::initInternal</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   thes callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-loopcallback">
+        <refnamediv>
+          <refname>PurpleClient::loopCallback</refname>
+          <refpurpose>this callback method is called within the PurpleClient::runLoop</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>protected PurpleClient::loopCallback</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   this callback method is called within the PurpleClient::runLoop
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-runloop">
+        <refnamediv>
+          <refname>PurpleClient::runLoop</refname>
+          <refpurpose>Creates the main loop</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>final public PurpleClient::runLoop</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Creates the main loop
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-setuserdir">
+        <refnamediv>
+          <refname>PurpleClient::setUserDir</refname>
+          <refpurpose>Define a custom purple settings directory, overriding the default (user's home directory/.purple)</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>final public static PurpleClient::setUserDir</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Define a custom purple settings directory, overriding the default (user's home directory/.purple)
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-writeconv">
+        <refnamediv>
+          <refname>PurpleClient::writeConv</refname>
+          <refpurpose>this callback method writes to the conversation, if implemented</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>protected PurpleClient::writeConv</methodname>
+            <methodparam>
+              <type>PurpleConversation</type>
+              <parameter>conversation</parameter>
+            </methodparam>
+            <methodparam>
+              <type>PurplePuddy</type>
+              <parameter>buddy</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>message</parameter>
+            </methodparam>
+            <methodparam>
+              <type>int</type>
+              <parameter>flags</parameter>
+            </methodparam>
+            <methodparam>
+              <type>timestamp</type>
+              <parameter>time</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   this callback method writes to the conversation, if implemented
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>conversation</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>buddy</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>message</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>flags</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>time</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-writeim">
+        <refnamediv>
+          <refname>PurpleClient::writeIM</refname>
+          <refpurpose>this callback method writes to the conversation, if implemented</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>protected PurpleClient::writeIM</methodname>
+            <methodparam>
+              <type>PurpleConversation</type>
+              <parameter>conversation</parameter>
+            </methodparam>
+            <methodparam>
+              <type>PurplePuddy</type>
+              <parameter>buddy</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>message</parameter>
+            </methodparam>
+            <methodparam>
+              <type>int</type>
+              <parameter>flags</parameter>
+            </methodparam>
+            <methodparam>
+              <type>timestamp</type>
+              <parameter>time</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   this callback method writes to the conversation, if implemented
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>conversation</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>buddy</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>message</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>flags</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>time</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+    </reference>
+    <reference id="account">
+      <title>PurpleAccount</title>
+      <refentry xml:id="purpleaccount-construct">
+        <refnamediv>
+          <refname>PurpleAccount::__construct</refname>
+          <refpurpose>Creates a new account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>object</type>
+            <methodname>public PurpleAccount::__construct</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>user_name</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>protocol_name</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Creates a new account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>user_name</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>protocol_name</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleaccount-addbuddy">
+        <refnamediv>
+          <refname>PurpleAccount::addBuddy</refname>
+          <refpurpose>Adds a buddy to the server-side buddy list for the specified account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>bool</type>
+            <methodname>public PurpleAccount::addBuddy</methodname>
+            <methodparam>
+              <type>PurpleBuddy</type>
+              <parameter>buddy</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Adds a buddy to the server-side buddy list for the specified account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>buddy</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleaccount-removebuddy">
+        <refnamediv>
+          <refname>PurpleAccount::removeBuddy</refname>
+          <refpurpose>Removes a buddy from the server-side buddy list for the specified account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>bool</type>
+            <methodname>public PurpleAccount::removeBuddy</methodname>
+            <methodparam>
+              <type>PurpleBuddy</type>
+              <parameter>buddy</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Removes a buddy from the server-side buddy list for the specified account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>buddy</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleaccount-setpassword">
+        <refnamediv>
+          <refname>PurpleAccount::setPassword</refname>
+          <refpurpose>Sets the account's password</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>public PurpleAccount::setPassword</methodname>
+            <methodparam>
+              <type>int</type>
+              <parameter>account</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>password</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Sets the account's password
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>account</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>password</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleaccount-setenabled">
+        <refnamediv>
+          <refname>PurpleAccount::setEnabled</refname>
+          <refpurpose>Sets whether or not this account is enabled for some UI</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>public PurpleAccount::setEnabled</methodname>
+            <methodparam>
+              <type>bool</type>
+              <parameter>enabled</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Sets whether or not this account is enabled for some UI
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>enabled</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleaccount-isconnected">
+        <refnamediv>
+          <refname>PurpleAccount::isConnected</refname>
+          <refpurpose>Returns whether or not the account is connected</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>bool</type>
+            <methodname>public PurpleAccount::isConnected</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns whether or not the account is connected
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+    </reference>
+    <reference id="connection">
+      <title>PurpleConnection</title>
+      <refentry xml:id="purpleconnection-construct">
+        <refnamediv>
+          <refname>PurpleConnection::__construct</refname>
+          <refpurpose>constructor</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>object</type>
+            <methodname>public PurpleConnection::__construct</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   constructor
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleconnection-getaccount">
+        <refnamediv>
+          <refname>PurpleConnection::getAccount</refname>
+          <refpurpose>Returns the connection's account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>PurpleAccount</type>
+            <methodname>public PurpleConnection::getAccount</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns the connection's account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+    </reference>
+    <reference id="conversation">
+      <title>PurpleConversation</title>
+      <refentry xml:id="purpleconversation-construct">
+        <refnamediv>
+          <refname>PurpleConversation::__construct</refname>
+          <refpurpose>Creates a new conversation of the specified type</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>int</type>
+            <methodname>public PurpleConversation::__construct</methodname>
+            <methodparam>
+              <type>int</type>
+              <parameter>type</parameter>
+            </methodparam>
+            <methodparam>
+              <type>PurpleAccount</type>
+              <parameter>account</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>name</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Creates a new conversation of the specified type
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>type</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>account</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>name</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleconversation-getname">
+        <refnamediv>
+          <refname>PurpleConversation::getName</refname>
+          <refpurpose>Returns the specified conversation's name</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>string</type>
+            <methodname>public PurpleConversation::getName</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns the specified conversation's name
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleconversation-sendim">
+        <refnamediv>
+          <refname>PurpleConversation::sendIM</refname>
+          <refpurpose>Sends a message to this IM conversation</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>public PurpleConversation::sendIM</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>message</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Sends a message to this IM conversation
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>message</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purpleconversation-setaccount">
+        <refnamediv>
+          <refname> PurpleConversation::setAccount</refname>
+          <refpurpose>Sets the specified conversation's purple_account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>public PurpleConversation::setAccount</methodname>
+            <methodparam>
+              <type>PurpleAccount</type>
+              <parameter>account</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Sets the specified conversation's purple_account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>account</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+    </reference>
+    <reference id="buddy">
+      <title>PurpleBuddy</title>
+      <refentry xml:id="purplebuddy-construct">
+        <refnamediv>
+          <refname>PurpleBuddy::__construct</refname>
+          <refpurpose>Creates new buddy</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>object</type>
+            <methodname>public PurpleBuddy::__construct</methodname>
+            <methodparam>
+              <type>PurpleAccount</type>
+              <parameter>account</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>name</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>alias</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Creates new buddy
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>account</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>name</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>alias</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddy-getaccount">
+        <refnamediv>
+          <refname>PurpleBuddy::getAccount</refname>
+          <refpurpose>gets buddy's account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>PurpleAccount</type>
+            <methodname>public PurpleBuddy::getAccount</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   gets buddy's account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddy-getalias">
+        <refnamediv>
+          <refname>PurpleBuddy::getAlias</refname>
+          <refpurpose>gets buddy alias</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>string</type>
+            <methodname>public PurpleBuddy::getAlias</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   gets buddy alias
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddy-getname">
+        <refnamediv>
+          <refname>PurpleBuddy::getName</refname>
+          <refpurpose>Gets buddy name</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>string</type>
+            <methodname>public PurpleBuddy::getName</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Gets buddy name
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddy-updatestatus">
+        <refnamediv>
+          <refname>PurpleBuddy::updateStatus</refname>
+          <refpurpose>updates the buddy status</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>public PurpleBuddy::updateStatus</methodname>
+            <methodparam>
+              <type>int</type>
+              <parameter>status</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   updates the buddy status
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>status</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+    </reference>
+    <reference id="buddylist">
+      <title>PurpleBuddyList</title>
+      <refentry xml:id="purplebuddylist-construct">
+        <refnamediv>
+          <refname>PurpleBuddyList::__construct</refname>
+          <refpurpose>should newer be called</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>PurpleBuddyList</type>
+            <methodname>private PurpleBuddyList::__construct</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   should newer be called
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddylist-addbuddy">
+        <refnamediv>
+          <refname>PurpleBuddyList::addBuddy</refname>
+          <refpurpose>adds the buddy to the blist (optionally to the given group in the blist, not implemented yet)</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>bool</type>
+            <methodname>final public static PurpleBuddyList::addBuddy</methodname>
+            <methodparam>
+              <type>PurpleBuddy</type>
+              <parameter>buddy</parameter>
+            </methodparam>
+            <methodparam choice="opt">
+              <type>PurpleGroup</type>
+              <parameter>group</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   adds the buddy to the blist (optionally to the given group in the blist, not implemented yet)
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>buddy</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>group</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddylist-addgroup">
+        <refnamediv>
+          <refname>PurpleBuddyList::addGroup</refname>
+          <refpurpose>Adds new group to the blist</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>bool</type>
+            <methodname>final public static PurpleBuddyList::addGroup</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>name</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Adds new group to the blist
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>name</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+<refentry xml:id="purplebuddylist-findbuddy">
+ <refnamediv>
+  <refname>PurpleBuddyList::findBuddy</refname>
+  <refpurpose>returns the buddy, if found</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+   <type>PurpleBuddy</type><methodname>final public static PurpleBuddyList::findBuddy</methodname>
+   <methodparam><type>PurpleAccount</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   returns the buddy, if found
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+      <refentry xml:id="purplebuddylist-load">
+        <refnamediv>
+          <refname>PurpleBuddyList::load</refname>
+          <refpurpose>loads the blist.xml from the homedir</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>void</type>
+            <methodname>public final static PurpleBuddyList::load</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   loads the blist.xml from the homedir
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+    </reference>
+    <reference id="buddygroup">
+      <title>PurpleBuddyGroup</title>
+      <refentry xml:id="purplebuddygroup-construct">
+        <refnamediv>
+          <refname>PurpleBuddyGroup::__construct</refname>
+          <refpurpose>constructor</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>object</type>
+            <methodname>public PurpleBuddyGroup::__construct</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   constructor
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddygroup-getaccounts">
+        <refnamediv>
+          <refname>PurpleBuddyGroup::getAccounts</refname>
+          <refpurpose>gets all the accounts related to the group</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>array</type>
+            <methodname>public PurpleBuddyGroup::getAccounts</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   gets all the accounts related to the group
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="purplebuddygroup-getname">
+        <refnamediv>
+          <refname>PurpleBuddyGroup::getName</refname>
+          <refpurpose>gets the name of the group</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+            <type>string</type>
+            <methodname>public PurpleBuddyGroup::getName</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   gets the name of the group
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+<refentry xml:id="purplebuddygroup-getonlinecount">
+ <refnamediv>
+  <refname>PurpleBuddyGroup::getOnlineCount</refname>
+  <refpurpose>gets the count of the buddies in the group with the status online</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+   <type>int</type><methodname>public PurpleBuddyGroup::getOnlineCount</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   gets the count of the buddies in the group with the status online
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="function.purplebuddygroup-getsize" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <refnamediv>
+  <refname>PurpleBuddyGroup::getSize</refname>
+  <refpurpose>gets the count of the buddies in the group</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+   <type>int</type><methodname>public PurpleBuddyGroup::getSize</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   gets the count of the buddies in the group
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+    </reference>
+  </part>
+</book>
