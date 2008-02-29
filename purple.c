@@ -225,6 +225,9 @@ zend_function_entry PurpleAccount_methods[] = {
 	PHP_ME(PurpleAccount, setEnabled, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleAccount, addBuddy, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleAccount, removeBuddy, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleAccount, clearSettings, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleAccount, set, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleAccount, isConnected, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -254,6 +257,9 @@ zend_function_entry PurpleBuddyList_methods[] = {
 	PHP_ME(PurpleBuddyList, addGroup, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleBuddyList, findBuddy, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleBuddyList, load, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleBuddyList, findGroup, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleBuddyList, removeBuddy, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleBuddyList, removeGroup, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
 };
 
@@ -1064,9 +1070,42 @@ PHP_METHOD(PurpleAccount, removeBuddy)
 /* }}} */
 
 
+/* {{{ proto void PurpleAccount::clearSettings(void)
+	Clears all protocol-specific settings on an account. }}} */
+PHP_METHOD(PurpleAccount, clearSettings)
+{
+	
+}
+
+
+/* {{{ proto void PurpleAccount::set(string name, string value)
+	Sets a protocol-specific setting for an account.
+	The value types expected are int, string or bool. }}} */
+PHP_METHOD(PurpleAccount, set)
+{
+	
+}
+
+
 /* {{{ proto bool PurpleAccount::isConnected(void)
 	Returns whether or not the account is connected*/
 /* }}} */
+PHP_METHOD(PurpleAccount, isConnected)
+{
+	PurpleAccount *paccount = NULL;
+	zval *index;
+	
+	index = zend_read_property(PurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0);
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
+	
+	if(paccount) {
+		RETVAL_BOOL((long) purple_account_is_connected(paccount));
+		return;
+	}
+	
+	RETURN_FALSE;
+}
 
 /*
 **
@@ -1582,6 +1621,130 @@ PHP_METHOD(PurpleBuddyList, load)
 	purple_blist_load();
 
 	purple_set_blist(purple_get_blist());
+}
+/* }}} */
+
+
+/* {{{ proto PurpleGroup PurpleBuddyList::findGroup(string group)
+	Finds group by name }}} */
+PHP_METHOD(PurpleBuddyList, findGroup)
+{
+	PurpleGroup *pgroup = NULL;
+	zval *name, *retval_ptr;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &name) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	pgroup = purple_find_group(Z_STRVAL_P(name));
+
+	if(pgroup) {
+		zval ***params;
+		zend_fcall_info fci;
+		zend_fcall_info_cache fcc;
+
+		params = safe_emalloc(sizeof(zval **), 1, 0);
+		params[0] = &name;
+		
+		object_init_ex(return_value, PurpleBuddyGroup_ce);
+		
+		fci.size = sizeof(fci);
+		fci.function_table = EG(function_table);
+		fci.function_name = NULL;
+		fci.symbol_table = NULL;
+		fci.object_pp = &return_value;
+		fci.retval_ptr_ptr = &retval_ptr;
+		fci.param_count = 1;
+		fci.params = params;
+		fci.no_separation = 1;
+
+		fcc.initialized = 1;
+		fcc.function_handler = PurpleBuddyGroup_ce->constructor;
+		fcc.calling_scope = EG(scope);
+		fcc.object_pp = &return_value;
+		
+		if (zend_call_function(&fci, &fcc TSRMLS_CC) == FAILURE) {
+			efree(params);
+			zval_ptr_dtor(&retval_ptr);
+			zend_error(E_WARNING, "Invocation of %s's constructor failed", PurpleBuddyGroup_ce->name);
+			RETURN_NULL();
+		}
+		if (retval_ptr) {
+			zval_ptr_dtor(&retval_ptr);
+		}
+		efree(params);
+		
+		return;
+	}
+
+	RETURN_NULL();
+}
+/* }}} */
+
+
+/* {{{ proto boolean PurpleBuddyList::removeBuddy(PurpleBuddy buddy)
+	Removes a buddy from the buddy list */
+PHP_METHOD(PurpleBuddyList, removeBuddy)
+{
+	zval *buddy, *index;
+	PurpleBuddy *pbuddy = NULL;
+	
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &buddy, PurpleBuddy_ce) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+
+	index = zend_read_property(PurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
+
+	if(pbuddy) {
+		purple_blist_remove_buddy(pbuddy);
+		zend_hash_index_del(&pp->buddy, (ulong)Z_LVAL_P(index));
+		zend_hash_clean(&pp->buddy);
+		zval_ptr_dtor(&buddy);
+
+		RETURN_TRUE;
+	}
+
+	RETURN_FALSE;
+}
+/* }}} */
+
+
+/* {{{ proto boolean PurpleBuddyList::removeGroup(PurpleBuddyGroup group)
+	Removes an empty group from the buddy list */
+PHP_METHOD(PurpleBuddyList, removeGroup)
+{
+	zval *group, *index;
+	PurpleGroup *pgroup = NULL;
+	
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PurpleBuddyGroup_ce) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	struct php_purple_object_storage *pp = &PURPLE_G(ppos);
+
+	index = zend_read_property(PurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0);
+	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+
+	if(pgroup) {
+		PurpleBlistNode *node = (PurpleBlistNode *) group;
+
+		if(node->child) {
+			/* group isn't empty */
+			RETURN_FALSE;
+		}
+		
+		purple_blist_remove_group(pgroup);
+		zend_hash_index_del(&pp->group, (ulong)Z_LVAL_P(index));
+		zend_hash_clean(&pp->group);
+		zval_ptr_dtor(&group);
+
+		RETURN_TRUE;
+	}
+
+	RETURN_FALSE;
 }
 /* }}} */
 
@@ -2145,12 +2308,10 @@ static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend
 	va_start(given_params, param_count);
 	for(i=0;i<param_count;i++) {
 		params[i] = va_arg(given_params, zval **);
-// 		purple_php_dump_zval(*params[i]);
 	}
 	va_end(given_params);
 	
 	fci.size = sizeof(fci);
-	/*fci.function_table = NULL; will be read form zend_class_entry of object if needed */
 	fci.object_pp = object_pp;
 	fci.function_name = &z_fname;
 	fci.retval_ptr_ptr = retval_ptr_ptr ? retval_ptr_ptr : &retval;

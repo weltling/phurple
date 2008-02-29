@@ -54,6 +54,9 @@ PHP_METHOD(PurpleAccount, setPassword);
 PHP_METHOD(PurpleAccount, setEnabled);
 PHP_METHOD(PurpleAccount, addBuddy);
 PHP_METHOD(PurpleAccount, removeBuddy);
+PHP_METHOD(PurpleAccount, clearSettings);
+PHP_METHOD(PurpleAccount, set);
+PHP_METHOD(PurpleAccount, isConnected);
 
 PHP_METHOD(PurpleConnection, __construct);
 PHP_METHOD(PurpleConnection, getAccount);
@@ -76,6 +79,9 @@ PHP_METHOD(PurpleBuddyList, addBuddy);
 PHP_METHOD(PurpleBuddyList, addGroup);
 PHP_METHOD(PurpleBuddyList, findBuddy);
 PHP_METHOD(PurpleBuddyList, load);
+PHP_METHOD(PurpleBuddyList, findGroup);
+PHP_METHOD(PurpleBuddyList, removeBuddy);
+PHP_METHOD(PurpleBuddyList, removeGroup);
 
 PHP_METHOD(PurpleBuddyGroup, __construct);
 PHP_METHOD(PurpleBuddyGroup, getAccounts);
