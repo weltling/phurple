@@ -47,7 +47,6 @@ PHP_METHOD(PurpleClient, addAccount);
 PHP_METHOD(PurpleClient, getProtocols);
 PHP_METHOD(PurpleClient, setUserDir);
 PHP_METHOD(PurpleClient, loopCallback);
-PHP_METHOD(PurpleClient, loopTickCallback);
 
 PHP_METHOD(PurpleAccount, __construct);
 PHP_METHOD(PurpleAccount, setPassword);
@@ -65,13 +64,13 @@ PHP_METHOD(PurpleConversation, __construct);
 PHP_METHOD(PurpleConversation, getName);
 PHP_METHOD(PurpleConversation, sendIM);
 PHP_METHOD(PurpleConversation, getAccount);
+PHP_METHOD(PurpleConversation, setAccount);
 
 PHP_METHOD(PurpleBuddy, __construct);
 PHP_METHOD(PurpleBuddy, getName);
 PHP_METHOD(PurpleBuddy, getAlias);
 PHP_METHOD(PurpleBuddy, getGroup);
 PHP_METHOD(PurpleBuddy, getAccount);
-PHP_METHOD(PurpleBuddy, updateStatus);
 PHP_METHOD(PurpleBuddy, isOnline);
 
 PHP_METHOD(PurpleBuddyList, __construct);
