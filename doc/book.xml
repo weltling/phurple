@@ -13,37 +13,23 @@
     <legalnotice xml:id="copyright">
 		<title>Copyright</title> 
       <para>
-			Redistribution and use in source and binary forms, with or without modification, are
-			permitted provided that the following conditions are met:
-			</para>
-      <itemizedlist>
-        <listitem>
-          <para>Redistributions of source code must retain the above copyright notice, this
-			list of conditions and the following disclaimer.</para>
-        </listitem>
-        <listitem>
-          <para>Redistributions in binary form must reproduce the above copyright notice, this
-			list of conditions and the following disclaimer in the documentation and/or other
-			materials provided with the distribution.</para>
-        </listitem>
-        <listitem>
-          <para>Source code and binaries may NOT be SOLD in any manner without the explicit
-			written consent of the copyright holder.</para>
-        </listitem>
-      </itemizedlist>
-      <para>
-			THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-			EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-			MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-			THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-			SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
-			OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-			HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
-			TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-			SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	      This program is free software: you can redistribute it and/or modify
+	      it under the terms of the GNU General Public License as published by
+	      the Free Software Foundation, either version 3 of the License, or
+	      (at your option) any later version.
+      </para>
+<para>
+	      This program is distributed in the hope that it will be useful,
+	      but WITHOUT ANY WARRANTY; without even the implied warranty of
+	      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	      GNU General Public License for more details.
+      </para>
+<para>
+	      You should have received a copy of the GNU General Public License
+    along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
 		</para>
     </legalnotice>
-  </bookinfo>
+</bookinfo>
   <part>
     <title>Common</title>
     <preface id="intro">
@@ -89,7 +75,7 @@
 		dl('purple.' . PHP_SHLIB_SUFFIX);
 	}
 ?&gt;</programlisting></example>
-<para>Note, that since the windows wariant isn't exists yet, there are no installation instructions for this.</para>
+<para>Note, that since the windows variant isn't exists yet, there are no installation instructions for this.</para>
     </chapter>
     <chapter id="runtime">
       <title>Runtime Configuration</title>
@@ -177,8 +163,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+            <modifier>final protected</modifier>
             <type>PurpleClient</type>
-            <methodname>final protected PurpleClient::__construct</methodname>
+            <methodname>PurpleClient::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -201,8 +188,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+	<modifier>public static</modifier>
             <type>PurpleClient</type>
-            <methodname>public static PurpleClient::getInstance</methodname>
+            <methodname>PurpleClient::getInstance</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -225,8 +213,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>public PurpleClient::addAccount</methodname>
+            <methodname>PurpleClient::addAccount</methodname>
             <methodparam>
               <type>string</type>
               <parameter>dsn</parameter>
@@ -263,8 +252,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>final public</modifier>
             <type>int</type>
-            <methodname>final public PurpleClient::connectToSignal</methodname>
+            <methodname>PurpleClient::connectToSignal</methodname>
             <methodparam>
               <type>string</type>
               <parameter>signal</parameter>
@@ -301,8 +291,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>final public</modifier>
             <type>string</type>
-            <methodname>final public PurpleClient::getCoreVersion</methodname>
+            <methodname>PurpleClient::getCoreVersion</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -325,8 +316,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>final public static</modifier>
             <type>array</type>
-            <methodname>final public static PurpleClient::getProtocols</methodname>
+            <methodname>PurpleClient::getProtocols</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -349,8 +341,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>protected PurpleClient::initInternal</methodname>
+            <methodname>PurpleClient::initInternal</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -373,8 +366,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>protected PurpleClient::loopCallback</methodname>
+            <methodname>PurpleClient::loopCallback</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -397,8 +391,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>final public</modifier>
             <type>void</type>
-            <methodname>final public PurpleClient::runLoop</methodname>
+            <methodname>PurpleClient::runLoop</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -421,8 +416,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>final public static</modifier>
             <type>void</type>
-            <methodname>final public static PurpleClient::setUserDir</methodname>
+            <methodname>PurpleClient::setUserDir</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -445,8 +441,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>protected PurpleClient::writeConv</methodname>
+            <methodname>PurpleClient::writeConv</methodname>
             <methodparam>
               <type>PurpleConversation</type>
               <parameter>conversation</parameter>
@@ -535,8 +532,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>protected PurpleClient::writeIM</methodname>
+            <methodname>PurpleClient::writeIM</methodname>
             <methodparam>
               <type>PurpleConversation</type>
               <parameter>conversation</parameter>
@@ -618,6 +616,42 @@
   </para>
         </refsect1>
       </refentry>
+<refentry xml:id="purpleclient-onsignedon">
+ <refnamediv>
+  <refname>PurpleClient::onSignedOn</refname>
+  <refpurpose>this callback is called at the moment, where the client gets singed on, if implemented</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+	<modifier>protected</modifier>
+   <type>void</type><methodname>PurpleClient::onSignedOn</methodname>
+   <methodparam><type>PurpleConnection</type><parameter>connection</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   this callback is called at the moment, where the client gets singed on, if implemented
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
     </reference>
     <reference id="account">
       <title>PurpleAccount</title>
@@ -628,8 +662,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>public PurpleAccount::__construct</methodname>
+            <methodname>PurpleAccount::__construct</methodname>
             <methodparam>
               <type>string</type>
               <parameter>user_name</parameter>
@@ -679,8 +714,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>bool</type>
-            <methodname>public PurpleAccount::addBuddy</methodname>
+            <methodname>PurpleAccount::addBuddy</methodname>
             <methodparam>
               <type>PurpleBuddy</type>
               <parameter>buddy</parameter>
@@ -717,8 +753,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>bool</type>
-            <methodname>public PurpleAccount::removeBuddy</methodname>
+            <methodname>PurpleAccount::removeBuddy</methodname>
             <methodparam>
               <type>PurpleBuddy</type>
               <parameter>buddy</parameter>
@@ -755,8 +792,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>public PurpleAccount::setPassword</methodname>
+            <methodname>PurpleAccount::setPassword</methodname>
             <methodparam>
               <type>int</type>
               <parameter>account</parameter>
@@ -806,8 +844,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>public PurpleAccount::setEnabled</methodname>
+            <methodname>PurpleAccount::setEnabled</methodname>
             <methodparam>
               <type>bool</type>
               <parameter>enabled</parameter>
@@ -844,8 +883,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>bool</type>
-            <methodname>public PurpleAccount::isConnected</methodname>
+            <methodname>PurpleAccount::isConnected</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -869,7 +909,9 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
-			      <type>void</type><methodname>PurpleAccount::clearSettings</methodname>
+			      <modifier>public</modifier>
+			      <type>void</type>
+			      <methodname>PurpleAccount::clearSettings</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -894,7 +936,9 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
-			      <type>void</type><methodname>PurpleAccount::set</methodname>
+			      <modifier>public</modifier>
+			      <type>void</type>
+			      <methodname>PurpleAccount::set</methodname>
 			      <methodparam><type>string</type><parameter>name</parameter></methodparam>
 			      <methodparam><type>string</type><parameter>value</parameter></methodparam>
 		      </methodsynopsis>
@@ -939,8 +983,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>public PurpleConnection::__construct</methodname>
+            <methodname>PurpleConnection::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -963,8 +1008,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>PurpleAccount</type>
-            <methodname>public PurpleConnection::getAccount</methodname>
+            <methodname>PurpleConnection::getAccount</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -990,8 +1036,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>int</type>
-            <methodname>public PurpleConversation::__construct</methodname>
+            <methodname>PurpleConversation::__construct</methodname>
             <methodparam>
               <type>int</type>
               <parameter>type</parameter>
@@ -1054,8 +1101,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>public PurpleConversation::getName</methodname>
+            <methodname>PurpleConversation::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1078,8 +1126,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>public PurpleConversation::sendIM</methodname>
+            <methodname>PurpleConversation::sendIM</methodname>
             <methodparam>
               <type>string</type>
               <parameter>message</parameter>
@@ -1116,8 +1165,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>public PurpleConversation::setAccount</methodname>
+            <methodname>PurpleConversation::setAccount</methodname>
             <methodparam>
               <type>PurpleAccount</type>
               <parameter>account</parameter>
@@ -1155,7 +1205,9 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
-			      <type>PurpleAccount</type><methodname>PurpleConversation::getAccount</methodname>
+			      <modifier>public</modifier>
+			      <type>PurpleAccount</type>
+			      <methodname>PurpleConversation::getAccount</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1182,8 +1234,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>public PurpleBuddy::__construct</methodname>
+            <methodname>PurpleBuddy::__construct</methodname>
             <methodparam>
               <type>PurpleAccount</type>
               <parameter>account</parameter>
@@ -1246,8 +1299,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>PurpleAccount</type>
-            <methodname>public PurpleBuddy::getAccount</methodname>
+            <methodname>PurpleBuddy::getAccount</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1270,8 +1324,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>public PurpleBuddy::getAlias</methodname>
+            <methodname>PurpleBuddy::getAlias</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1294,8 +1349,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>public PurpleBuddy::getName</methodname>
+            <methodname>PurpleBuddy::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1319,7 +1375,9 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
-			      <type>PurpleGroup</type><methodname>PurpleBuddy::getGroup</methodname>
+			      <modifier>public</modifier>
+			      <type>PurpleGroup</type>
+			      <methodname>PurpleBuddy::getGroup</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1345,7 +1403,9 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
-			      <type>bool</type><methodname>PurpleBuddy::isOnline</methodname>
+			      <modifier>public</modifier>
+			      <type>bool</type>
+			      <methodname>PurpleBuddy::isOnline</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1373,8 +1433,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		<modifier>private</modifier>
             <type>PurpleBuddyList</type>
-            <methodname>private PurpleBuddyList::__construct</methodname>
+            <methodname>PurpleBuddyList::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1397,8 +1458,9 @@
 	      </refnamediv>
 	      <refsect1 role="description">
 		      <methodsynopsis>
+			      <modifier>public final static</modifier>
 			      <type>void</type>
-			      <methodname>public final static PurpleBuddyList::load</methodname>
+			      <methodname>PurpleBuddyList::load</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1421,8 +1483,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>final public static</modifier>
             <type>bool</type>
-            <methodname>final public static PurpleBuddyList::addBuddy</methodname>
+            <methodname>PurpleBuddyList::addBuddy</methodname>
             <methodparam>
               <type>PurpleBuddy</type>
               <parameter>buddy</parameter>
@@ -1472,8 +1535,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>final public static</modifier>
             <type>bool</type>
-            <methodname>final public static PurpleBuddyList::addGroup</methodname>
+            <methodname>PurpleBuddyList::addGroup</methodname>
             <methodparam>
               <type>string</type>
               <parameter>name</parameter>
@@ -1510,7 +1574,9 @@
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
-   <type>PurpleBuddy</type><methodname>final public static PurpleBuddyList::findBuddy</methodname>
+	  <modifier>final public static</modifier>
+   <type>PurpleBuddy</type>
+   <methodname>PurpleBuddyList::findBuddy</methodname>
    <methodparam><type>PurpleAccount</type><parameter>account</parameter></methodparam>
    <methodparam><type>string</type><parameter>name</parameter></methodparam>
   </methodsynopsis>
@@ -1551,7 +1617,9 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
-			      <type>PurpleGroup</type><methodname>PurpleBuddyList::findGroup</methodname>
+			      <modifier>final public static</modifier>
+			      <type>PurpleGroup</type>
+			      <methodname>PurpleBuddyList::findGroup</methodname>
 			      <methodparam><type>string</type><parameter>group</parameter></methodparam>
 		      </methodsynopsis>
 		      <para>
@@ -1586,7 +1654,9 @@
 	
 	<refsect1 role="description">
 		<methodsynopsis>
-			<type>boolean</type><methodname>PurpleBuddyList::removeBuddy</methodname>
+			<modifier>final public static</modifier>
+			<type>boolean</type>
+			<methodname>PurpleBuddyList::removeBuddy</methodname>
 			<methodparam><type>PurpleBuddy</type><parameter>buddy</parameter></methodparam>
 		</methodsynopsis>
 		<para>
@@ -1621,7 +1691,9 @@
 	
 	<refsect1 role="description">
 		<methodsynopsis>
-			<type>boolean</type><methodname>PurpleBuddyList::removeGroup</methodname>
+			<modifier>final public static</modifier>
+			<type>boolean</type>
+			<methodname>PurpleBuddyList::removeGroup</methodname>
 			<methodparam><type>PurpleBuddyGroup</type><parameter>group</parameter></methodparam>
 		</methodsynopsis>
 		<para>
@@ -1657,8 +1729,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>public PurpleBuddyGroup::__construct</methodname>
+            <methodname>PurpleBuddyGroup::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1681,8 +1754,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>array</type>
-            <methodname>public PurpleBuddyGroup::getAccounts</methodname>
+            <methodname>PurpleBuddyGroup::getAccounts</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1705,8 +1779,9 @@
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
+		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>public PurpleBuddyGroup::getName</methodname>
+            <methodname>PurpleBuddyGroup::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1730,7 +1805,9 @@
 
  <refsect1 role="description">
   <methodsynopsis>
-   <type>int</type><methodname>public PurpleBuddyGroup::getOnlineCount</methodname>
+	  <modifier>public</modifier>
+   <type>int</type>
+   <methodname>PurpleBuddyGroup::getOnlineCount</methodname>
    <void/>
   </methodsynopsis>
   <para>
@@ -1754,7 +1831,9 @@
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
-   <type>int</type><methodname>public PurpleBuddyGroup::getSize</methodname>
+	  <modifier>public</modifier>
+   <type>int</type>
+   <methodname>PurpleBuddyGroup::getSize</methodname>
    <void/>
   </methodsynopsis>
   <para>
