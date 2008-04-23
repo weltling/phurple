@@ -384,6 +384,31 @@
   </para>
         </refsect1>
       </refentry>
+      <refentry xml:id="purpleclient-loopheartbeat">
+	      <refnamediv>
+		      <refname>PurpleClient::loopHeartBeat</refname>
+		      <refpurpose>this callback method is being called as timer</refpurpose>
+	      </refnamediv>
+	      <refsect1 role="description">
+		      <methodsynopsis>
+			      <modifier>protected</modifier>
+			      <type>void</type>
+			      <methodname>PurpleClient::loopHeartBeat</methodname>
+			      <void/>
+		      </methodsynopsis>
+		      <para>
+			      This callback method is being called with timeout(set as param in PurpleClient::runLoop)
+		      </para>
+	      </refsect1>
+	      <refsect1 role="parameters">
+		      <para>
+		      </para>
+	      </refsect1>
+	      <refsect1 role="returnvalues">
+		      <para>
+		      </para>
+	      </refsect1>
+      </refentry>
       <refentry xml:id="purpleclient-runloop">
         <refnamediv>
           <refname>PurpleClient::runLoop</refname>
@@ -394,15 +419,29 @@
 		  <modifier>final public</modifier>
             <type>void</type>
             <methodname>PurpleClient::runLoop</methodname>
-            <void/>
+	    <methodparam>
+		    <type>int</type>
+		    <parameter>interval</parameter>
+            </methodparam>
           </methodsynopsis>
           <para>
    Creates the main loop
   </para>
         </refsect1>
         <refsect1 role="parameters">
-          <para>
-  </para>
+		<para>
+			<variablelist>
+				<varlistentry>
+					<term>
+						<parameter>interval</parameter>
+					</term>
+					<listitem>
+						<para>
+						</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+          </para>
         </refsect1>
         <refsect1 role="returnvalues">
           <para>

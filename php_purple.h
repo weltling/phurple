@@ -54,6 +54,7 @@ PHP_METHOD(PurpleClient, addAccount);
 PHP_METHOD(PurpleClient, getProtocols);
 PHP_METHOD(PurpleClient, setUserDir);
 PHP_METHOD(PurpleClient, loopCallback);
+PHP_METHOD(PurpleClient, loopHeartBeat);
 
 PHP_METHOD(PurpleAccount, __construct);
 PHP_METHOD(PurpleAccount, setPassword);

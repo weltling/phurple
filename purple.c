@@ -86,6 +86,7 @@ static char *purple_php_get_protocol_id_by_name(const char *name);
 static void purple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
 static void purple_php_g_loop_callback(void);
 static int purple_php_hash_index_find(HashTable *ht, void *element);
+static int purple_php_heartbeat_callback(gpointer data);
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
 static void clean_pid();
@@ -170,6 +171,19 @@ static PurpleCoreUiOps php_core_uiops =
 	NULL
 };
 
+static PurpleAccountUiOps php_account_uiops = 
+{
+	NULL,				/* notify added */
+	NULL,				/* status changed */
+	NULL,				/* request add */
+	NULL,				/* request authorize */
+	NULL,				/* close account request */
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
+
 ZEND_DECLARE_MODULE_GLOBALS(purple);
 
 void globals_ctor(zend_purple_globals *purple_globals TSRMLS_DC)
@@ -212,6 +226,7 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleClient, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleClient, loopCallback, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PurpleClient, loopHeartBeat, NULL, ZEND_ACC_PROTECTED)
 	{NULL, NULL, NULL}
 };
 
@@ -472,6 +487,7 @@ PHP_MINIT_FUNCTION(purple)
 	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
 	purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
 	purple_core_set_ui_ops(&php_core_uiops);
+	purple_accounts_set_ui_ops(&php_account_uiops);
 	purple_eventloop_set_ui_ops(&glib_eventloops);
 	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
 
@@ -593,11 +609,21 @@ PHP_METHOD(PurpleClient, connectToSignal)
 /* }}} */
 
 
-/* {{{ proto void PurpleClient::runLoop(void)
+/* {{{ proto void PurpleClient::runLoop(int interval)
 	Creates the main loop*/
 PHP_METHOD(PurpleClient, runLoop)
 {
+	long interval;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &interval) == FAILURE) {
+		RETURN_NULL();
+	}
+	
 	purple_php_g_loop_callback();
+	
+	if(interval) {
+		g_timeout_add(interval, (GSourceFunc)purple_php_heartbeat_callback, NULL);
+	}
 	
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(loop);
@@ -859,6 +885,15 @@ PHP_METHOD(PurpleClient, loopCallback)
 {
 }
 /* }}} */
+
+
+/* {{{ proto void loopHeartBeat(void) 
+	this callback method is invoked by glib timer */
+PHP_METHOD(PurpleClient, loopHeartBeat)
+{
+}
+/* }}} */
+
 
 /*
 **
@@ -2562,6 +2597,26 @@ static void purple_php_g_loop_callback(void)
 }
 /* }}} */
 
+
+/* {{{ */
+static int purple_php_heartbeat_callback(gpointer data)
+{
+	TSRMLS_FETCH();
+
+	zval *client = PURPLE_G(purple_php_client_obj);
+	zend_class_entry *ce = Z_OBJCE_P(client);
+
+	call_custom_method(	&client,
+				 ce,
+				 NULL,
+				 "loopheartbeat",
+				 sizeof("loopheartbeat")-1,
+				 NULL,
+				 0 TSRMLS_CC);
+	
+	return 1;
+}
+/* }}} */
 /*
 **
 ** End helper functions
