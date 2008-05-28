@@ -48,7 +48,7 @@ if test "$PHP_PURPLE" != "no"; then
 		PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $GLIB_DIR/lib, GLIB_SHARED_LIBADD)
 		AC_DEFINE(HAVE_GLIBLIB,1,[ ])
 	],[
-		AC_MSG_ERROR([wrong glib lib version or lib not found])
+		AC_MSG_ERROR([wrong glib lib version or glib not found])
 	],[
 		-L$GLIB_DIR/lib -lglib-2.0
 	])
