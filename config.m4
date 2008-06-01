@@ -1,20 +1,9 @@
-dnl $Id$
 dnl config.m4 for extension purple
 
-dnl Comments in this file start with the string 'dnl'.
-dnl Remove where necessary. This file will not work
-dnl without editing.
-
-dnl If your extension references something external, use with:
-
-PHP_ARG_WITH(purple, for purple support,
-dnl Make sure that the comment is aligned:
-[  --with-purple             Include purple support])
-
-dnl Otherwise use enable:
+dnl PHP_ARG_WITH(purple, for purple support,
+dnl [  --with-purple             Include purple support])
 
 PHP_ARG_ENABLE(purple, whether to enable purple support,
-dnl Make sure that the comment is aligned:
 [  --enable-purple           Enable purple support])
 
 if test "$PHP_PURPLE" != "no"; then

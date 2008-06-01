@@ -1,2 +1,14 @@
-See extension docs at http://phpurple.rubay.de
-Please ask your questions using the forums at http://sourceforge.net/projects/phpurple
+See extension docs at http://phpurple.rubay.de/
+Please ask your questions using the forums at http://sourceforge.net/projects/phpurple/
+
+Changelog:
+
+v0.2 alpha:
+* fixed zts compatibility
+* implemented the loopHeartBeat method
+* the runLoop method was changed to set the heartbeat interval
+* fixed memory leak on empty alias
+* purple.debug_enabled is now boolean
+
+v0.1 alpha:
+* initial release - mostly it's possible to send and receive messages

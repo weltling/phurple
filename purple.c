@@ -293,6 +293,7 @@ zend_function_entry PurpleBuddyList_methods[] = {
 	{NULL, NULL, NULL}
 };
 
+/* buddy group class methods*/
 zend_function_entry PurpleBuddyGroup_methods[] = {
 	PHP_ME(PurpleBuddyGroup, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleBuddyGroup, getAccounts, NULL, ZEND_ACC_PUBLIC)
@@ -326,8 +327,7 @@ zend_module_entry purple_module_entry = {
 ZEND_GET_MODULE(purple)
 #endif
 
-/* {{{ PHP_INI
- */
+/* {{{ PHP_INI */
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("purple.custom_user_directory", "/dev/null", PHP_INI_ALL, OnUpdateString, custom_user_directory, zend_purple_globals, purple_globals)
 	STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, custom_plugin_path, zend_purple_globals, purple_globals)
@@ -337,14 +337,6 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
 
-/* {{{ php_purple_init_globals
- */
-
-/*static void php_purple_init_globals(zend_purple_globals *purple_globals TSRMLS_DC)
-{
-}*/
-
-/* }}} */
 
 /* {{{ PHP_MINIT_FUNCTION
  */
