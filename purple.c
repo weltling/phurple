@@ -1,23 +1,21 @@
-/*
-
-Copyright (c) 2007-2008, Anatoliy Belsky
-
-This file is part of PHPurple.
-
-PHPurple is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PHPurple is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with PHPurple.  If not, see <http://www.gnu.org/licenses/>.
-
-*/
+/**
+ * Copyright (c) 2007-2008, Anatoliy Belsky
+ *
+ * This file is part of PHPurple.
+ *
+ * PHPurple is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PHPurple is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PHPurple.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -70,14 +68,9 @@ static zval *purple_php_string_zval(const char *str);
 static zval *purple_php_long_zval(long l);
 static void purple_glib_io_destroy(gpointer data);
 static gboolean purple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data);
-static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
-							gpointer data);
-static void
-purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias,
-							   const char *message, PurpleMessageFlags flags, time_t mtime);
-static void
-purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message,
-							 PurpleMessageFlags flags, time_t mtime);
+static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function, gpointer data);
+static void purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime);
+static void purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime);
 static void purple_php_signed_on_function(PurpleConnection *gc, gpointer null);
 static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... );
 static char *purple_php_tolower(const char *s);
@@ -86,6 +79,7 @@ static void purple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log
 static void purple_php_g_loop_callback(void);
 static int purple_php_hash_index_find(HashTable *ht, void *element);
 static int purple_php_heartbeat_callback(gpointer data);
+
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
 static void clean_pid();
@@ -209,16 +203,13 @@ static int le_purple;
 static zend_class_entry *PurpleClient_ce, *PurpleConversation_ce, *PurpleAccount_ce, *PurpleConnection_ce, *PurpleBuddy_ce, *PurpleBuddyList_ce, *PurpleBuddyGroup_ce;
 
 
-/* {{{ purple_functions[]
- *
- * Every user visible function must have an entry in purple_functions[].
- */
+/* {{{ purple_functions[] */
 zend_function_entry purple_functions[] = {
 	{NULL, NULL, NULL}	/* Must be the last line in purple_functions[] */
 };
 /* }}} */
 
-/* client class methods */
+/* {{{ client class methods[] */
 zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, __construct, NULL, ZEND_ACC_FINAL | ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, getInstance, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -236,9 +227,10 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, loopHeartBeat, NULL, ZEND_ACC_PROTECTED)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
 
-/* conversation class methods*/
+/* {{{ conversation class methods[] */
 zend_function_entry PurpleConversation_methods[] = {
 	PHP_ME(PurpleConversation, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleConversation, getName, NULL, ZEND_ACC_PUBLIC)
@@ -247,9 +239,10 @@ zend_function_entry PurpleConversation_methods[] = {
 	PHP_ME(PurpleConversation, setAccount, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
 
-/* account class methods*/
+/* {{{ account class methods[] */
 zend_function_entry PurpleAccount_methods[] = {
 	PHP_ME(PurpleAccount, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleAccount, setPassword, NULL, ZEND_ACC_PUBLIC)
@@ -259,17 +252,24 @@ zend_function_entry PurpleAccount_methods[] = {
 	PHP_ME(PurpleAccount, clearSettings, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleAccount, set, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleAccount, isConnected, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleAccount, isConnecting, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleAccount, getUserName, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleAccount, getPassword, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
-/* connection class methods*/
+
+/* {{{ connection class methods[] */
 zend_function_entry PurpleConnection_methods[] = {
 	PHP_ME(PurpleConnection, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleConnection, getAccount, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
-/* buddy class methods */
+
+/* {{{ buddy class methods[] */
 zend_function_entry PurpleBuddy_methods[] = {
 	PHP_ME(PurpleBuddy, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleBuddy, getName, NULL, ZEND_ACC_PUBLIC)
@@ -279,8 +279,10 @@ zend_function_entry PurpleBuddy_methods[] = {
 	PHP_ME(PurpleBuddy, isOnline, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
-/* buddy list class methods */
+
+/* {{{ buddy list class methods[] */
 zend_function_entry PurpleBuddyList_methods[] = {
 	PHP_ME(PurpleBuddyList, __construct, NULL, ZEND_ACC_PRIVATE)
 	PHP_ME(PurpleBuddyList, addBuddy, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -292,8 +294,10 @@ zend_function_entry PurpleBuddyList_methods[] = {
 	PHP_ME(PurpleBuddyList, removeGroup, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
-/* buddy group class methods*/
+
+/* {{{ buddy group class methods[] */
 zend_function_entry PurpleBuddyGroup_methods[] = {
 	PHP_ME(PurpleBuddyGroup, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleBuddyGroup, getAccounts, NULL, ZEND_ACC_PUBLIC)
@@ -302,9 +306,10 @@ zend_function_entry PurpleBuddyGroup_methods[] = {
 	PHP_ME(PurpleBuddyGroup, getName, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
-/* {{{ purple_module_entry
- */
+
+/* {{{ purple_module_entry */
 zend_module_entry purple_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
 	STANDARD_MODULE_HEADER,
@@ -338,8 +343,7 @@ PHP_INI_END()
 /* }}} */
 
 
-/* {{{ PHP_MINIT_FUNCTION
- */
+/* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(purple)
 {
 #ifdef ZTS
@@ -482,10 +486,9 @@ PHP_MINIT_FUNCTION(purple)
 	}
 #endif
 
-    /*
+    	/*
 	 * purple initialization stuff
 	 */
-	
 	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
 	purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
 	purple_core_set_ui_ops(&php_core_uiops);
@@ -514,8 +517,7 @@ PHP_MINIT_FUNCTION(purple)
 }
 /* }}} */
 
-/* {{{ PHP_MSHUTDOWN_FUNCTION
- */
+/* {{{ PHP_MSHUTDOWN_FUNCTION */
 PHP_MSHUTDOWN_FUNCTION(purple)
 {
 	UNREGISTER_INI_ENTRIES();
@@ -531,9 +533,7 @@ PHP_MSHUTDOWN_FUNCTION(purple)
 /* }}} */
 
 
-/* Remove if there's nothing to do at request start */
-/* {{{ PHP_RINIT_FUNCTION
- */
+/* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(purple)
 {
 	return SUCCESS;
@@ -541,9 +541,7 @@ PHP_RINIT_FUNCTION(purple)
 /* }}} */
 
 
-/* Remove if there's nothing to do at request end */
-/* {{{ PHP_RSHUTDOWN_FUNCTION
- */
+/* {{{ PHP_RSHUTDOWN_FUNCTION */
 PHP_RSHUTDOWN_FUNCTION(purple)
 {
 	return SUCCESS;
@@ -551,8 +549,7 @@ PHP_RSHUTDOWN_FUNCTION(purple)
 /* }}} */
 
 
-/* {{{ PHP_MINFO_FUNCTION
- */
+/* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(purple)
 {
 /*	php_info_print_table_start();
@@ -1130,11 +1127,12 @@ PHP_METHOD(PurpleAccount, clearSettings)
 	
 	RETURN_FALSE;
 }
+/* }}} */
 
 
 /* {{{ proto void PurpleAccount::set(string name, string value)
 	Sets a protocol-specific setting for an account.
-	The value types expected are int, string or bool. }}} */
+	The value types expected are int, string or bool. */
 PHP_METHOD(PurpleAccount, set)
 {
 	PurpleAccount *paccount = NULL;
@@ -1176,11 +1174,11 @@ PHP_METHOD(PurpleAccount, set)
 	
 	RETURN_FALSE;
 }
+/* }}} */
 
 
 /* {{{ proto boolean PurpleAccount::isConnected(void)
 	Returns whether or not the account is connected*/
-/* }}} */
 PHP_METHOD(PurpleAccount, isConnected)
 {
 	PurpleAccount *paccount = NULL;
@@ -1197,6 +1195,66 @@ PHP_METHOD(PurpleAccount, isConnected)
 	
 	RETURN_FALSE;
 }
+/* }}} */
+
+
+/* {{{ proto boolean PurpleAccount::isConnecting(void)
+	Returns whether or not the account is connecting*/
+PHP_METHOD(PurpleAccount, isConnecting)
+{
+	PurpleAccount *paccount = NULL;
+	zval *index;
+	
+	index = zend_read_property(PurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
+	
+	if(paccount) {
+		RETVAL_BOOL((long) purple_account_is_connecting(paccount));
+		return;
+	}
+	
+	RETURN_FALSE;
+}
+/* }}} */
+
+
+/* {{{ proto string PurpleAccount::getUserName(void) Returns the account's username */
+PHP_METHOD(PurpleAccount, getUserName)
+{
+	PurpleAccount *paccount = NULL;
+	zval *index;
+	
+	index = zend_read_property(PurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
+	
+	if(paccount) {
+		RETURN_STRING(estrdup(purple_account_get_username(paccount)), 0);
+	}
+	
+	RETURN_NULL();
+}
+/* }}} */
+
+
+/* {{{ proto string PurpleAccount::getPassword(void) Returns the account's password */
+PHP_METHOD(PurpleAccount, getPassword)
+{
+	PurpleAccount *paccount = NULL;
+	zval *index;
+	
+	index = zend_read_property(PurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
+	
+	if(paccount) {
+		RETURN_STRING(estrdup(purple_account_get_password(paccount)), 0);
+	}
+	
+	RETURN_NULL();
+}
+/* }}} */
 
 /*
 **

@@ -3,6 +3,11 @@ Please ask your questions using the forums at http://sourceforge.net/projects/ph
 
 Changelog:
 
+v0.3 alpha:
+* PurpleAccount::isConnecting() added
+* PurpleAccount::getUserName() added
+* PurpleAccount::getPassword() added
+
 v0.2 alpha:
 * fixed zts compatibility
 * implemented the loopHeartBeat method

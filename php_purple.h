@@ -1,23 +1,21 @@
-/*
-
-Copyright (c) 2007-2008, Anatoliy Belsky
-
-This file is part of PHPurple.
-
-PHPurple is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PHPurple is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with PHPurple.  If not, see <http://www.gnu.org/licenses/>.
-
-*/
+/**
+ * Copyright (c) 2007-2008, Anatoliy Belsky
+ *
+ * This file is part of PHPurple.
+ *
+ * PHPurple is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * PHPurple is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PHPurple.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef PHP_PURPLE_H
 #define PHP_PURPLE_H
@@ -64,6 +62,9 @@ PHP_METHOD(PurpleAccount, removeBuddy);
 PHP_METHOD(PurpleAccount, clearSettings);
 PHP_METHOD(PurpleAccount, set);
 PHP_METHOD(PurpleAccount, isConnected);
+PHP_METHOD(PurpleAccount, isConnecting);
+PHP_METHOD(PurpleAccount, getUserName);
+PHP_METHOD(PurpleAccount, getPassword);
 
 PHP_METHOD(PurpleConnection, __construct);
 PHP_METHOD(PurpleConnection, getAccount);
