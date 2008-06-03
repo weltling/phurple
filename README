@@ -7,6 +7,9 @@ v0.3 alpha:
 * PurpleAccount::isConnecting() added
 * PurpleAccount::getUserName() added
 * PurpleAccount::getPassword() added
+* PurpleClient::deleteAccount() added
+* PurpleClient::findAccount() added
+* PurpleClient::addAccount returns now a PurpleAccount instance (but was null)
 
 v0.2 alpha:
 * fixed zts compatibility

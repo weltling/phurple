@@ -53,6 +53,8 @@ PHP_METHOD(PurpleClient, getProtocols);
 PHP_METHOD(PurpleClient, setUserDir);
 PHP_METHOD(PurpleClient, loopCallback);
 PHP_METHOD(PurpleClient, loopHeartBeat);
+PHP_METHOD(PurpleClient, deleteAccount);
+PHP_METHOD(PurpleClient, findAccount);
 
 PHP_METHOD(PurpleAccount, __construct);
 PHP_METHOD(PurpleAccount, setPassword);
@@ -103,7 +105,12 @@ ZEND_BEGIN_MODULE_GLOBALS(purple)
 	char *custom_plugin_path;
 	char *ui_id;
 	char *plugin_save_pref;
+	
+	/**
+	 * @todo move the purple_php_client_obj into the ppos struct
+	 */
 	zval *purple_php_client_obj;
+	
 	struct php_purple_object_storage
 	{
 		HashTable buddy;
@@ -117,6 +124,12 @@ ZEND_END_MODULE_GLOBALS(purple)
 #define PURPLE_G(v) (purple_globals.v)
 #endif
 
+/**
+ * @todo At many places this macros is used as follows:
+ * PURPLE_MK_OBJ(return_value, PurpleAccount_ce);
+ * But it doesn't really affect the return_value
+ * Changing the MAKE_STD_ZVAL to ZVAL_NULL does work, why?
+ */
 #define PURPLE_MK_OBJ(o, c) 	MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
 
 #endif	/* PHP_PURPLE_H */

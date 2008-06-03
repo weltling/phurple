@@ -225,6 +225,8 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleClient, loopCallback, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, loopHeartBeat, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PurpleClient, deleteAccount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleClient, findAccount, NULL, ZEND_ACC_PUBLIC )
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -699,14 +701,15 @@ PHP_METHOD(PurpleClient, addAccount)
 
 		accounts = purple_accounts_get_all();
 
-		PURPLE_MK_OBJ(return_value, PurpleAccount_ce);
-		zend_update_property_long(	PurpleAccount_ce,
-						return_value,
-						"index",
-						sizeof("index")-1,
-						(long)g_list_position(accounts, g_list_find(accounts, account))
-						TSRMLS_CC
-						);
+		ZVAL_NULL(return_value);
+		Z_TYPE_P(return_value) = IS_OBJECT;
+		object_init_ex(return_value, PurpleAccount_ce);
+		zend_update_property_long(PurpleAccount_ce,
+		                          return_value,
+		                          "index",
+		                          sizeof("index")-1,
+		                          (long)g_list_position(accounts, g_list_find(accounts, account)) TSRMLS_CC
+		                          );
 
 		efree(protocol);
 		efree(nick);
@@ -723,6 +726,72 @@ PHP_METHOD(PurpleClient, addAccount)
 	efree(password);
 	efree(host);
 	efree(port);
+	
+	RETURN_NULL();
+}
+/* }}} */
+
+
+/* {{{ proto void PurpleClient::deleteAccount(PurpleAccount account)
+	Removes an account from the list of accounts*/
+PHP_METHOD(PurpleClient, deleteAccount)
+{
+	zval *account;
+	PurpleAccount *paccount = NULL;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &account) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	switch (Z_TYPE_P(account)) {
+		case IS_OBJECT:
+			paccount = g_list_nth_data(purple_accounts_get_all(), (guint)Z_LVAL_P(zend_read_property(PurpleAccount_ce, account, "index", sizeof("index")-1, 0 TSRMLS_CC)));
+		break;
+			
+		case IS_STRING:
+			paccount = purple_accounts_find(Z_STRVAL_P(account), NULL);
+		break;
+	}
+		
+	if(paccount) {
+		purple_accounts_delete(paccount);
+		
+	}
+	
+	RETURN_FALSE;
+}
+/* }}} */
+
+
+/* {{{ proto PurpleAccount PurpleClient::findAccount(string name)
+	Finds the specified account in the accounts list */
+PHP_METHOD(PurpleClient, findAccount)
+{
+	char *account_name;
+	int account_name_len;
+	zval *account;
+	PurpleAccount *paccount = NULL;
+	GList *l;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_name, &account_name_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	paccount = purple_accounts_find(account_name, NULL);
+
+	if(paccount) {
+		ZVAL_NULL(return_value);
+		Z_TYPE_P(return_value) = IS_OBJECT;
+		object_init_ex(return_value, PurpleAccount_ce);
+		zend_update_property_long(PurpleAccount_ce,
+		                          return_value,
+		                          "index",
+		                          sizeof("index")-1,
+		                          (long)g_list_position(purple_accounts_get_all(),
+		                          g_list_find(purple_accounts_get_all(), paccount)) TSRMLS_CC
+		                         );
+		return;
+	}
 	
 	RETURN_NULL();
 }
@@ -766,13 +835,13 @@ PHP_METHOD(PurpleClient, getInstance)
 #endif
 		*return_value = *PURPLE_G(purple_php_client_obj);
 
-		call_custom_method(	&PURPLE_G(purple_php_client_obj),
-							Z_OBJCE_P(PURPLE_G(purple_php_client_obj)),
-							NULL,
-							"initinternal",
-							sizeof("initinternal")-1,
-							NULL,
-							0);
+		call_custom_method(&PURPLE_G(purple_php_client_obj),
+		                   Z_OBJCE_P(PURPLE_G(purple_php_client_obj)),
+		                   NULL,
+		                   "initinternal",
+		                   sizeof("initinternal")-1,
+		                   NULL,
+		                  0);
 
 		return;
 	}
@@ -932,12 +1001,12 @@ PHP_METHOD(PurpleConnection, getAccount)
 			ZVAL_NULL(return_value);
 			Z_TYPE_P(return_value) = IS_OBJECT;
 			object_init_ex(return_value, PurpleAccount_ce);
-			zend_update_property_long(	PurpleAccount_ce,
-										return_value,
-										"index",
-										sizeof("index")-1,
-										(long)g_list_position(accounts, g_list_find(accounts, acc)) TSRMLS_CC
-										);
+			zend_update_property_long(PurpleAccount_ce,
+			                          return_value,
+			                          "index",
+			                          sizeof("index")-1,
+			                          (long)g_list_position(accounts, g_list_find(accounts, acc)) TSRMLS_CC
+			                          );
 			return;
 		}
 	}
@@ -980,12 +1049,12 @@ PHP_METHOD(PurpleAccount, __construct)
 	if(NULL != account) {
 		accounts = purple_accounts_get_all();
 
-		zend_update_property_long(	PurpleAccount_ce,
-									getThis(),
-									"index",
-									sizeof("index")-1,
-									(long)g_list_position(accounts, g_list_last(accounts)) TSRMLS_CC
-								 );
+		zend_update_property_long(PurpleAccount_ce,
+		                          getThis(),
+		                          "index",
+		                          sizeof("index")-1,
+		                          (long)g_list_position(accounts, g_list_last(accounts)) TSRMLS_CC
+		                          );
 		return;
 		
 	}
