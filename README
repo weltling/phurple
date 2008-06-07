@@ -3,20 +3,21 @@ Please ask your questions using the forums at http://sourceforge.net/projects/ph
 
 Changelog:
 
-v0.3 alpha:
+v0.3.0 alpha:
 * PurpleAccount::isConnecting() added
 * PurpleAccount::getUserName() added
 * PurpleAccount::getPassword() added
 * PurpleClient::deleteAccount() added
 * PurpleClient::findAccount() added
 * PurpleClient::addAccount returns now a PurpleAccount instance (but was null)
+* PurpleClient::authorizeRequest() added
 
-v0.2 alpha:
+v0.2.0 alpha:
 * fixed zts compatibility
 * implemented the loopHeartBeat method
 * the runLoop method was changed to set the heartbeat interval
 * fixed memory leak on empty alias
 * purple.debug_enabled is now boolean
 
-v0.1 alpha:
+v0.1.0 pre-alpha:
 * initial release - mostly it's possible to send and receive messages
