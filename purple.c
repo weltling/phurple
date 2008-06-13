@@ -1392,12 +1392,12 @@ PHP_METHOD(PurpleConversation, __construct)
 		conv = purple_conversation_new(type, paccount, estrdup(name));
 		conversations = purple_get_conversations();
 
-		zend_update_property_long(	PurpleConversation_ce,
-									getThis(),
-									"index",
-									sizeof("index")-1,
-									(long)g_list_position(conversations, g_list_last(conversations)) TSRMLS_CC
-									);
+		zend_update_property_long(PurpleConversation_ce,
+		                          getThis(),
+		                          "index",
+		                          sizeof("index")-1,
+		                          (long)g_list_position(conversations, g_list_last(conversations)) TSRMLS_CC
+		                          );
 		return;
 	}
 
@@ -1466,13 +1466,13 @@ PHP_METHOD(PurpleConversation, getAccount)
 			ZVAL_NULL(return_value);
 			Z_TYPE_P(return_value) = IS_OBJECT;
 			object_init_ex(return_value, PurpleAccount_ce);
-			zend_update_property_long(	PurpleAccount_ce,
-										return_value,
-										"index",
-										sizeof("index")-1,
-										(long)g_list_position(purple_accounts_get_all(),
-										g_list_find(purple_accounts_get_all(), acc)) TSRMLS_CC
-										);
+			zend_update_property_long(PurpleAccount_ce,
+			                          return_value,
+			                          "index",
+			                          sizeof("index")-1,
+			                          (long)g_list_position(purple_accounts_get_all(),
+			                          g_list_find(purple_accounts_get_all(), acc)) TSRMLS_CC
+			                          );
 			return;
 		}
 	}
@@ -2250,13 +2250,11 @@ sighandler(int sig)
 static zval *purple_php_string_zval(const char *str)
 {
 	zval *ret;
-	int len;
 	
 	MAKE_STD_ZVAL(ret);
 	
-	if (str) {
-		len = strlen(str);
-		ZVAL_STRINGL(ret, (char*)str, len, 1);
+	if ((char*)str) {
+		ZVAL_STRING(ret, (char*)str, 1);
 	} else {
 		ZVAL_NULL(ret);
 	}
@@ -2744,13 +2742,27 @@ purple_php_request_authorize(PurpleAccount *account,
 	zval *client = PURPLE_G(purple_php_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 	
-	/**
-	 * @todo make account obj (now it's null)
-	 */
+	zval *result, *php_account, *php_on_list, *php_remote_user, *php_message;
 	
-	zval *result, *php_account, *php_on_list;
-	ALLOC_INIT_ZVAL(php_account);
+	if(NULL != account) {
+		ALLOC_INIT_ZVAL(php_account);
+		Z_TYPE_P(php_account) = IS_OBJECT;
+		object_init_ex(php_account, PurpleAccount_ce);
+		zend_update_property_long(PurpleAccount_ce,
+		                          php_account,
+		                          "index",
+		                          sizeof("index")-1,
+		                          (long)g_list_position(purple_accounts_get_all(), g_list_find(purple_accounts_get_all(), account)) TSRMLS_CC
+		                          );
+	} else {
+		ALLOC_INIT_ZVAL(php_account);
+	}
+	
+	MAKE_STD_ZVAL(php_on_list);
 	ZVAL_BOOL(php_on_list, (long)on_list);
+	
+	php_message = purple_php_string_zval(message);
+	php_remote_user = purple_php_string_zval(remote_user);
 	
 	call_custom_method(&client,
 	                   ce,
@@ -2759,10 +2771,10 @@ purple_php_request_authorize(PurpleAccount *account,
 	                   sizeof("authorizerequest")-1,
 	                   &result,
 	                   4,
-	                   php_account,
-	                   purple_php_string_zval(remote_user),
-	                   purple_php_string_zval(message),
-	                   php_on_list
+	                   &php_account,
+	                   &php_remote_user,
+	                   &php_message,
+	                   &php_on_list
 	                   );
 	
 	if(Z_TYPE_P(result) == IS_BOOL || Z_TYPE_P(result) == IS_LONG || Z_TYPE_P(result) == IS_DOUBLE) {
