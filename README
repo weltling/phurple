@@ -2,6 +2,8 @@ See extension docs at http://phpurple.rubay.de/
 Please ask your questions using the forums at http://sourceforge.net/projects/phpurple/
 
 Changelog:
+v0.4.0 alpha:
+* PurpleClient::iterate() added
 
 v0.3.0 alpha:
 * PurpleAccount::isConnecting() added

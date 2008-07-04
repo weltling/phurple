@@ -233,6 +233,7 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, deleteAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, findAccount, NULL, ZEND_ACC_PUBLIC )
 	PHP_ME(PurpleClient, authorizeRequest, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PurpleClient, iterate, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -617,7 +618,7 @@ PHP_METHOD(PurpleClient, connectToSignal)
 	Creates the main loop*/
 PHP_METHOD(PurpleClient, runLoop)
 {
-	long interval;
+	long interval = 0;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &interval) == FAILURE) {
 		RETURN_NULL();
@@ -904,6 +905,14 @@ PHP_METHOD(PurpleClient, setUserDir) {
 }
 /* }}} */
 
+
+/* {{{ */
+PHP_METHOD(PurpleClient, iterate)
+{
+	RETVAL_BOOL(g_main_context_iteration(NULL, 0));
+}
+/* }}} */
+
 /*
 **
 **
@@ -920,7 +929,7 @@ PHP_METHOD(PurpleClient, setUserDir) {
 */
 
 /* {{{ proto void PurpleClient::writeConv(PurpleConversation conversation, PurplePuddy buddy, string message, int flags, timestamp time)
-	this callback method writes to the conversation, if implemented*/
+	This callback method writes to the conversation, if implemented*/
 PHP_METHOD(PurpleClient, writeConv)
 {
 }
@@ -928,14 +937,14 @@ PHP_METHOD(PurpleClient, writeConv)
 
 
 /* {{{ proto void PurpleClient::writeIM(PurpleConversation conversation, PurplePuddy buddy, string message, int flags, timestamp time)
-	this callback method writes to the conversation, if implemented*/
+	This callback method writes to the conversation, if implemented*/
 PHP_METHOD(PurpleClient, writeIM)
 {
 }
 /* }}} */
 
 /* {{{ proto void PurpleClient::onSignedOn(PurpleConnection connection)
-	this callback is called at the moment, where the client gets singed on, if implemented */
+	This callback is called at the moment, where the client gets singed on, if implemented */
 PHP_METHOD(PurpleClient, onSignedOn)
 {
 }
@@ -943,7 +952,7 @@ PHP_METHOD(PurpleClient, onSignedOn)
 
 
 /* {{{ proto void PurpleClient::initInternal(void)
-	thes callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff*/
+	This callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff*/
 PHP_METHOD(PurpleClient, initInternal)
 {
 }
@@ -951,15 +960,15 @@ PHP_METHOD(PurpleClient, initInternal)
 
 
 /* {{{ proto void PurpleClient::loopCallback(void)
-	this callback method is called within the PurpleClient::runLoop */
+	This callback method is called within the PurpleClient::runLoop */
 PHP_METHOD(PurpleClient, loopCallback)
 {
 }
 /* }}} */
 
 
-/* {{{ proto void loopHeartBeat(void) 
-	this callback method is invoked by glib timer */
+/* {{{ proto void PurpleClient::loopHeartBeat(void) 
+	This callback method is invoked by glib timer */
 PHP_METHOD(PurpleClient, loopHeartBeat)
 {
 }
@@ -967,13 +976,12 @@ PHP_METHOD(PurpleClient, loopHeartBeat)
 
 
 /* {{{ proto boolean PurpleClient::authorizeRequest(PurpleAccount account, string $remote_user, string $message, boolean $on_list)
-	this callback method is invoked, when someone adds us to his buddy list */
+	This callback method is invoked, when someone adds us to his buddy list */
 PHP_METHOD(PurpleClient, authorizeRequest)
 {
 	
 }
 /* }}} */
-
 
 /*
 **
@@ -2785,8 +2793,6 @@ purple_php_request_authorize(PurpleAccount *account,
 		}
 		
 	}
-
-	return (int*)1;
 }
 /* }}} */
 

@@ -34,14 +34,14 @@
     <title>Common</title>
     <preface id="intro">
       <title>Introduction</title>
-      <para>PHPurple is the libpurple php binding, which makes the use of the instant
-			messaging  protocols such AIM (ICQ, Oscar), MSN, Yahoo etc. within php possible.
+      <para>PHPurple is the libpurple PHP binding, which makes the use of the instant
+			messaging  protocols such AIM (ICQ, Oscar), MSN, Yahoo etc. in PHP possible. It's implemented as a set of the internal classes.
 			Learn more about the libpurple at <ulink url="http://developer.pidgin.im/wiki/WhatIsLibpurple"><citetitle>http://developer.pidgin.im/wiki/WhatIsLibpurple</citetitle></ulink>.
-			libpurple docs can be found at <ulink url="http://developer.pidgin.im/doxygen/dev/html/files.html"><citetitle>
+			libpurples docs can be found at <ulink url="http://developer.pidgin.im/doxygen/dev/html/files.html"><citetitle>
 			http://developer.pidgin.im/doxygen/dev/html/files.html</citetitle></ulink>
 		</para>
 		<para>
-			Normally, the PHPurple is using the g_main_loop_run() function from the GLib to run the main loop. This makes impossible to use it within some webserver process. One of the possible models to use the extension for some web application could be AJAX web interface, which communicates with the PHPurple through the inetd sevice.
+			Actually, the PHPurple is using the g_main_loop_run() function from the GLib to run the main loop. This makes impossible to use it within some webserver process. One of the possible models to use the extension for some web application could be AJAX web interface, which communicates with the PHPurple through the inetd sevice. At the moment I'm working on the possibility to integrate the glibs main loop into some other main loop, which could give a chance to use this extension within a webserver (may be even multithreaded).
 		</para>
 		<para>
 			The last development news can be found at <ulink url="http://thinker.rubay.de/"><citetitle>http://thinker.rubay.de/</citetitle></ulink> or at <ulink url="http://sourceforge.net/projects/phpurple/"><citetitle>http://sourceforge.net/projects/phpurple/</citetitle></ulink>
@@ -57,15 +57,15 @@
 			<listitem>GLib >= 2.0</listitem>
 		</itemizedlist>
 	  </para>
-	  <para>Please let us know, if you've successfully compiled on earlier versions. Actually the extension is being developed on the php v5.2.5 with the option to be upcomming php v5.3 compatible.</para>
+	  <para>Please let me know, if you've successfully compiled on earlier versions. Actually the extension is being developed on the php v5.2.6 with the option to be upcomming php v5.3 compatible.</para>
     </chapter>
     <chapter id="installation">
       <title>Installation</title>
 	  <para>
-		  If you compile the libpurple from scratch, you could use the following configure options:
+		  If you compile libpurple from scratch, you could use the following configure options:
 	  </para>
   <para><code>user@host~# ./configure --enable-gnutls=yes --enable-nss=no --disable-gtkui --disable-consoleui --disable-screensaver --disable-sm --without-x --prefix=/usr</code></para>
-<para>This will compile only libpurple. Otherwise, if you have already pidgin installed, the libpurple is normally present in the /usr/lib or /usr/local/lib.</para>
+<para>This will compile only libpurple. Otherwise, if you have already pidgin installed, libpurple is normally present in the /usr/lib or /usr/local/lib.</para>
 <para></para>
 <para>While within PHPurple dir, invoke:</para>
 <para><code> user@host~# phpize &amp;&amp; ./configure --enable-purple &amp;&amp; make &amp;&amp; make install</code></para>
@@ -75,7 +75,7 @@
 		dl('purple.' . PHP_SHLIB_SUFFIX);
 	}
 ?&gt;</programlisting></example>
-<para>Note, that since the windows variant isn't exists yet, there are no installation instructions for this.</para>
+<para>Note, that since the windows variant isn't exists yet, there are no installation instructions for this. Any help with windows builds is appreciated.</para>
     </chapter>
     <chapter id="runtime">
       <title>Runtime Configuration</title>
@@ -209,7 +209,7 @@
       <refentry xml:id="purpleclient-addaccount">
         <refnamediv>
           <refname>PurpleClient::addAccount</refname>
-          <refpurpose>adds a new account to the current client</refpurpose>
+          <refpurpose>Adds a new account to the current client</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
@@ -337,7 +337,7 @@
       <refentry xml:id="purpleclient-initinternal">
         <refnamediv>
           <refname>PurpleClient::initInternal</refname>
-          <refpurpose>thes callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff</refpurpose>
+          <refpurpose>This callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
@@ -347,7 +347,7 @@
             <void/>
           </methodsynopsis>
           <para>
-   thes callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff
+   This callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -362,7 +362,7 @@
       <refentry xml:id="purpleclient-loopcallback">
         <refnamediv>
           <refname>PurpleClient::loopCallback</refname>
-          <refpurpose>this callback method is called within the PurpleClient::runLoop</refpurpose>
+          <refpurpose>This callback method is called within the PurpleClient::runLoop</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
@@ -372,7 +372,7 @@
             <void/>
           </methodsynopsis>
           <para>
-   this callback method is called within the PurpleClient::runLoop
+   This callback method is called within the PurpleClient::runLoop
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -387,7 +387,7 @@
       <refentry xml:id="purpleclient-loopheartbeat">
 	      <refnamediv>
 		      <refname>PurpleClient::loopHeartBeat</refname>
-		      <refpurpose>this callback method is being called as timer</refpurpose>
+		      <refpurpose>This callback method is being called as timer</refpurpose>
 	      </refnamediv>
 	      <refsect1 role="description">
 		      <methodsynopsis>
@@ -476,7 +476,7 @@
       <refentry xml:id="purpleclient-writeconv">
         <refnamediv>
           <refname>PurpleClient::writeConv</refname>
-          <refpurpose>this callback method writes to the conversation, if implemented</refpurpose>
+          <refpurpose>This callback method writes to the conversation, if implemented</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
@@ -505,7 +505,7 @@
             </methodparam>
           </methodsynopsis>
           <para>
-   this callback method writes to the conversation, if implemented
+   This callback method writes to the conversation, if implemented
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -567,7 +567,7 @@
       <refentry xml:id="purpleclient-writeim">
         <refnamediv>
           <refname>PurpleClient::writeIM</refname>
-          <refpurpose>this callback method writes to the conversation, if implemented</refpurpose>
+          <refpurpose>This callback method writes to the conversation, if implemented</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
@@ -596,7 +596,7 @@
             </methodparam>
           </methodsynopsis>
           <para>
-   this callback method writes to the conversation, if implemented
+   This callback method writes to the conversation, if implemented
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -658,7 +658,7 @@
 <refentry xml:id="purpleclient-onsignedon">
  <refnamediv>
   <refname>PurpleClient::onSignedOn</refname>
-  <refpurpose>this callback is called at the moment, where the client gets singed on, if implemented</refpurpose>
+  <refpurpose>This callback is called at the moment, where the client gets singed on, if implemented</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
@@ -668,7 +668,7 @@
    <methodparam><type>PurpleConnection</type><parameter>connection</parameter></methodparam>
   </methodsynopsis>
   <para>
-   this callback is called at the moment, where the client gets singed on, if implemented
+   This callback is called at the moment, where the client gets singed on, if implemented
   </para>
  </refsect1>
 
@@ -685,6 +685,132 @@
    </variablelist>
   </para>
 
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="purpleclient-deleteaccount">
+ <refnamediv>
+  <refname>PurpleClient::deleteAccount</refname>
+  <refpurpose>Removes an account from the list of accounts</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>PurpleClient::deleteAccount</methodname>
+   <methodparam><type>PurpleAccount</type><parameter>account</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Removes an account from the list of accounts
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="purpleclient-findaccount">
+ <refnamediv>
+  <refname>PurpleClient::findAccount</refname>
+  <refpurpose>Finds the specified account in the accounts list</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>PurpleAccount</type><methodname>PurpleClient::findAccount</methodname>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Finds the specified account in the accounts list
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="purpleclient-authorizerequest">
+ <refnamediv>
+  <refname>PurpleClient::authorizeRequest</refname>
+  <refpurpose>This callback method is invoked, when someone adds us to his buddy list</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>protected</modifier>
+   <type>boolean</type><methodname>PurpleClient::authorizeRequest</methodname>
+   <methodparam><type>PurpleAccount</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>remote_user</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message</parameter></methodparam>
+   <methodparam><type>boolean</type><parameter>on_list</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   This callback method is invoked, when someone adds us to his buddy list
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>remote_user</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>on_list</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
  </refsect1>
  <refsect1 role="returnvalues">
   <para>
@@ -1011,6 +1137,80 @@
 		      <para>
 		      </para>
 	      </refsect1>
+</refentry>
+<refentry xml:id="purpleaccount-isconnecting">
+ <refnamediv>
+  <refname>PurpleAccount::isConnecting</refname>
+  <refpurpose>Returns whether or not the account is connecting</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>PurpleAccount::isConnecting</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   Returns whether or not the account is connecting
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="purpleaccount-getusername">
+ <refnamediv>
+  <refname>PurpleAccount::getUserName</refname>
+  <refpurpose>Returns the account's username</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>string</type><methodname>PurpleAccount::getUserName</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   Returns the account's username
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="purpleaccount-getpassword">
+ <refnamediv>
+  <refname>PurpleAccount::getPassword</refname>
+  <refpurpose>Returns the account's password</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>string</type><methodname>PurpleAccount::getPassword</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   Returns the account's password
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
 </refentry>
     </reference>
     <reference id="connection">

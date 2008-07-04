@@ -56,6 +56,7 @@ PHP_METHOD(PurpleClient, loopHeartBeat);
 PHP_METHOD(PurpleClient, deleteAccount);
 PHP_METHOD(PurpleClient, findAccount);
 PHP_METHOD(PurpleClient, authorizeRequest);
+PHP_METHOD(PurpleClient, iterate);
 
 PHP_METHOD(PurpleAccount, __construct);
 PHP_METHOD(PurpleAccount, setPassword);
