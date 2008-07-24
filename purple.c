@@ -57,10 +57,6 @@
 #include <sys/wait.h>
 #endif
 
-/**
- * The following eventloop functions are used in both pidgin and purple-text. If your
- * application uses glib mainloop, you can safely use this verbatim.
- */
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
@@ -86,9 +82,7 @@ static void *purple_php_request_authorize(PurpleAccount *account, const char *re
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
 static void clean_pid();
-#endif
 
-#ifdef HAVE_SIGNAL_H
 static char *segfault_message = "";
 
 static int catch_sig_list[] = {
@@ -495,7 +489,7 @@ PHP_MINIT_FUNCTION(purple)
 	}
 #endif
 
-    	/*
+    	/**
 	 * purple initialization stuff
 	 */
 	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
