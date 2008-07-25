@@ -220,7 +220,7 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, onSignedOn, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, runLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, addAccount, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleClient, loopCallback, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, loopHeartBeat, NULL, ZEND_ACC_PROTECTED)
@@ -337,11 +337,11 @@ ZEND_GET_MODULE(purple)
 
 /* {{{ PHP_INI */
 PHP_INI_BEGIN()
-	STD_PHP_INI_ENTRY("purple.custom_user_directory", "/dev/null", PHP_INI_ALL, OnUpdateString, custom_user_directory, zend_purple_globals, purple_globals)
-	STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, custom_plugin_path, zend_purple_globals, purple_globals)
-	STD_PHP_INI_ENTRY("purple.ui_id", "php", PHP_INI_ALL, OnUpdateString, ui_id, zend_purple_globals, purple_globals)
-	STD_PHP_INI_BOOLEAN("purple.debug_enabled", "0", PHP_INI_ALL, OnUpdateBool, debug_enabled, zend_purple_globals, purple_globals)
-	STD_PHP_INI_ENTRY("purple.plugin_save_pref", "/purple/nullclient/plugins/saved", PHP_INI_ALL, OnUpdateString, plugin_save_pref, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.custom_user_directory", PURPLE_INI_CUSTOM_USER_DIRECTORY, PHP_INI_ALL, OnUpdateString, custom_user_directory, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.custom_plugin_path", PURPLE_INI_CUSTOM_PLUGIN_PATH, PHP_INI_ALL, OnUpdateString, custom_plugin_path, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.ui_id", PURPLE_INI_UI_ID, PHP_INI_ALL, OnUpdateString, ui_id, zend_purple_globals, purple_globals)
+	STD_PHP_INI_BOOLEAN("purple.debug_enabled", PURPLE_INI_DEBUG_ENABLED, PHP_INI_ALL, OnUpdateBool, debug_enabled, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.plugin_save_pref", PURPLE_INI_PLUGIN_SAVE_PREF, PHP_INI_ALL, OnUpdateString, plugin_save_pref, zend_purple_globals, purple_globals)
 PHP_INI_END()
 /* }}} */
 
@@ -488,33 +488,6 @@ PHP_MINIT_FUNCTION(purple)
 		perror(errmsg);
 	}
 #endif
-
-    	/**
-	 * purple initialization stuff
-	 */
-	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
-	purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
-	purple_core_set_ui_ops(&php_core_uiops);
-	purple_accounts_set_ui_ops(&php_account_uiops);
-	purple_eventloop_set_ui_ops(&glib_eventloops);
-	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
-
-	if (!purple_core_init(INI_STR("purple.ui_id"))) {
-#ifdef HAVE_SIGNAL_H
-		g_free(segfault_message);
-#endif
-		return FAILURE;
-	}
-
-	purple_set_blist(purple_blist_new());
-	purple_blist_load();
-	
-	purple_prefs_load();
-
-	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
-
-	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
-	purple_savedstatus_activate(saved_status);
 	
 	return SUCCESS;
 }
@@ -814,6 +787,34 @@ PHP_METHOD(PurpleClient, getCoreVersion)
 	creates new PurpleClient instance*/
 PHP_METHOD(PurpleClient, getInstance)
 {
+	/**
+	 * purple initialization stuff
+	 */
+	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
+	purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
+	purple_core_set_ui_ops(&php_core_uiops);
+	purple_accounts_set_ui_ops(&php_account_uiops);
+	purple_eventloop_set_ui_ops(&glib_eventloops);
+	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
+
+	if (!purple_core_init(INI_STR("purple.ui_id"))) {
+#ifdef HAVE_SIGNAL_H
+		g_free(segfault_message);
+#endif
+		RETURN_FALSE;
+	}
+
+	purple_set_blist(purple_blist_new());
+	purple_blist_load();
+	
+	purple_prefs_load();
+
+	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
+
+	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
+	purple_savedstatus_activate(saved_status);
+
+
 	zval_ptr_dtor(&return_value);
 
 	if(NULL == zend_objects_get_address(PURPLE_G(purple_php_client_obj) TSRMLS_CC)) {
@@ -882,6 +883,9 @@ PHP_METHOD(PurpleClient, getProtocols)
 /* }}} */
 
 
+/**
+ * @todo make aliases for all the ini settings
+ */
 /* {{{ proto void PurpleClient::setUserDir([string $userDir])
 	Define a custom purple settings directory, overriding the default (user's home directory/.purple) */
 PHP_METHOD(PurpleClient, setUserDir) {
@@ -891,9 +895,13 @@ PHP_METHOD(PurpleClient, setUserDir) {
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &user_dir, &user_dir_len) == FAILURE) {
 		RETURN_NULL();
 	}
-	
-	user_dir = !user_dir_len ? INI_STR("purple.custom_user_directory") : estrdup(user_dir);
-	PURPLE_G(custom_user_directory) = estrdup(user_dir);
+
+	zend_alter_ini_entry("purple.custom_user_directory",
+	                     sizeof("purple.custom_user_directory"),
+	                     user_dir,
+	                     user_dir_len,
+	                     PHP_INI_ALL,
+	                     PHP_INI_STAGE_RUNTIME);
 	
 	purple_util_set_user_dir(user_dir);
 }

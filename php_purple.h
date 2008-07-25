@@ -120,6 +120,12 @@ ZEND_BEGIN_MODULE_GLOBALS(purple)
 	} ppos; /*php purple object storage*/
 ZEND_END_MODULE_GLOBALS(purple)
 
+#define PURPLE_INI_CUSTOM_USER_DIRECTORY "/dev/null"
+#define PURPLE_INI_CUSTOM_PLUGIN_PATH ""
+#define PURPLE_INI_UI_ID "php"
+#define PURPLE_INI_DEBUG_ENABLED "0"
+#define PURPLE_INI_PLUGIN_SAVE_PREF "/purple/nullclient/plugins/saved"
+
 #ifdef ZTS
 #define PURPLE_G(v) TSRMG(purple_globals_id, zend_purple_globals *, v)
 #else
