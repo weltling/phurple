@@ -3,12 +3,11 @@ Please ask your questions using the forums at http://sourceforge.net/projects/ph
 
 Changelog:
 v0.4.0 alpha:
-* libpurple initialization no more happens on the minit time, but on
-  the CustomPurpleClient instantiation time
-* because of this the PurpleClient::getProtocols() method is now no more
-  static
-* PurpleClient::iterate() added. It's very important for the main
-  loop integration.
+* libpurple initialization moved from the compile time, to the runtime,
+  excactly - to the CustomPurpleClient instantiation time
+* PurpleClient::getProtocols() method is no more static
+* PurpleClient::iterate() added
+* PurpleAccount::get() added
 
 
 v0.3.0 alpha:

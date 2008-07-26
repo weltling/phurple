@@ -108,6 +108,27 @@ typedef struct _PurpleGLibIOClosure {
 	gpointer data;
 } PurpleGLibIOClosure;
 
+/**
+ * Took this from the libpurples account.c because of need
+ * to get the account settings. If the libpurple will change,
+ * should fit it.
+ */
+typedef struct
+{
+	PurplePrefType type;
+
+	char *ui;
+
+	union
+	{
+		int integer;
+		char *string;
+		gboolean boolean;
+
+	} value;
+
+} PurpleAccountSetting;
+
 static PurpleEventLoopUiOps glib_eventloops =
 {
 	g_timeout_add,
@@ -258,6 +279,7 @@ zend_function_entry PurpleAccount_methods[] = {
 	PHP_ME(PurpleAccount, isConnecting, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleAccount, getUserName, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleAccount, getPassword, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleAccount, get, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -1246,16 +1268,16 @@ PHP_METHOD(PurpleAccount, set)
 	if(paccount) {
 		switch (Z_TYPE_P(value)) {
 			case IS_BOOL:
-				purple_account_set_bool (paccount, name, (gboolean) Z_LVAL_P(value));
+				purple_account_set_ui_bool (paccount, PURPLE_G(ui_id), name, (gboolean) Z_LVAL_P(value));
 			break;
 			
 			case IS_LONG:
 			case IS_DOUBLE:
-				purple_account_set_int (paccount, name, (int) Z_LVAL_P(value));
+				purple_account_set_ui_int (paccount, PURPLE_G(ui_id), name, (int) Z_LVAL_P(value));
 			break;
 				
 			case IS_STRING:
-				purple_account_set_string (paccount, name, Z_STRVAL_P(value));
+				purple_account_set_ui_string (paccount, PURPLE_G(ui_id), name, Z_STRVAL_P(value));
 			break;
 				
 			default:
@@ -1270,6 +1292,64 @@ PHP_METHOD(PurpleAccount, set)
 }
 /* }}} */
 
+
+/* {{{ proto mixed PurpleAccount::get($key)
+	Sets a protocol-specific setting for an account.
+	Possible return datatypes are int|boolean|string or null 
+	if the setting isn't set or not found*/
+PHP_METHOD(PurpleAccount, get)
+{
+	PurpleAccount *paccount = NULL;
+	PurpleAccountSetting *setting;
+	GHashTable *table;
+	zval *index;
+	char *name;
+	int name_len;
+	
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	index = zend_read_property(PurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
+
+	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
+
+	if(paccount) {
+
+		if((table = g_hash_table_lookup(paccount->ui_settings, PURPLE_G(ui_id))) == NULL) {
+			RETURN_NULL();
+		}
+
+		setting = g_hash_table_lookup(table, name);
+		if(setting) {
+			switch(setting->type) {
+				case PURPLE_PREF_BOOLEAN:
+					RETVAL_BOOL(setting->value.boolean);
+					return;
+				break;
+
+				case PURPLE_PREF_INT:
+					RETVAL_LONG(setting->value.integer);
+					return;
+				break;
+
+				case PURPLE_PREF_STRING:
+					RETVAL_STRING(setting->value.string, 1);
+					return;
+				break;
+
+				default:
+					RETURN_NULL();
+				break;
+			}
+		}
+		RETURN_NULL();
+	}
+
+	RETURN_NULL();
+}
+/* }}} */
 
 /* {{{ proto boolean PurpleAccount::isConnected(void)
 	Returns whether or not the account is connected*/

@@ -1108,7 +1108,8 @@
 			      <methodparam><type>string</type><parameter>value</parameter></methodparam>
 		      </methodsynopsis>
 		      <para>
-			      Sets a protocol-specific setting for an account.
+			      Sets a protocol-specific setting for an account. The settings get added to the corresponding
+			      account in the accounts.xml within clients user dir.
 		      </para>
 	      </refsect1>
 	      

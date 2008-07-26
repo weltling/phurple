@@ -65,6 +65,7 @@ PHP_METHOD(PurpleAccount, addBuddy);
 PHP_METHOD(PurpleAccount, removeBuddy);
 PHP_METHOD(PurpleAccount, clearSettings);
 PHP_METHOD(PurpleAccount, set);
+PHP_METHOD(PurpleAccount, get);
 PHP_METHOD(PurpleAccount, isConnected);
 PHP_METHOD(PurpleAccount, isConnecting);
 PHP_METHOD(PurpleAccount, getUserName);
