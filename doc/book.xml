@@ -134,7 +134,7 @@
 				mkdir($user_dir);
 			}
 		
-			PurpleClient::setUserDir($user_dir);
+			ini_set("purple.custom_user_directory", $user_dir);
 		
 			PurpleBuddyList::load();
 		
@@ -442,31 +442,6 @@
 				</varlistentry>
 			</variablelist>
           </para>
-        </refsect1>
-        <refsect1 role="returnvalues">
-          <para>
-  </para>
-        </refsect1>
-      </refentry>
-      <refentry xml:id="purpleclient-setuserdir">
-        <refnamediv>
-          <refname>PurpleClient::setUserDir</refname>
-          <refpurpose>Define a custom purple settings directory, overriding the default (user's home directory/.purple)</refpurpose>
-        </refnamediv>
-        <refsect1 role="description">
-          <methodsynopsis>
-		  <modifier>final public static</modifier>
-            <type>void</type>
-            <methodname>PurpleClient::setUserDir</methodname>
-            <void/>
-          </methodsynopsis>
-          <para>
-   Define a custom purple settings directory, overriding the default (user's home directory/.purple)
-  </para>
-        </refsect1>
-        <refsect1 role="parameters">
-          <para>
-  </para>
         </refsect1>
         <refsect1 role="returnvalues">
           <para>

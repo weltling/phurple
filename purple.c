@@ -211,7 +211,6 @@ void php_purple_globals_ctor(zend_purple_globals *purple_globals TSRMLS_DC)
 	purple_globals->custom_user_directory = NULL;
 	purple_globals->custom_plugin_path = NULL;
 	purple_globals->ui_id = NULL;
-	purple_globals->plugin_save_pref = NULL;
 }
 void php_purple_globals_dtor(zend_purple_globals *purple_globals TSRMLS_DC) { }
 
@@ -242,13 +241,14 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, runLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, addAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
-	PHP_ME(PurpleClient, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleClient, loopCallback, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, loopHeartBeat, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, deleteAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, findAccount, NULL, ZEND_ACC_PUBLIC )
 	PHP_ME(PurpleClient, authorizeRequest, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, iterate, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleClient, set, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleClient, get, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -347,7 +347,7 @@ zend_module_entry purple_module_entry = {
 	PHP_RSHUTDOWN(purple),
 	PHP_MINFO(purple),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.2",
+	"0.4",
 #endif
 	STANDARD_MODULE_PROPERTIES
 };
@@ -363,7 +363,6 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("purple.custom_plugin_path", PURPLE_INI_CUSTOM_PLUGIN_PATH, PHP_INI_ALL, OnUpdateString, custom_plugin_path, zend_purple_globals, purple_globals)
 	STD_PHP_INI_ENTRY("purple.ui_id", PURPLE_INI_UI_ID, PHP_INI_ALL, OnUpdateString, ui_id, zend_purple_globals, purple_globals)
 	STD_PHP_INI_BOOLEAN("purple.debug_enabled", PURPLE_INI_DEBUG_ENABLED, PHP_INI_ALL, OnUpdateBool, debug_enabled, zend_purple_globals, purple_globals)
-	STD_PHP_INI_ENTRY("purple.plugin_save_pref", PURPLE_INI_PLUGIN_SAVE_PREF, PHP_INI_ALL, OnUpdateString, plugin_save_pref, zend_purple_globals, purple_globals)
 PHP_INI_END()
 /* }}} */
 
@@ -389,10 +388,12 @@ PHP_MINIT_FUNCTION(purple)
 	
 	/* classes definitions */
 
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
+#define PURPLE_CLIENT_CLASS_NAME "Client"
 	INIT_CLASS_ENTRY(ce, "Purple::Client", PurpleClient_methods);
 #else
-	INIT_CLASS_ENTRY(ce, "PurpleClient", PurpleClient_methods);
+#define PURPLE_CLIENT_CLASS_NAME "PurpleClient"
+	INIT_CLASS_ENTRY(ce, PURPLE_CLIENT_CLASS_NAME, PurpleClient_methods);
 #endif
 	PurpleClient_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
@@ -426,49 +427,61 @@ PHP_MINIT_FUNCTION(purple)
 	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_AWAY", sizeof("PURPLE_STATUS_AWAY")-1, PURPLE_STATUS_AWAY TSRMLS_CC);
 	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_MOBILE", sizeof("PURPLE_STATUS_MOBILE")-1, PURPLE_STATUS_MOBILE TSRMLS_CC);
 	
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
+#define PURPLE_CONVERSATION_CLASS_NAME "Conversation"
 	INIT_CLASS_ENTRY(ce, "Purple::Conversation", PurpleConversation_methods);
 #else
-	INIT_CLASS_ENTRY(ce, "PurpleConversation", PurpleConversation_methods);
+#define PURPLE_CONVERSATION_CLASS_NAME "PurpleConversation"
+	INIT_CLASS_ENTRY(ce, PURPLE_CONVERSATION_CLASS_NAME, PurpleConversation_methods);
 #endif
 	PurpleConversation_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PurpleConversation_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
 
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
+#define PURPLE_ACCOUNT_CLASS_NAME "Account"
 	INIT_CLASS_ENTRY(ce, "Purple::Account", PurpleAccount_methods);
 #else
-	INIT_CLASS_ENTRY(ce, "PurpleAccount", PurpleAccount_methods);
+#define PURPLE_ACCOUNT_CLASS_NAME "PurpleAccount"
+	INIT_CLASS_ENTRY(ce, PURPLE_ACCOUNT_CLASS_NAME, PurpleAccount_methods);
 #endif
 	PurpleAccount_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PurpleAccount_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 	
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
+#define PURPLE_CONNECION_CLASS_NAME "Connection"
 	INIT_CLASS_ENTRY(ce, "Purple::Connection", PurpleConnection_methods);
 #else
-	INIT_CLASS_ENTRY(ce, "PurpleConnection", PurpleConnection_methods);
+#define PURPLE_CONNECION_CLASS_NAME "PurpleConnection"
+	INIT_CLASS_ENTRY(ce, PURPLE_CONNECION_CLASS_NAME, PurpleConnection_methods);
 #endif
 	PurpleConnection_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PurpleConnection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
+#define PURPLE_BUDDY_CLASS_NAME "Buddy"
 	INIT_CLASS_ENTRY(ce, "Purple::Buddy", PurpleBuddy_methods);
 #else
-	INIT_CLASS_ENTRY(ce, "PurpleBuddy", PurpleBuddy_methods);
+#define PURPLE_BUDDY_CLASS_NAME "PurpleBuddy"
+	INIT_CLASS_ENTRY(ce, PURPLE_BUDDY_CLASS_NAME, PurpleBuddy_methods);
 #endif
 	PurpleBuddy_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PurpleBuddy_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
+#define PURPLE_BUDDYLIST_CLASS_NAME "BuddyList"
 	INIT_CLASS_ENTRY(ce, "Purple::BuddyList", PurpleBuddyList_methods);
 #else
-	INIT_CLASS_ENTRY(ce, "PurpleBuddyList", PurpleBuddyList_methods);
+#define PURPLE_BUDDYLIST_CLASS_NAME "PurpleBuddyList"
+	INIT_CLASS_ENTRY(ce, PURPLE_BUDDYLIST_CLASS_NAME, PurpleBuddyList_methods);
 #endif
 	PurpleBuddyList_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
+#define PURPLE_BUDDY_GROUP_CLASS_NAME "Purple::BuddyGroup"
 	INIT_CLASS_ENTRY(ce, "Purple::BuddyGroup", PurpleBuddyGroup_methods);
 #else
-	INIT_CLASS_ENTRY(ce, "PurpleBuddyGroup", PurpleBuddyGroup_methods);
+#define PURPLE_BUDDY_GROUP_CLASS_NAME "PurpleBuddyGroup"
+	INIT_CLASS_ENTRY(ce, PURPLE_BUDDY_GROUP_CLASS_NAME, PurpleBuddyGroup_methods);
 #endif
 	PurpleBuddyGroup_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
@@ -589,6 +602,9 @@ PHP_METHOD(PurpleClient, connectToSignal)
 		RETURN_NULL();
 	}
 
+	/**
+	 * @todo connect to other signals
+	 */
 	if(0 == strcmp("signed-on", signal)) {
 		ret = purple_signal_connect(	purple_connections_get_handle(),
 						estrdup(signal),
@@ -809,40 +825,38 @@ PHP_METHOD(PurpleClient, getCoreVersion)
 	creates new PurpleClient instance*/
 PHP_METHOD(PurpleClient, getInstance)
 {
-	/**
-	 * purple initialization stuff
-	 */
-	purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
-	purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
-	purple_core_set_ui_ops(&php_core_uiops);
-	purple_accounts_set_ui_ops(&php_account_uiops);
-	purple_eventloop_set_ui_ops(&glib_eventloops);
-	purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
-
-	if (!purple_core_init(INI_STR("purple.ui_id"))) {
-#ifdef HAVE_SIGNAL_H
-		g_free(segfault_message);
-#endif
-		RETURN_FALSE;
-	}
-
-	purple_set_blist(purple_blist_new());
-	purple_blist_load();
-	
-	purple_prefs_load();
-
-	purple_plugins_load_saved(INI_STR("purple.plugin_save_pref"));
-
-	PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
-	purple_savedstatus_activate(saved_status);
-
-
-	zval_ptr_dtor(&return_value);
-
 	if(NULL == zend_objects_get_address(PURPLE_G(purple_php_client_obj) TSRMLS_CC)) {
+
+		/**
+		 * purple initialization stuff
+		 */
+		purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
+		purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
+		purple_core_set_ui_ops(&php_core_uiops);
+		purple_accounts_set_ui_ops(&php_account_uiops);
+		purple_eventloop_set_ui_ops(&glib_eventloops);
+		purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
+	
+		if (!purple_core_init(INI_STR("purple.ui_id"))) {
+#ifdef HAVE_SIGNAL_H
+			g_free(segfault_message);
+#endif
+			zend_throw_exception(NULL, "Couldn't initalize the core of libpurple", 0 TSRMLS_CC);
+			RETURN_NULL();
+		}
+	
+		purple_set_blist(purple_blist_new());
+		purple_blist_load();
+		
+		purple_prefs_load();
+
+		PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
+		purple_savedstatus_activate(saved_status);
+
+
 		MAKE_STD_ZVAL(PURPLE_G(purple_php_client_obj));
 		Z_TYPE_P(PURPLE_G(purple_php_client_obj)) = IS_OBJECT;
-#if ZEND_MODULE_API_NO >= 20071006
+#if USING_PHP_53
 		object_init_ex(PURPLE_G(purple_php_client_obj), EG(called_scope));
 #else
 		zend_class_entry **ce = NULL;
@@ -905,37 +919,31 @@ PHP_METHOD(PurpleClient, getProtocols)
 /* }}} */
 
 
-/**
- * @todo make aliases for all the ini settings
- */
-/* {{{ proto void PurpleClient::setUserDir([string $userDir])
-	Define a custom purple settings directory, overriding the default (user's home directory/.purple) */
-PHP_METHOD(PurpleClient, setUserDir) {
-	char *user_dir;
-	int user_dir_len;
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &user_dir, &user_dir_len) == FAILURE) {
-		RETURN_NULL();
-	}
-
-	zend_alter_ini_entry("purple.custom_user_directory",
-	                     sizeof("purple.custom_user_directory"),
-	                     user_dir,
-	                     user_dir_len,
-	                     PHP_INI_ALL,
-	                     PHP_INI_STAGE_RUNTIME);
-	
-	purple_util_set_user_dir(user_dir);
-}
-/* }}} */
-
-
-/* {{{ */
+/* {{{ proto boolean PurpleClient::iterate(void)
+	Do a single glibs main loop iteration
+*/
 PHP_METHOD(PurpleClient, iterate)
 {
 	RETVAL_BOOL(g_main_context_iteration(NULL, 0));
 }
 /* }}} */
+
+
+/* {{{ */
+PHP_METHOD(PurpleClient, set)
+{
+
+}
+/* }}} */
+
+
+/* {{{ */
+PHP_METHOD(PurpleClient, get)
+{
+
+}
+/* }}} */
+
 
 /*
 **

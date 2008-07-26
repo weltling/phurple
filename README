@@ -3,11 +3,14 @@ Please ask your questions using the forums at http://sourceforge.net/projects/ph
 
 Changelog:
 v0.4.0 alpha:
-* libpurple initialization moved from the compile time, to the runtime,
+* libpurple initialization moved from the compile time to the runtime,
   excactly - to the CustomPurpleClient instantiation time
 * PurpleClient::getProtocols() method is no more static
 * PurpleClient::iterate() added
 * PurpleAccount::get() added
+* purple.plugin_save_pref ini setting removed 'cause it's useless
+* PurpleClient::setUserDir 'cause it's duplicating the stadard ini_set
+  way to set ini settings
 
 
 v0.3.0 alpha:

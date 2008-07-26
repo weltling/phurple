@@ -50,13 +50,14 @@ PHP_METHOD(PurpleClient, onSignedOn);
 PHP_METHOD(PurpleClient, runLoop);
 PHP_METHOD(PurpleClient, addAccount);
 PHP_METHOD(PurpleClient, getProtocols);
-PHP_METHOD(PurpleClient, setUserDir);
 PHP_METHOD(PurpleClient, loopCallback);
 PHP_METHOD(PurpleClient, loopHeartBeat);
 PHP_METHOD(PurpleClient, deleteAccount);
 PHP_METHOD(PurpleClient, findAccount);
 PHP_METHOD(PurpleClient, authorizeRequest);
 PHP_METHOD(PurpleClient, iterate);
+PHP_METHOD(PurpleClient, set);
+PHP_METHOD(PurpleClient, get);
 
 PHP_METHOD(PurpleAccount, __construct);
 PHP_METHOD(PurpleAccount, setPassword);
@@ -107,7 +108,6 @@ ZEND_BEGIN_MODULE_GLOBALS(purple)
 	char *custom_user_directory;
 	char *custom_plugin_path;
 	char *ui_id;
-	char *plugin_save_pref;
 	
 	/**
 	 * @todo move the purple_php_client_obj into the ppos struct
@@ -125,7 +125,8 @@ ZEND_END_MODULE_GLOBALS(purple)
 #define PURPLE_INI_CUSTOM_PLUGIN_PATH ""
 #define PURPLE_INI_UI_ID "php"
 #define PURPLE_INI_DEBUG_ENABLED "0"
-#define PURPLE_INI_PLUGIN_SAVE_PREF "/purple/nullclient/plugins/saved"
+
+#define USING_PHP_53 ZEND_MODULE_API_NO >= 20071006
 
 #ifdef ZTS
 #define PURPLE_G(v) TSRMG(purple_globals_id, zend_purple_globals *, v)
