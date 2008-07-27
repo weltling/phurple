@@ -43,10 +43,10 @@ PHP_METHOD(PurpleClient, __construct);
 PHP_METHOD(PurpleClient, getInstance);
 PHP_METHOD(PurpleClient, initInternal);
 PHP_METHOD(PurpleClient, getCoreVersion);
-PHP_METHOD(PurpleClient, connectToSignal);
 PHP_METHOD(PurpleClient, writeConv);
 PHP_METHOD(PurpleClient, writeIM);
 PHP_METHOD(PurpleClient, onSignedOn);
+PHP_METHOD(PurpleClient, onSignedOff);
 PHP_METHOD(PurpleClient, runLoop);
 PHP_METHOD(PurpleClient, addAccount);
 PHP_METHOD(PurpleClient, getProtocols);
@@ -56,8 +56,16 @@ PHP_METHOD(PurpleClient, deleteAccount);
 PHP_METHOD(PurpleClient, findAccount);
 PHP_METHOD(PurpleClient, authorizeRequest);
 PHP_METHOD(PurpleClient, iterate);
-PHP_METHOD(PurpleClient, set);
-PHP_METHOD(PurpleClient, get);
+/*PHP_METHOD(PurpleClient, set);
+PHP_METHOD(PurpleClient, get);*/
+PHP_METHOD(PurpleClient, connect);
+PHP_METHOD(PurpleClient, disconnect);
+PHP_METHOD(PurpleClient, setUserDir);
+PHP_METHOD(PurpleClient, setDebug);
+PHP_METHOD(PurpleClient, setUiId);
+PHP_METHOD(PurpleClient, __clone);
+
+
 
 PHP_METHOD(PurpleAccount, __construct);
 PHP_METHOD(PurpleAccount, setPassword);
@@ -104,11 +112,19 @@ PHP_METHOD(PurpleBuddyGroup, getOnlineCount);
 PHP_METHOD(PurpleBuddyGroup, getName);
 
 ZEND_BEGIN_MODULE_GLOBALS(purple)
-	zend_bool  debug_enabled;
-	char *custom_user_directory;
+
+	/**
+	 * This are ini settings
+	 */
 	char *custom_plugin_path;
+
+	/**
+	 * This are instance specific settings
+	 */
+	char *custom_user_dir;
 	char *ui_id;
-	
+	int debug;
+
 	/**
 	 * @todo move the purple_php_client_obj into the ppos struct
 	 */
@@ -121,11 +137,16 @@ ZEND_BEGIN_MODULE_GLOBALS(purple)
 	} ppos; /*php purple object storage*/
 ZEND_END_MODULE_GLOBALS(purple)
 
-#define PURPLE_INI_CUSTOM_USER_DIRECTORY "/dev/null"
-#define PURPLE_INI_CUSTOM_PLUGIN_PATH ""
-#define PURPLE_INI_UI_ID "php"
-#define PURPLE_INI_DEBUG_ENABLED "0"
+/**
+ * Signal names
+ */
+#define SIGNAL_SIGNED_ON "signed-on"
+#define SIGNAL_SIGNED_OFF "signed-off"
 
+/**
+ * At the moment we only take care about PHP versions 5.3 or 5.2,
+ * mostly because of namespaces. 
+ */
 #define USING_PHP_53 ZEND_MODULE_API_NO >= 20071006
 
 #ifdef ZTS
@@ -135,7 +156,7 @@ ZEND_END_MODULE_GLOBALS(purple)
 #endif
 
 /**
- * @todo At many places this macros is used as follows:
+ * @todo At many places this macros was used as follows:
  * PURPLE_MK_OBJ(return_value, PurpleAccount_ce);
  * But it doesn't really affect the return_value
  * Changing the MAKE_STD_ZVAL to ZVAL_NULL does work, why?

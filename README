@@ -8,9 +8,16 @@ v0.4.0 alpha:
 * PurpleClient::getProtocols() method is no more static
 * PurpleClient::iterate() added
 * PurpleAccount::get() added
+* PurpleClient::PURPLE_STATUS_* constant names changed to PurpleClient::STATUS_*
+* PurpleClient::connectToSignal() removed to simplify code
+* PurpleClient::connect() added
+* PurpleClient::disconnect() added
+* PurpleClient::setUserDir() is no more alias for purple.custom_user_directory
+* PurpleClient::setDebug() added instead of the purple.debug_enabled ini setting
+* PurpleClient::setUiId() added instead of the purple.ui_id ini setting
 * purple.plugin_save_pref ini setting removed 'cause it's useless
-* PurpleClient::setUserDir 'cause it's duplicating the stadard ini_set
-  way to set ini settings
+* purple.custom_plugin_path is the only true ini setting which wasn't deleted
+* PurpleClient::__clone() is now private final
 
 
 v0.3.0 alpha:

@@ -69,6 +69,7 @@ static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInput
 static void purple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime);
 static void purple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime);
 static void purple_php_signed_on_function(PurpleConnection *gc, gpointer null);
+static void purple_php_signed_off_function(PurpleConnection *gc, gpointer null);
 static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... );
 static char *purple_php_tolower(const char *s);
 static char *purple_php_get_protocol_id_by_name(const char *name);
@@ -206,12 +207,13 @@ void php_purple_globals_ctor(zend_purple_globals *purple_globals TSRMLS_DC)
 	
 	zend_hash_init(&(purple_globals->ppos).buddy, 20, NULL, NULL, 0);
 	zend_hash_init(&(purple_globals->ppos).group, 20, NULL, NULL, 0);
-	
-	purple_globals->debug_enabled = 0;
-	purple_globals->custom_user_directory = NULL;
-	purple_globals->custom_plugin_path = NULL;
-	purple_globals->ui_id = NULL;
+
+	purple_globals->debug = 0;
+	purple_globals->custom_user_dir = "/dev/null";
+	purple_globals->custom_plugin_path = "";
+	purple_globals->ui_id = "PHP";
 }
+
 void php_purple_globals_dtor(zend_purple_globals *purple_globals TSRMLS_DC) { }
 
 /* True global resources - no need for thread safety here */
@@ -234,10 +236,10 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, getInstance, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PurpleClient, initInternal, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, getCoreVersion, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
-	PHP_ME(PurpleClient, connectToSignal, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, writeConv, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, writeIM, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, onSignedOn, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PurpleClient, onSignedOff, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, runLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, addAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
@@ -247,8 +249,14 @@ zend_function_entry PurpleClient_methods[] = {
 	PHP_ME(PurpleClient, findAccount, NULL, ZEND_ACC_PUBLIC )
 	PHP_ME(PurpleClient, authorizeRequest, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PurpleClient, iterate, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PurpleClient, set, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PurpleClient, get, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+/*	PHP_ME(PurpleClient, set, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleClient, get, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)*/
+	PHP_ME(PurpleClient, connect, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleClient, disconnect, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PurpleClient, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleClient, setDebug, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleClient, setUiId, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PurpleClient, __clone, NULL, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -359,10 +367,7 @@ ZEND_GET_MODULE(purple)
 
 /* {{{ PHP_INI */
 PHP_INI_BEGIN()
-	STD_PHP_INI_ENTRY("purple.custom_user_directory", PURPLE_INI_CUSTOM_USER_DIRECTORY, PHP_INI_ALL, OnUpdateString, custom_user_directory, zend_purple_globals, purple_globals)
-	STD_PHP_INI_ENTRY("purple.custom_plugin_path", PURPLE_INI_CUSTOM_PLUGIN_PATH, PHP_INI_ALL, OnUpdateString, custom_plugin_path, zend_purple_globals, purple_globals)
-	STD_PHP_INI_ENTRY("purple.ui_id", PURPLE_INI_UI_ID, PHP_INI_ALL, OnUpdateString, ui_id, zend_purple_globals, purple_globals)
-	STD_PHP_INI_BOOLEAN("purple.debug_enabled", PURPLE_INI_DEBUG_ENABLED, PHP_INI_ALL, OnUpdateBool, debug_enabled, zend_purple_globals, purple_globals)
+	STD_PHP_INI_ENTRY("purple.custom_plugin_path", "", PHP_INI_ALL, OnUpdateString, custom_plugin_path, zend_purple_globals, purple_globals)
 PHP_INI_END()
 /* }}} */
 
@@ -420,12 +425,12 @@ PHP_MINIT_FUNCTION(purple)
 	zend_declare_class_constant_long(PurpleClient_ce, "MESSAGE_NO_LINKIFY", sizeof("MESSAGE_NO_LINKIFY")-1, PURPLE_MESSAGE_NO_LINKIFY TSRMLS_CC);
 	zend_declare_class_constant_long(PurpleClient_ce, "MESSAGE_INVISIBLE", sizeof("MESSAGE_INVISIBLE")-1, PURPLE_MESSAGE_INVISIBLE TSRMLS_CC);
 	/* Flags applicable to a status */
-	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_OFFLINE", sizeof("PURPLE_STATUS_OFFLINE")-1, PURPLE_STATUS_OFFLINE TSRMLS_CC);
-	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_AVAILABLE", sizeof("PURPLE_STATUS_AVAILABLE")-1, PURPLE_STATUS_AVAILABLE TSRMLS_CC);
-	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_UNAVAILABLE", sizeof("PURPLE_STATUS_UNAVAILABLE")-1, PURPLE_STATUS_UNAVAILABLE TSRMLS_CC);
-	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_INVISIBLE", sizeof("PURPLE_STATUS_INVISIBLE")-1, PURPLE_STATUS_INVISIBLE TSRMLS_CC);
-	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_AWAY", sizeof("PURPLE_STATUS_AWAY")-1, PURPLE_STATUS_AWAY TSRMLS_CC);
-	zend_declare_class_constant_long(PurpleClient_ce, "PURPLE_STATUS_MOBILE", sizeof("PURPLE_STATUS_MOBILE")-1, PURPLE_STATUS_MOBILE TSRMLS_CC);
+	zend_declare_class_constant_long(PurpleClient_ce, "STATUS_OFFLINE", sizeof("STATUS_OFFLINE")-1, PURPLE_STATUS_OFFLINE TSRMLS_CC);
+	zend_declare_class_constant_long(PurpleClient_ce, "STATUS_AVAILABLE", sizeof("STATUS_AVAILABLE")-1, PURPLE_STATUS_AVAILABLE TSRMLS_CC);
+	zend_declare_class_constant_long(PurpleClient_ce, "STATUS_UNAVAILABLE", sizeof("STATUS_UNAVAILABLE")-1, PURPLE_STATUS_UNAVAILABLE TSRMLS_CC);
+	zend_declare_class_constant_long(PurpleClient_ce, "STATUS_INVISIBLE", sizeof("STATUS_INVISIBLE")-1, PURPLE_STATUS_INVISIBLE TSRMLS_CC);
+	zend_declare_class_constant_long(PurpleClient_ce, "STATUS_AWAY", sizeof("STATUS_AWAY")-1, PURPLE_STATUS_AWAY TSRMLS_CC);
+	zend_declare_class_constant_long(PurpleClient_ce, "STATUS_MOBILE", sizeof("STATUS_MOBILE")-1, PURPLE_STATUS_MOBILE TSRMLS_CC);
 	
 #if USING_PHP_53
 #define PURPLE_CONVERSATION_CLASS_NAME "Conversation"
@@ -589,36 +594,6 @@ PHP_METHOD(PurpleClient, __construct)
 /* }}} */
 
 
-/* {{{ proto int PurpleClient::connectToSignal(string signal)
-	Connects a signal handler to a signal for a particular object */
-PHP_METHOD(PurpleClient, connectToSignal)
-{
-	static int handle;
-	int signal_len;
-	int ret = -1;
-	char *signal;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &signal, &signal_len) == FAILURE) {
-		RETURN_NULL();
-	}
-
-	/**
-	 * @todo connect to other signals
-	 */
-	if(0 == strcmp("signed-on", signal)) {
-		ret = purple_signal_connect(	purple_connections_get_handle(),
-						estrdup(signal),
-						&handle,
-						PURPLE_CALLBACK(purple_php_signed_on_function),
-						NULL
-					);
-	}
-
-	RETURN_LONG(ret);
-}
-/* }}} */
-
-
 /* {{{ proto void PurpleClient::runLoop(int interval)
 	Creates the main loop*/
 PHP_METHOD(PurpleClient, runLoop)
@@ -707,7 +682,7 @@ PHP_METHOD(PurpleClient, addAccount)
 			purple_account_set_int(account, "port", (int)atoi(port));
 		}
 
-		purple_account_set_enabled(account, INI_STR("purple.ui_id"), 1);
+		purple_account_set_enabled(account, PURPLE_G(ui_id), 1);
 
 		purple_accounts_add(account);
 
@@ -830,18 +805,18 @@ PHP_METHOD(PurpleClient, getInstance)
 		/**
 		 * purple initialization stuff
 		 */
-		purple_util_set_user_dir(INI_STR("purple.custom_user_directory"));
-		purple_debug_set_enabled(INI_INT("purple.debug_enabled"));
+		purple_util_set_user_dir(PURPLE_G(custom_user_dir));
+		purple_debug_set_enabled(PURPLE_G(debug));
 		purple_core_set_ui_ops(&php_core_uiops);
 		purple_accounts_set_ui_ops(&php_account_uiops);
 		purple_eventloop_set_ui_ops(&glib_eventloops);
 		purple_plugins_add_search_path(INI_STR("purple.custom_plugin_path"));
 	
-		if (!purple_core_init(INI_STR("purple.ui_id"))) {
+		if (!purple_core_init(PURPLE_G(ui_id))) {
 #ifdef HAVE_SIGNAL_H
 			g_free(segfault_message);
 #endif
-			zend_throw_exception(NULL, "Couldn't initalize the core of libpurple", 0 TSRMLS_CC);
+			zend_throw_exception(NULL, "Couldn't initalize the libpurple core", 0 TSRMLS_CC);
 			RETURN_NULL();
 		}
 	
@@ -862,10 +837,14 @@ PHP_METHOD(PurpleClient, getInstance)
 		zend_class_entry **ce = NULL;
 		zend_hash_find(EG(class_table), "custompurpleclient", sizeof("custompurpleclient"), (void **) &ce);
 
-		if(ce && (*ce)->parent && 0 == strcmp("PurpleClient", (*ce)->parent->name)) {
+		if(ce && (*ce)->parent && 0 == strcmp(PURPLE_CLIENT_CLASS_NAME, (*ce)->parent->name)) {
 			object_init_ex(PURPLE_G(purple_php_client_obj), *ce);
 		} else {
-			zend_throw_exception(NULL, "The PurpleClient child class must be named CustomPurpleClient for php < 5.3", 0 TSRMLS_CC);
+			zend_throw_exception(NULL,
+			                     "The "
+			                     PURPLE_CLIENT_CLASS_NAME
+			                     " child class must be named CustomPurpleClient for PHP < v5.3",
+			                     0 TSRMLS_CC);
 			return;
 		}
 		/* object_init_ex(tmp, EG(current_execute_data->fbc->common.scope)); would be beautiful but works not as expected */
@@ -919,6 +898,54 @@ PHP_METHOD(PurpleClient, getProtocols)
 /* }}} */
 
 
+/* {{{ proto void PurpleClient::setUserDir([string $userDir])
+	Define a custom purple settings directory, overriding the default (user's home directory/.purple) */
+PHP_METHOD(PurpleClient, setUserDir) {
+	char *user_dir;
+	int user_dir_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &user_dir, &user_dir_len) == FAILURE) {
+		return;
+	}
+
+	PURPLE_G(custom_user_dir) = estrdup(user_dir);
+	
+	purple_util_set_user_dir(user_dir);
+}
+/* }}} */
+
+
+PHP_METHOD(PurpleClient, setDebug)
+{
+	zval *debug;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &debug) == FAILURE) {
+		return;
+	}
+
+	if(Z_TYPE_P(debug) == IS_BOOL) {
+		PURPLE_G(debug) = Z_BVAL_P(debug) ? 1 : 0;
+	} else if(Z_TYPE_P(debug) == IS_LONG) {
+		PURPLE_G(debug) = Z_LVAL_P(debug) == 0 ? 0 : 1;
+	} else if(Z_TYPE_P(debug) == IS_DOUBLE) {
+		PURPLE_G(debug) = Z_DVAL_P(debug) == 0 ? 0 : 1;
+	}
+}
+
+
+PHP_METHOD(PurpleClient, setUiId)
+{
+	char *ui_id;
+	int ui_id_len;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &ui_id, &ui_id_len) == FAILURE) {
+		return;
+	}
+
+	PURPLE_G(ui_id) = estrdup(ui_id);
+}
+
+
 /* {{{ proto boolean PurpleClient::iterate(void)
 	Do a single glibs main loop iteration
 */
@@ -930,20 +957,60 @@ PHP_METHOD(PurpleClient, iterate)
 
 
 /* {{{ */
-PHP_METHOD(PurpleClient, set)
+/*PHP_METHOD(PurpleClient, set)
 {
 
-}
+}*/
 /* }}} */
 
 
 /* {{{ */
-PHP_METHOD(PurpleClient, get)
+/*PHP_METHOD(PurpleClient, get)
+{
+
+}*/
+/* }}} */
+
+
+/* {{{ proto void PurpleClient::connect()
+	Connect the client*/
+PHP_METHOD(PurpleClient, connect)
+{
+	zval *this = getThis();
+
+	purple_signal_connect(purple_connections_get_handle(),
+	                      SIGNAL_SIGNED_ON,
+	                      &this,
+	                      PURPLE_CALLBACK(purple_php_signed_on_function),
+	                      NULL
+	                      );
+}
+/* }}} */
+
+
+/* {{{ proto void PurpleClient::disconnect()
+	Close all client connections*/
+PHP_METHOD(PurpleClient, disconnect)
+{
+	zval *this = getThis();
+
+	purple_signal_connect(purple_connections_get_handle(),
+	                      SIGNAL_SIGNED_OFF,
+	                      &this,
+	                      PURPLE_CALLBACK(purple_php_signed_off_function),
+	                      NULL
+	                      );
+}
+/* }}} */
+
+
+/* {{{ proto PurpleClient PurpleClient::__clone()
+	Clone method block, because it's private final*/
+PHP_METHOD(PurpleClient, __clone)
 {
 
 }
 /* }}} */
-
 
 /*
 **
@@ -976,7 +1043,7 @@ PHP_METHOD(PurpleClient, writeIM)
 /* }}} */
 
 /* {{{ proto void PurpleClient::onSignedOn(PurpleConnection connection)
-	This callback is called at the moment, where the client gets singed on, if implemented */
+	This callback is called at the moment, where the client got singed on, if implemented */
 PHP_METHOD(PurpleClient, onSignedOn)
 {
 }
@@ -1014,6 +1081,15 @@ PHP_METHOD(PurpleClient, authorizeRequest)
 	
 }
 /* }}} */
+
+
+/* {{{ */
+PHP_METHOD(PurpleClient, onSignedOff)
+{
+
+}
+/* }}} */
+
 
 /*
 **
@@ -1162,7 +1238,7 @@ PHP_METHOD(PurpleAccount, setEnabled)
 	
 	account = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
 	if(NULL != account) {
-		purple_account_set_enabled(account, INI_STR("purple.ui_id"), (gboolean) enabled);
+		purple_account_set_enabled(account, PURPLE_G(ui_id), (gboolean) enabled);
 	}
 }
 /* }}} */
@@ -2886,6 +2962,41 @@ purple_php_request_authorize(PurpleAccount *account,
 }
 /* }}} */
 
+
+/* {{{ */
+static void
+purple_php_signed_off_function(PurpleConnection *conn, gpointer null)
+{
+	zval *connection, *retval;
+	GList *connections = NULL;
+
+	TSRMLS_FETCH();
+
+	zval *client = PURPLE_G(purple_php_client_obj);
+	zend_class_entry *ce = Z_OBJCE_P(client);
+	
+	connections = purple_connections_get_all();
+
+	PURPLE_MK_OBJ(connection, PurpleConnection_ce);
+	zend_update_property_long(PurpleConnection_ce,
+	                          connection,
+	                          "index",
+	                          sizeof("index")-1,
+	                          (long)g_list_position(connections, g_list_find(connections, conn)) TSRMLS_CC
+	                          );
+
+	call_custom_method(&client,
+	                   ce,
+	                   NULL,
+	                   "onsignedoff",
+	                   sizeof("onsignedoff")-1,
+	                   NULL,
+	                   1,
+	                   &connection);
+	
+	zval_ptr_dtor(&connection);
+}
+/* }}} */
 
 /*
 **

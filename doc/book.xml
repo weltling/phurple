@@ -245,45 +245,6 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-connecttosignal">
-        <refnamediv>
-          <refname>PurpleClient::connectToSignal</refname>
-          <refpurpose>Connects a signal handler to a signal for a particular object</refpurpose>
-        </refnamediv>
-        <refsect1 role="description">
-          <methodsynopsis>
-		  <modifier>final public</modifier>
-            <type>int</type>
-            <methodname>PurpleClient::connectToSignal</methodname>
-            <methodparam>
-              <type>string</type>
-              <parameter>signal</parameter>
-            </methodparam>
-          </methodsynopsis>
-          <para>
-   Connects a signal handler to a signal for a particular object
-  </para>
-        </refsect1>
-        <refsect1 role="parameters">
-          <para>
-            <variablelist>
-              <varlistentry>
-                <term>
-                  <parameter>signal</parameter>
-                </term>
-                <listitem>
-                  <para>
-      </para>
-                </listitem>
-              </varlistentry>
-            </variablelist>
-          </para>
-        </refsect1>
-        <refsect1 role="returnvalues">
-          <para>
-  </para>
-        </refsect1>
-      </refentry>
       <refentry xml:id="purpleclient-getcoreversion">
         <refnamediv>
           <refname>PurpleClient::getCoreVersion</refname>
@@ -337,7 +298,7 @@
       <refentry xml:id="purpleclient-initinternal">
         <refnamediv>
           <refname>PurpleClient::initInternal</refname>
-          <refpurpose>This callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff</refpurpose>
+          <refpurpose>This callback method is called within the PurpleClient::getInstance</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
@@ -347,7 +308,7 @@
             <void/>
           </methodsynopsis>
           <para>
-   This callback method is called within the PurpleClient::getInstance, so if implemented, can initalize some internal stuff
+   This callback method is called within the PurpleClient::getInstance. If implemented, can initalize some internal stuff.
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -447,6 +408,31 @@
           <para>
   </para>
         </refsect1>
+      </refentry>
+      <refentry xml:id="purpleclient-setuserdir">
+	      <refnamediv>
+		      <refname>PurpleClient::setUserDir</refname>
+		      <refpurpose>Define a custom purple settings directory.</refpurpose>
+	      </refnamediv>
+	      <refsect1 role="description">
+		      <methodsynopsis>
+			      <modifier>final public static</modifier>
+			      <type>void</type>
+			      <methodname>PurpleClient::setUserDir</methodname>
+			      <void/>
+		      </methodsynopsis>
+		      <para>
+			      Define a custom purple settings directory. Default is /dev/null.
+		      </para>
+	      </refsect1>
+	      <refsect1 role="parameters">
+		      <para>
+		      </para>
+	      </refsect1>
+	      <refsect1 role="returnvalues">
+		      <para>
+		      </para>
+	      </refsect1>
       </refentry>
       <refentry xml:id="purpleclient-writeconv">
         <refnamediv>
