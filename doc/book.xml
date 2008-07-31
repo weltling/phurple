@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
   <bookinfo>
-    <title>PHPurple Reference</title>
+    <title>Phurple Reference</title>
     <author>
       <firstname>Anatoliy</firstname>
       <surname>Belsky</surname>
@@ -34,17 +34,17 @@
     <title>Common</title>
     <preface id="intro">
       <title>Introduction</title>
-      <para>PHPurple is the libpurple PHP binding, which makes the use of the instant
+      <para>Phurple is the libpurple PHP binding, which makes the use of the instant
 			messaging  protocols such AIM (ICQ, Oscar), MSN, Yahoo etc. in PHP possible. It's implemented as a set of the internal classes.
-			Learn more about the libpurple at <ulink url="http://developer.pidgin.im/wiki/WhatIsLibpurple"><citetitle>http://developer.pidgin.im/wiki/WhatIsLibpurple</citetitle></ulink>.
+			Learn more about the libpurple at <ulink url="http://developer.pidgin.im/wiki/WhatIsLibphurple"><citetitle>http://developer.pidgin.im/wiki/WhatIsLibphurple</citetitle></ulink>.
 			libpurples docs can be found at <ulink url="http://developer.pidgin.im/doxygen/dev/html/files.html"><citetitle>
 			http://developer.pidgin.im/doxygen/dev/html/files.html</citetitle></ulink>
 		</para>
 		<para>
-			Actually, the PHPurple is using the g_main_loop_run() function from the GLib to run the main loop. This makes impossible to use it within some webserver process. One of the possible models to use the extension for some web application could be AJAX web interface, which communicates with the PHPurple through the inetd sevice. At the moment I'm working on the possibility to integrate the glibs main loop into some other main loop, which could give a chance to use this extension within a webserver (may be even multithreaded).
+			Actually, the Phurple is using the g_main_loop_run() function from the GLib to run the main loop. This makes impossible to use it within some webserver process. One of the possible models to use the extension for some web application could be AJAX web interface, which communicates with the Phurple through the inetd sevice. At the moment I'm working on the possibility to integrate the glibs main loop into some other main loop, which could give a chance to use this extension within a webserver (may be even multithreaded).
 		</para>
 		<para>
-			The last development news can be found at <ulink url="http://thinker.rubay.de/"><citetitle>http://thinker.rubay.de/</citetitle></ulink> or at <ulink url="http://sourceforge.net/projects/phpurple/"><citetitle>http://sourceforge.net/projects/phpurple/</citetitle></ulink>
+			The last development news can be found at <ulink url="http://thinker.rubay.de/"><citetitle>http://thinker.rubay.de/</citetitle></ulink> or at <ulink url="http://sourceforge.net/projects/phphurple/"><citetitle>http://sourceforge.net/projects/phphurple/</citetitle></ulink>
 		</para>
     </preface>
     <chapter id="requirements">
@@ -67,12 +67,12 @@
   <para><code>user@host~# ./configure --enable-gnutls=yes --enable-nss=no --disable-gtkui --disable-consoleui --disable-screensaver --disable-sm --without-x --prefix=/usr</code></para>
 <para>This will compile only libpurple. Otherwise, if you have already pidgin installed, libpurple is normally present in the /usr/lib or /usr/local/lib.</para>
 <para></para>
-<para>While within PHPurple dir, invoke:</para>
-<para><code> user@host~# phpize &amp;&amp; ./configure --enable-purple &amp;&amp; make &amp;&amp; make install</code></para>
+<para>While within Phurple dir, invoke:</para>
+<para><code> user@host~# phpize &amp;&amp; ./configure --enable-phurple &amp;&amp; make &amp;&amp; make install</code></para>
 <para>Since the extension is installed, you can simply add a line in your php.ini with which it'll be loaded by default. An other way would be to use the dl() php function at the top of your script</para>
 <example><programlisting>&lt;?php
-	if(!extension_loaded('purple')) {
-		dl('purple.' . PHP_SHLIB_SUFFIX);
+	if(!extension_loaded('phurple')) {
+		dl('phurple.' . PHP_SHLIB_SUFFIX);
 	}
 ?&gt;</programlisting></example>
 <para>Note, that since the windows variant isn't exists yet, there are no installation instructions for this. Any help with windows builds is appreciated.</para>
@@ -81,21 +81,17 @@
       <title>Runtime Configuration</title>
       <table border="1" cellpadding="3">
 	      <tr><td>Name</td><td>Default</td><td>Changeable</td><td>Changelog</td></tr>
-	      <tr><td>purple.custom_user_directory</td><td>"/dev/null"</td><td>PHP_INI_ALL</td><td></td></tr>
-	      <tr><td>purple.custom_plugin_path</td><td>""</td><td>PHP_INI_ALL</td><td></td></tr>
-	      <tr><td>purple.ui_id</td><td>php</td><td>PHP_INI_ALL</td><td></td></tr>
-	      <tr><td>purple.debug_enabled</td><td>"0"</td><td>PHP_INI_ALL</td><td></td></tr>
-	      <tr><td>purple.plugin_save_pref</td><td>"/purple/nullclient/plugins/saved"</td><td>PHP_INI_ALL</td><td></td></tr>
+	      <tr><td>phurple.custom_plugin_path</td><td>""</td><td>PHP_INI_ALL</td><td></td></tr>
       </table>
     </chapter>
     <chapter id="examples">
       <title>Examples</title>
       <example><programlisting>&lt;?php
-		if(!extension_loaded('purple')) {
-		dl('purple.' . PHP_SHLIB_SUFFIX);
+		if(!extension_loaded('phurple')) {
+		dl('phurple.' . PHP_SHLIB_SUFFIX);
 		}
 		
-		class CustomPurpleClient extends PurpleClient {
+		class CustomPhurpleClient extends PhurpleClient {
 		
 			private $someVar;
 		
@@ -106,7 +102,7 @@
 			
 			protected function writeIM($conversation, $buddy, $message, $flags, $time)
 			{
-				if(PurpleClient::MESSAGE_RECV == $flags) {
+				if(PhurpleClient::MESSAGE_RECV == $flags) {
 					printf(	"(%s) %s %s: %s\n",
 								$conversation->getName() ? $conversation->getName() : $buddy->getName(),
 								date("H:i:s", $time),
@@ -129,24 +125,24 @@
 		
 		try {
 	
-			$user_dir = "/tmp/phpurple-test";
+			$user_dir = "/tmp/phphurple-test";
 			if(!file_exists($user_dir) || !is_dir($user_dir)) {
 				mkdir($user_dir);
 			}
 		
-			ini_set("purple.custom_user_directory", $user_dir);
+			PhurpleClient::setUserDir($user_dir);
+			PhurpleClient::setDebug(true);
+			PhurpleClient::setUiId("TestUI");
 		
-			PurpleBuddyList::load();
-		
-			$client = CustomPurpleClient::getInstance();
+			$client = CustomPhurpleClient::getInstance();
 			
 			$client->addAccount("msn://nick@hotmail.com:password@messenger.hotmail.com:1863");
 			
-			$client->connectToSignal("signed-on");
+			$client->connect();
 	
 			$client->runLoop();
 		} catch (Exception $e) {
-			echo "[Purple]: " . $e->getMessage() . "\n";
+			echo "[Phurple]: " . $e->getMessage() . "\n";
 			die();
 		}
 ?&gt;</programlisting></example>
@@ -155,17 +151,17 @@
   <part>
     <title>Classes Reference</title>
     <reference id="client">
-      <title>PurpleClient</title>
-      <refentry xml:id="purpleclient-__construct">
+      <title>PhurpleClient</title>
+      <refentry xml:id="phurpleclient-__construct">
         <refnamediv>
-          <refname>PurpleClient::__construct</refname>
+          <refname>PhurpleClient::__construct</refname>
           <refpurpose>Constructor</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
             <modifier>final protected</modifier>
-            <type>PurpleClient</type>
-            <methodname>PurpleClient::__construct</methodname>
+            <type>PhurpleClient</type>
+            <methodname>PhurpleClient::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -181,20 +177,20 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-getinstance">
+      <refentry xml:id="phurpleclient-getinstance">
         <refnamediv>
-          <refname>PurpleClient::getInstance</refname>
-          <refpurpose>Creates new PurpleClient instance</refpurpose>
+          <refname>PhurpleClient::getInstance</refname>
+          <refpurpose>Creates new PhurpleClient instance</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 	<modifier>public static</modifier>
-            <type>PurpleClient</type>
-            <methodname>PurpleClient::getInstance</methodname>
+            <type>PhurpleClient</type>
+            <methodname>PhurpleClient::getInstance</methodname>
             <void/>
           </methodsynopsis>
           <para>
-   Creates new PurpleClient instance
+   Creates new PhurpleClient instance
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -206,16 +202,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-addaccount">
+      <refentry xml:id="phurpleclient-addaccount">
         <refnamediv>
-          <refname>PurpleClient::addAccount</refname>
+          <refname>PhurpleClient::addAccount</refname>
           <refpurpose>Adds a new account to the current client</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>PurpleClient::addAccount</methodname>
+            <methodname>PhurpleClient::addAccount</methodname>
             <methodparam>
               <type>string</type>
               <parameter>dsn</parameter>
@@ -245,16 +241,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-getcoreversion">
+      <refentry xml:id="phurpleclient-getcoreversion">
         <refnamediv>
-          <refname>PurpleClient::getCoreVersion</refname>
+          <refname>PhurpleClient::getCoreVersion</refname>
           <refpurpose>Returns the libpurple core version string</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>final public</modifier>
             <type>string</type>
-            <methodname>PurpleClient::getCoreVersion</methodname>
+            <methodname>PhurpleClient::getCoreVersion</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -270,16 +266,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-getprotocols">
+      <refentry xml:id="phurpleclient-getprotocols">
         <refnamediv>
-          <refname>PurpleClient::getProtocols</refname>
+          <refname>PhurpleClient::getProtocols</refname>
           <refpurpose>Returns a list of all valid protocol plugins</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>final public static</modifier>
             <type>array</type>
-            <methodname>PurpleClient::getProtocols</methodname>
+            <methodname>PhurpleClient::getProtocols</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -295,20 +291,20 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-initinternal">
+      <refentry xml:id="phurpleclient-initinternal">
         <refnamediv>
-          <refname>PurpleClient::initInternal</refname>
-          <refpurpose>This callback method is called within the PurpleClient::getInstance</refpurpose>
+          <refname>PhurpleClient::initInternal</refname>
+          <refpurpose>This callback method is called within the PhurpleClient::getInstance</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>PurpleClient::initInternal</methodname>
+            <methodname>PhurpleClient::initInternal</methodname>
             <void/>
           </methodsynopsis>
           <para>
-   This callback method is called within the PurpleClient::getInstance. If implemented, can initalize some internal stuff.
+   This callback method is called within the PhurpleClient::getInstance. If implemented, can initalize some internal stuff.
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -320,20 +316,20 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-loopcallback">
+      <refentry xml:id="phurpleclient-loopcallback">
         <refnamediv>
-          <refname>PurpleClient::loopCallback</refname>
-          <refpurpose>This callback method is called within the PurpleClient::runLoop</refpurpose>
+          <refname>PhurpleClient::loopCallback</refname>
+          <refpurpose>This callback method is called within the PhurpleClient::runLoop</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>PurpleClient::loopCallback</methodname>
+            <methodname>PhurpleClient::loopCallback</methodname>
             <void/>
           </methodsynopsis>
           <para>
-   This callback method is called within the PurpleClient::runLoop
+   This callback method is called within the PhurpleClient::runLoop
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -345,20 +341,20 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-loopheartbeat">
+      <refentry xml:id="phurpleclient-loopheartbeat">
 	      <refnamediv>
-		      <refname>PurpleClient::loopHeartBeat</refname>
+		      <refname>PhurpleClient::loopHeartBeat</refname>
 		      <refpurpose>This callback method is being called as timer</refpurpose>
 	      </refnamediv>
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>protected</modifier>
 			      <type>void</type>
-			      <methodname>PurpleClient::loopHeartBeat</methodname>
+			      <methodname>PhurpleClient::loopHeartBeat</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
-			      This callback method is being called with timeout(set as param in PurpleClient::runLoop)
+			      This callback method is being called with timeout(set as param in PhurpleClient::runLoop)
 		      </para>
 	      </refsect1>
 	      <refsect1 role="parameters">
@@ -370,16 +366,16 @@
 		      </para>
 	      </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-runloop">
+      <refentry xml:id="phurpleclient-runloop">
         <refnamediv>
-          <refname>PurpleClient::runLoop</refname>
+          <refname>PhurpleClient::runLoop</refname>
           <refpurpose>Creates the main loop</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>final public</modifier>
             <type>void</type>
-            <methodname>PurpleClient::runLoop</methodname>
+            <methodname>PhurpleClient::runLoop</methodname>
 	    <methodparam>
 		    <type>int</type>
 		    <parameter>interval</parameter>
@@ -409,20 +405,20 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-setuserdir">
+      <refentry xml:id="phurpleclient-setuserdir">
 	      <refnamediv>
-		      <refname>PurpleClient::setUserDir</refname>
-		      <refpurpose>Define a custom purple settings directory.</refpurpose>
+		      <refname>PhurpleClient::setUserDir</refname>
+		      <refpurpose>Define a custom phurple settings directory.</refpurpose>
 	      </refnamediv>
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>final public static</modifier>
 			      <type>void</type>
-			      <methodname>PurpleClient::setUserDir</methodname>
+			      <methodname>PhurpleClient::setUserDir</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
-			      Define a custom purple settings directory. Default is /dev/null.
+			      Define a custom phurple settings directory. Default is /dev/null.
 		      </para>
 	      </refsect1>
 	      <refsect1 role="parameters">
@@ -434,22 +430,22 @@
 		      </para>
 	      </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-writeconv">
+      <refentry xml:id="phurpleclient-writeconv">
         <refnamediv>
-          <refname>PurpleClient::writeConv</refname>
+          <refname>PhurpleClient::writeConv</refname>
           <refpurpose>This callback method writes to the conversation, if implemented</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>PurpleClient::writeConv</methodname>
+            <methodname>PhurpleClient::writeConv</methodname>
             <methodparam>
-              <type>PurpleConversation</type>
+              <type>PhurpleConversation</type>
               <parameter>conversation</parameter>
             </methodparam>
             <methodparam>
-              <type>PurplePuddy</type>
+              <type>PhurplePuddy</type>
               <parameter>buddy</parameter>
             </methodparam>
             <methodparam>
@@ -525,22 +521,22 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleclient-writeim">
+      <refentry xml:id="phurpleclient-writeim">
         <refnamediv>
-          <refname>PurpleClient::writeIM</refname>
+          <refname>PhurpleClient::writeIM</refname>
           <refpurpose>This callback method writes to the conversation, if implemented</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>protected</modifier>
             <type>void</type>
-            <methodname>PurpleClient::writeIM</methodname>
+            <methodname>PhurpleClient::writeIM</methodname>
             <methodparam>
-              <type>PurpleConversation</type>
+              <type>PhurpleConversation</type>
               <parameter>conversation</parameter>
             </methodparam>
             <methodparam>
-              <type>PurplePuddy</type>
+              <type>PhurplePuddy</type>
               <parameter>buddy</parameter>
             </methodparam>
             <methodparam>
@@ -616,17 +612,17 @@
   </para>
         </refsect1>
       </refentry>
-<refentry xml:id="purpleclient-onsignedon">
+<refentry xml:id="phurpleclient-onsignedon">
  <refnamediv>
-  <refname>PurpleClient::onSignedOn</refname>
+  <refname>PhurpleClient::onSignedOn</refname>
   <refpurpose>This callback is called at the moment, where the client gets singed on, if implemented</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   <methodsynopsis>
 	<modifier>protected</modifier>
-   <type>void</type><methodname>PurpleClient::onSignedOn</methodname>
-   <methodparam><type>PurpleConnection</type><parameter>connection</parameter></methodparam>
+   <type>void</type><methodname>PhurpleClient::onSignedOn</methodname>
+   <methodparam><type>PhurpleConnection</type><parameter>connection</parameter></methodparam>
   </methodsynopsis>
   <para>
    This callback is called at the moment, where the client gets singed on, if implemented
@@ -652,16 +648,16 @@
   </para>
  </refsect1>
 </refentry>
-<refentry xml:id="purpleclient-deleteaccount">
+<refentry xml:id="phurpleclient-deleteaccount">
  <refnamediv>
-  <refname>PurpleClient::deleteAccount</refname>
+  <refname>PhurpleClient::deleteAccount</refname>
   <refpurpose>Removes an account from the list of accounts</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
       <modifier>public</modifier>
-   <type>void</type><methodname>PurpleClient::deleteAccount</methodname>
-   <methodparam><type>PurpleAccount</type><parameter>account</parameter></methodparam>
+   <type>void</type><methodname>PhurpleClient::deleteAccount</methodname>
+   <methodparam><type>PhurpleAccount</type><parameter>account</parameter></methodparam>
   </methodsynopsis>
   <para>
    Removes an account from the list of accounts
@@ -685,16 +681,16 @@
   </para>
  </refsect1>
 </refentry>
-<refentry xml:id="purpleclient-findaccount">
+<refentry xml:id="phurpleclient-findaccount">
  <refnamediv>
-  <refname>PurpleClient::findAccount</refname>
+  <refname>PhurpleClient::findAccount</refname>
   <refpurpose>Finds the specified account in the accounts list</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   <methodsynopsis>
       <modifier>public</modifier>
-   <type>PurpleAccount</type><methodname>PurpleClient::findAccount</methodname>
+   <type>PhurpleAccount</type><methodname>PhurpleClient::findAccount</methodname>
    <methodparam><type>string</type><parameter>name</parameter></methodparam>
   </methodsynopsis>
   <para>
@@ -719,17 +715,17 @@
   </para>
  </refsect1>
 </refentry>
-<refentry xml:id="purpleclient-authorizerequest">
+<refentry xml:id="phurpleclient-authorizerequest">
  <refnamediv>
-  <refname>PurpleClient::authorizeRequest</refname>
+  <refname>PhurpleClient::authorizeRequest</refname>
   <refpurpose>This callback method is invoked, when someone adds us to his buddy list</refpurpose>
  </refnamediv>
 
  <refsect1 role="description">
   <methodsynopsis>
       <modifier>protected</modifier>
-   <type>boolean</type><methodname>PurpleClient::authorizeRequest</methodname>
-   <methodparam><type>PurpleAccount</type><parameter>account</parameter></methodparam>
+   <type>boolean</type><methodname>PhurpleClient::authorizeRequest</methodname>
+   <methodparam><type>PhurpleAccount</type><parameter>account</parameter></methodparam>
    <methodparam><type>string</type><parameter>remote_user</parameter></methodparam>
    <methodparam><type>string</type><parameter>message</parameter></methodparam>
    <methodparam><type>boolean</type><parameter>on_list</parameter></methodparam>
@@ -780,17 +776,17 @@
 </refentry>
     </reference>
     <reference id="account">
-      <title>PurpleAccount</title>
-      <refentry xml:id="purpleaccount-construct">
+      <title>PhurpleAccount</title>
+      <refentry xml:id="phurpleaccount-construct">
         <refnamediv>
-          <refname>PurpleAccount::__construct</refname>
+          <refname>PhurpleAccount::__construct</refname>
           <refpurpose>Creates a new account</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>PurpleAccount::__construct</methodname>
+            <methodname>PhurpleAccount::__construct</methodname>
             <methodparam>
               <type>string</type>
               <parameter>user_name</parameter>
@@ -833,18 +829,18 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleaccount-addbuddy">
+      <refentry xml:id="phurpleaccount-addbuddy">
         <refnamediv>
-          <refname>PurpleAccount::addBuddy</refname>
+          <refname>PhurpleAccount::addBuddy</refname>
           <refpurpose>Adds a buddy to the server-side buddy list for the specified account</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>bool</type>
-            <methodname>PurpleAccount::addBuddy</methodname>
+            <methodname>PhurpleAccount::addBuddy</methodname>
             <methodparam>
-              <type>PurpleBuddy</type>
+              <type>PhurpleBuddy</type>
               <parameter>buddy</parameter>
             </methodparam>
           </methodsynopsis>
@@ -872,18 +868,18 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleaccount-removebuddy">
+      <refentry xml:id="phurpleaccount-removebuddy">
         <refnamediv>
-          <refname>PurpleAccount::removeBuddy</refname>
+          <refname>PhurpleAccount::removeBuddy</refname>
           <refpurpose>Removes a buddy from the server-side buddy list for the specified account</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>bool</type>
-            <methodname>PurpleAccount::removeBuddy</methodname>
+            <methodname>PhurpleAccount::removeBuddy</methodname>
             <methodparam>
-              <type>PurpleBuddy</type>
+              <type>PhurpleBuddy</type>
               <parameter>buddy</parameter>
             </methodparam>
           </methodsynopsis>
@@ -911,16 +907,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleaccount-setpassword">
+      <refentry xml:id="phurpleaccount-setpassword">
         <refnamediv>
-          <refname>PurpleAccount::setPassword</refname>
+          <refname>PhurpleAccount::setPassword</refname>
           <refpurpose>Sets the account's password</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>PurpleAccount::setPassword</methodname>
+            <methodname>PhurpleAccount::setPassword</methodname>
             <methodparam>
               <type>int</type>
               <parameter>account</parameter>
@@ -963,16 +959,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleaccount-setenabled">
+      <refentry xml:id="phurpleaccount-setenabled">
         <refnamediv>
-          <refname>PurpleAccount::setEnabled</refname>
+          <refname>PhurpleAccount::setEnabled</refname>
           <refpurpose>Sets whether or not this account is enabled for some UI</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>PurpleAccount::setEnabled</methodname>
+            <methodname>PhurpleAccount::setEnabled</methodname>
             <methodparam>
               <type>bool</type>
               <parameter>enabled</parameter>
@@ -1002,16 +998,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleaccount-isconnected">
+      <refentry xml:id="phurpleaccount-isconnected">
         <refnamediv>
-          <refname>PurpleAccount::isConnected</refname>
+          <refname>PhurpleAccount::isConnected</refname>
           <refpurpose>Returns whether or not the account is connected</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>bool</type>
-            <methodname>PurpleAccount::isConnected</methodname>
+            <methodname>PhurpleAccount::isConnected</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1027,9 +1023,9 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleaccount-clearsettings">
+      <refentry xml:id="phurpleaccount-clearsettings">
 	      <refnamediv>
-		      <refname>PurpleAccount::clearSettings</refname>
+		      <refname>PhurpleAccount::clearSettings</refname>
 		      <refpurpose>Clears all protocol-specific settings on an account.</refpurpose>
 	      </refnamediv>
 	      
@@ -1037,7 +1033,7 @@
 		      <methodsynopsis>
 			      <modifier>public</modifier>
 			      <type>void</type>
-			      <methodname>PurpleAccount::clearSettings</methodname>
+			      <methodname>PhurpleAccount::clearSettings</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1054,9 +1050,9 @@
 		      <para>
 		      </para>
 	      </refsect1></refentry>
-      <refentry xml:id="purpleaccount-set">
+      <refentry xml:id="phurpleaccount-set">
 	      <refnamediv>
-		      <refname>PurpleAccount::set</refname>
+		      <refname>PhurpleAccount::set</refname>
 		      <refpurpose>Sets a protocol-specific setting for an account.</refpurpose>
 	      </refnamediv>
 	      
@@ -1064,7 +1060,7 @@
 		      <methodsynopsis>
 			      <modifier>public</modifier>
 			      <type>void</type>
-			      <methodname>PurpleAccount::set</methodname>
+			      <methodname>PhurpleAccount::set</methodname>
 			      <methodparam><type>string</type><parameter>name</parameter></methodparam>
 			      <methodparam><type>string</type><parameter>value</parameter></methodparam>
 		      </methodsynopsis>
@@ -1100,15 +1096,15 @@
 		      </para>
 	      </refsect1>
 </refentry>
-<refentry xml:id="purpleaccount-isconnecting">
+<refentry xml:id="phurpleaccount-isconnecting">
  <refnamediv>
-  <refname>PurpleAccount::isConnecting</refname>
+  <refname>PhurpleAccount::isConnecting</refname>
   <refpurpose>Returns whether or not the account is connecting</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
       <modifier>public</modifier>
-   <type>boolean</type><methodname>PurpleAccount::isConnecting</methodname>
+   <type>boolean</type><methodname>PhurpleAccount::isConnecting</methodname>
    <void/>
   </methodsynopsis>
   <para>
@@ -1126,15 +1122,15 @@
   </para>
  </refsect1>
 </refentry>
-<refentry xml:id="purpleaccount-getusername">
+<refentry xml:id="phurpleaccount-getusername">
  <refnamediv>
-  <refname>PurpleAccount::getUserName</refname>
+  <refname>PhurpleAccount::getUserName</refname>
   <refpurpose>Returns the account's username</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
       <modifier>public</modifier>
-   <type>string</type><methodname>PurpleAccount::getUserName</methodname>
+   <type>string</type><methodname>PhurpleAccount::getUserName</methodname>
    <void/>
   </methodsynopsis>
   <para>
@@ -1150,15 +1146,15 @@
   </para>
  </refsect1>
 </refentry>
-<refentry xml:id="purpleaccount-getpassword">
+<refentry xml:id="phurpleaccount-getpassword">
  <refnamediv>
-  <refname>PurpleAccount::getPassword</refname>
+  <refname>PhurpleAccount::getPassword</refname>
   <refpurpose>Returns the account's password</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
       <modifier>public</modifier>
-   <type>string</type><methodname>PurpleAccount::getPassword</methodname>
+   <type>string</type><methodname>PhurpleAccount::getPassword</methodname>
    <void/>
   </methodsynopsis>
   <para>
@@ -1176,17 +1172,17 @@
 </refentry>
     </reference>
     <reference id="connection">
-      <title>PurpleConnection</title>
-      <refentry xml:id="purpleconnection-construct">
+      <title>PhurpleConnection</title>
+      <refentry xml:id="phurpleconnection-construct">
         <refnamediv>
-          <refname>PurpleConnection::__construct</refname>
+          <refname>PhurpleConnection::__construct</refname>
           <refpurpose>constructor</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>PurpleConnection::__construct</methodname>
+            <methodname>PhurpleConnection::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1202,16 +1198,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleconnection-getaccount">
+      <refentry xml:id="phurpleconnection-getaccount">
         <refnamediv>
-          <refname>PurpleConnection::getAccount</refname>
+          <refname>PhurpleConnection::getAccount</refname>
           <refpurpose>Returns the connection's account</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
-            <type>PurpleAccount</type>
-            <methodname>PurpleConnection::getAccount</methodname>
+            <type>PhurpleAccount</type>
+            <methodname>PhurpleConnection::getAccount</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1229,23 +1225,23 @@
       </refentry>
     </reference>
     <reference id="conversation">
-      <title>PurpleConversation</title>
-      <refentry xml:id="purpleconversation-construct">
+      <title>PhurpleConversation</title>
+      <refentry xml:id="phurpleconversation-construct">
         <refnamediv>
-          <refname>PurpleConversation::__construct</refname>
+          <refname>PhurpleConversation::__construct</refname>
           <refpurpose>Creates a new conversation of the specified type</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>int</type>
-            <methodname>PurpleConversation::__construct</methodname>
+            <methodname>PhurpleConversation::__construct</methodname>
             <methodparam>
               <type>int</type>
               <parameter>type</parameter>
             </methodparam>
             <methodparam>
-              <type>PurpleAccount</type>
+              <type>PhurpleAccount</type>
               <parameter>account</parameter>
             </methodparam>
             <methodparam>
@@ -1295,16 +1291,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleconversation-getname">
+      <refentry xml:id="phurpleconversation-getname">
         <refnamediv>
-          <refname>PurpleConversation::getName</refname>
+          <refname>PhurpleConversation::getName</refname>
           <refpurpose>Returns the specified conversation's name</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>PurpleConversation::getName</methodname>
+            <methodname>PhurpleConversation::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1320,16 +1316,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleconversation-sendim">
+      <refentry xml:id="phurpleconversation-sendim">
         <refnamediv>
-          <refname>PurpleConversation::sendIM</refname>
+          <refname>PhurpleConversation::sendIM</refname>
           <refpurpose>Sends a message to this IM conversation</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>PurpleConversation::sendIM</methodname>
+            <methodname>PhurpleConversation::sendIM</methodname>
             <methodparam>
               <type>string</type>
               <parameter>message</parameter>
@@ -1359,23 +1355,23 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleconversation-setaccount">
+      <refentry xml:id="phurpleconversation-setaccount">
         <refnamediv>
-          <refname> PurpleConversation::setAccount</refname>
-          <refpurpose>Sets the specified conversation's purple_account</refpurpose>
+          <refname> PhurpleConversation::setAccount</refname>
+          <refpurpose>Sets the specified conversation's phurple_account</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>PurpleConversation::setAccount</methodname>
+            <methodname>PhurpleConversation::setAccount</methodname>
             <methodparam>
-              <type>PurpleAccount</type>
+              <type>PhurpleAccount</type>
               <parameter>account</parameter>
             </methodparam>
           </methodsynopsis>
           <para>
-   Sets the specified conversation's purple_account
+   Sets the specified conversation's phurple_account
   </para>
         </refsect1>
         <refsect1 role="parameters">
@@ -1398,17 +1394,17 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purpleconversation-getaccount">
+      <refentry xml:id="phurpleconversation-getaccount">
 	      <refnamediv>
-		      <refname>PurpleConversation::getAccount</refname>
+		      <refname>PhurpleConversation::getAccount</refname>
 		      <refpurpose>Gets the account of this conversation</refpurpose>
 	      </refnamediv>
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>public</modifier>
-			      <type>PurpleAccount</type>
-			      <methodname>PurpleConversation::getAccount</methodname>
+			      <type>PhurpleAccount</type>
+			      <methodname>PhurpleConversation::getAccount</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1427,19 +1423,19 @@
 	      </refsect1></refentry>
     </reference>
     <reference id="buddy">
-      <title>PurpleBuddy</title>
-      <refentry xml:id="purplebuddy-construct">
+      <title>PhurpleBuddy</title>
+      <refentry xml:id="phurplebuddy-construct">
         <refnamediv>
-          <refname>PurpleBuddy::__construct</refname>
+          <refname>PhurpleBuddy::__construct</refname>
           <refpurpose>Creates new buddy</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>PurpleBuddy::__construct</methodname>
+            <methodname>PhurpleBuddy::__construct</methodname>
             <methodparam>
-              <type>PurpleAccount</type>
+              <type>PhurpleAccount</type>
               <parameter>account</parameter>
             </methodparam>
             <methodparam>
@@ -1493,16 +1489,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddy-getaccount">
+      <refentry xml:id="phurplebuddy-getaccount">
         <refnamediv>
-          <refname>PurpleBuddy::getAccount</refname>
+          <refname>PhurpleBuddy::getAccount</refname>
           <refpurpose>gets buddy's account</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
-            <type>PurpleAccount</type>
-            <methodname>PurpleBuddy::getAccount</methodname>
+            <type>PhurpleAccount</type>
+            <methodname>PhurpleBuddy::getAccount</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1518,16 +1514,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddy-getalias">
+      <refentry xml:id="phurplebuddy-getalias">
         <refnamediv>
-          <refname>PurpleBuddy::getAlias</refname>
+          <refname>PhurpleBuddy::getAlias</refname>
           <refpurpose>gets buddy alias</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>PurpleBuddy::getAlias</methodname>
+            <methodname>PhurpleBuddy::getAlias</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1543,16 +1539,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddy-getname">
+      <refentry xml:id="phurplebuddy-getname">
         <refnamediv>
-          <refname>PurpleBuddy::getName</refname>
+          <refname>PhurpleBuddy::getName</refname>
           <refpurpose>Gets buddy name</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>PurpleBuddy::getName</methodname>
+            <methodname>PhurpleBuddy::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1568,17 +1564,17 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddy-getgroup">
+      <refentry xml:id="phurplebuddy-getgroup">
 	      <refnamediv>
-		      <refname>PurpleBuddy::getGroup</refname>
+		      <refname>PhurpleBuddy::getGroup</refname>
 		      <refpurpose>Gets buddy's group</refpurpose>
 	      </refnamediv>
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>public</modifier>
-			      <type>PurpleGroup</type>
-			      <methodname>PurpleBuddy::getGroup</methodname>
+			      <type>PhurpleGroup</type>
+			      <methodname>PhurpleBuddy::getGroup</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1596,9 +1592,9 @@
 		      </para>
 	      </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddy-isonline">
+      <refentry xml:id="phurplebuddy-isonline">
 	      <refnamediv>
-		      <refname>PurpleBuddy::isOnline</refname>
+		      <refname>PhurpleBuddy::isOnline</refname>
 		      <refpurpose>Checks weither the buddy is online</refpurpose>
 	      </refnamediv>
 	      
@@ -1606,7 +1602,7 @@
 		      <methodsynopsis>
 			      <modifier>public</modifier>
 			      <type>bool</type>
-			      <methodname>PurpleBuddy::isOnline</methodname>
+			      <methodname>PhurpleBuddy::isOnline</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1626,17 +1622,17 @@
 </refentry>
     </reference>
     <reference id="buddylist">
-      <title>PurpleBuddyList</title>
-      <refentry xml:id="purplebuddylist-construct">
+      <title>PhurpleBuddyList</title>
+      <refentry xml:id="phurplebuddylist-construct">
         <refnamediv>
-          <refname>PurpleBuddyList::__construct</refname>
+          <refname>PhurpleBuddyList::__construct</refname>
           <refpurpose>should newer be called</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		<modifier>private</modifier>
-            <type>PurpleBuddyList</type>
-            <methodname>PurpleBuddyList::__construct</methodname>
+            <type>PhurpleBuddyList</type>
+            <methodname>PhurpleBuddyList::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1652,16 +1648,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddylist-load">
+      <refentry xml:id="phurplebuddylist-load">
 	      <refnamediv>
-		      <refname>PurpleBuddyList::load</refname>
+		      <refname>PhurpleBuddyList::load</refname>
 		      <refpurpose>loads the blist.xml from the homedir</refpurpose>
 	      </refnamediv>
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>public final static</modifier>
 			      <type>void</type>
-			      <methodname>PurpleBuddyList::load</methodname>
+			      <methodname>PhurpleBuddyList::load</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
@@ -1677,22 +1673,22 @@
 		      </para>
 	      </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddylist-addbuddy">
+      <refentry xml:id="phurplebuddylist-addbuddy">
         <refnamediv>
-          <refname>PurpleBuddyList::addBuddy</refname>
+          <refname>PhurpleBuddyList::addBuddy</refname>
           <refpurpose>adds the buddy to the blist (optionally to the given group in the blist, not implemented yet)</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>final public static</modifier>
             <type>bool</type>
-            <methodname>PurpleBuddyList::addBuddy</methodname>
+            <methodname>PhurpleBuddyList::addBuddy</methodname>
             <methodparam>
-              <type>PurpleBuddy</type>
+              <type>PhurpleBuddy</type>
               <parameter>buddy</parameter>
             </methodparam>
             <methodparam choice="opt">
-              <type>PurpleGroup</type>
+              <type>PhurpleGroup</type>
               <parameter>group</parameter>
             </methodparam>
           </methodsynopsis>
@@ -1729,16 +1725,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddylist-addgroup">
+      <refentry xml:id="phurplebuddylist-addgroup">
         <refnamediv>
-          <refname>PurpleBuddyList::addGroup</refname>
+          <refname>PhurpleBuddyList::addGroup</refname>
           <refpurpose>Adds new group to the blist</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>final public static</modifier>
             <type>bool</type>
-            <methodname>PurpleBuddyList::addGroup</methodname>
+            <methodname>PhurpleBuddyList::addGroup</methodname>
             <methodparam>
               <type>string</type>
               <parameter>name</parameter>
@@ -1768,17 +1764,17 @@
   </para>
         </refsect1>
       </refentry>
-<refentry xml:id="purplebuddylist-findbuddy">
+<refentry xml:id="phurplebuddylist-findbuddy">
  <refnamediv>
-  <refname>PurpleBuddyList::findBuddy</refname>
+  <refname>PhurpleBuddyList::findBuddy</refname>
   <refpurpose>returns the buddy, if found</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
 	  <modifier>final public static</modifier>
-   <type>PurpleBuddy</type>
-   <methodname>PurpleBuddyList::findBuddy</methodname>
-   <methodparam><type>PurpleAccount</type><parameter>account</parameter></methodparam>
+   <type>PhurpleBuddy</type>
+   <methodname>PhurpleBuddyList::findBuddy</methodname>
+   <methodparam><type>PhurpleAccount</type><parameter>account</parameter></methodparam>
    <methodparam><type>string</type><parameter>name</parameter></methodparam>
   </methodsynopsis>
   <para>
@@ -1810,17 +1806,17 @@
   </para>
  </refsect1>
 </refentry>
-      <refentry xml:id="purplebuddylist-findgroup">
+      <refentry xml:id="phurplebuddylist-findgroup">
 	      <refnamediv>
-		      <refname>PurpleBuddyList::findGroup</refname>
+		      <refname>PhurpleBuddyList::findGroup</refname>
 		      <refpurpose>Finds group by name }}}</refpurpose>
 	      </refnamediv>
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>final public static</modifier>
-			      <type>PurpleGroup</type>
-			      <methodname>PurpleBuddyList::findGroup</methodname>
+			      <type>PhurpleGroup</type>
+			      <methodname>PhurpleBuddyList::findGroup</methodname>
 			      <methodparam><type>string</type><parameter>group</parameter></methodparam>
 		      </methodsynopsis>
 		      <para>
@@ -1847,9 +1843,9 @@
 		      </para>
  </refsect1>
 </refentry>
-<refentry xml:id="purplebuddylist-removebuddy">
+<refentry xml:id="phurplebuddylist-removebuddy">
 	<refnamediv>
-		<refname>PurpleBuddyList::removeBuddy</refname>
+		<refname>PhurpleBuddyList::removeBuddy</refname>
 		<refpurpose>Removes a buddy from the buddy list</refpurpose>
 	</refnamediv>
 	
@@ -1857,8 +1853,8 @@
 		<methodsynopsis>
 			<modifier>final public static</modifier>
 			<type>boolean</type>
-			<methodname>PurpleBuddyList::removeBuddy</methodname>
-			<methodparam><type>PurpleBuddy</type><parameter>buddy</parameter></methodparam>
+			<methodname>PhurpleBuddyList::removeBuddy</methodname>
+			<methodparam><type>PhurpleBuddy</type><parameter>buddy</parameter></methodparam>
 		</methodsynopsis>
 		<para>
 			Removes a buddy from the buddy list
@@ -1884,9 +1880,9 @@
 		</para>
  </refsect1>
 </refentry>
-<refentry xml:id="purplebuddylist-removegroup">
+<refentry xml:id="phurplebuddylist-removegroup">
 	<refnamediv>
-		<refname>PurpleBuddyList::removeGroup</refname>
+		<refname>PhurpleBuddyList::removeGroup</refname>
 		<refpurpose>Removes an empty group from the buddy list</refpurpose>
 	</refnamediv>
 	
@@ -1894,8 +1890,8 @@
 		<methodsynopsis>
 			<modifier>final public static</modifier>
 			<type>boolean</type>
-			<methodname>PurpleBuddyList::removeGroup</methodname>
-			<methodparam><type>PurpleBuddyGroup</type><parameter>group</parameter></methodparam>
+			<methodname>PhurpleBuddyList::removeGroup</methodname>
+			<methodparam><type>PhurpleBuddyGroup</type><parameter>group</parameter></methodparam>
 		</methodsynopsis>
 		<para>
 			Removes an empty group from the buddy list
@@ -1922,17 +1918,17 @@
 	</refsect1></refentry>
     </reference>
     <reference id="buddygroup">
-      <title>PurpleBuddyGroup</title>
-      <refentry xml:id="purplebuddygroup-construct">
+      <title>PhurpleBuddyGroup</title>
+      <refentry xml:id="phurplebuddygroup-construct">
         <refnamediv>
-          <refname>PurpleBuddyGroup::__construct</refname>
+          <refname>PhurpleBuddyGroup::__construct</refname>
           <refpurpose>constructor</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>PurpleBuddyGroup::__construct</methodname>
+            <methodname>PhurpleBuddyGroup::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1948,16 +1944,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddygroup-getaccounts">
+      <refentry xml:id="phurplebuddygroup-getaccounts">
         <refnamediv>
-          <refname>PurpleBuddyGroup::getAccounts</refname>
+          <refname>PhurpleBuddyGroup::getAccounts</refname>
           <refpurpose>gets all the accounts related to the group</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>array</type>
-            <methodname>PurpleBuddyGroup::getAccounts</methodname>
+            <methodname>PhurpleBuddyGroup::getAccounts</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1973,16 +1969,16 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="purplebuddygroup-getname">
+      <refentry xml:id="phurplebuddygroup-getname">
         <refnamediv>
-          <refname>PurpleBuddyGroup::getName</refname>
+          <refname>PhurpleBuddyGroup::getName</refname>
           <refpurpose>gets the name of the group</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>PurpleBuddyGroup::getName</methodname>
+            <methodname>PhurpleBuddyGroup::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1998,9 +1994,9 @@
   </para>
         </refsect1>
       </refentry>
-<refentry xml:id="purplebuddygroup-getonlinecount">
+<refentry xml:id="phurplebuddygroup-getonlinecount">
  <refnamediv>
-  <refname>PurpleBuddyGroup::getOnlineCount</refname>
+  <refname>PhurpleBuddyGroup::getOnlineCount</refname>
   <refpurpose>gets the count of the buddies in the group with the status online</refpurpose>
  </refnamediv>
 
@@ -2008,7 +2004,7 @@
   <methodsynopsis>
 	  <modifier>public</modifier>
    <type>int</type>
-   <methodname>PurpleBuddyGroup::getOnlineCount</methodname>
+   <methodname>PhurpleBuddyGroup::getOnlineCount</methodname>
    <void/>
   </methodsynopsis>
   <para>
@@ -2025,16 +2021,16 @@
   </para>
  </refsect1>
 </refentry>
-<refentry xml:id="purplebuddygroup-getsize">
+<refentry xml:id="phurplebuddygroup-getsize">
  <refnamediv>
-  <refname>PurpleBuddyGroup::getSize</refname>
+  <refname>PhurpleBuddyGroup::getSize</refname>
   <refpurpose>gets the count of the buddies in the group</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
 	  <modifier>public</modifier>
    <type>int</type>
-   <methodname>PurpleBuddyGroup::getSize</methodname>
+   <methodname>PhurpleBuddyGroup::getSize</methodname>
    <void/>
   </methodsynopsis>
   <para>

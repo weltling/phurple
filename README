@@ -2,23 +2,29 @@ See extension docs at http://phpurple.rubay.de/
 Please ask your questions using the forums at http://sourceforge.net/projects/phpurple/
 
 Changelog:
-v0.4.0 alpha:
-* libpurple initialization moved from the compile time to the runtime,
-  excactly - to the CustomPurpleClient instantiation time
-* PurpleClient::getProtocols() method is no more static
-* PurpleClient::iterate() added
-* PurpleAccount::get() added
-* PurpleClient::PURPLE_STATUS_* constant names changed to PurpleClient::STATUS_*
-* PurpleClient::connectToSignal() removed to simplify code
-* PurpleClient::connect() added
-* PurpleClient::disconnect() added
-* PurpleClient::setUserDir() is no more alias for purple.custom_user_directory
-* PurpleClient::setDebug() added instead of the purple.debug_enabled ini setting
-* PurpleClient::setUiId() added instead of the purple.ui_id ini setting
-* purple.plugin_save_pref ini setting removed 'cause it's useless
-* purple.custom_plugin_path is the only true ini setting which wasn't deleted
-* PurpleClient::__clone() is now private final
 
+v0.4.0 alpha:
+* Project name changed to Phurple for two purposes:
+  - more flexible code processing of both extension and libpurle stuff
+  - php license compatibility (no word php in the title)
+  So in general your old code should work if you simply replace purple with 
+  phurple case sensitive. The name was suggested on the pidgin mailing list,
+  i can't remember by who
+* libpurple initialization moved from the compile time to the runtime,
+  excactly - to the CustomPhurpleClient instantiation time
+* PhurpleClient::iterate() added
+* PhurpleClient::getProtocols() is no more static
+* PhurpleAccount::get() added
+* PhurpleClient::PURPLE_STATUS_* constant names changed to PhurpleClient::STATUS_*
+* PhurpleClient::connectToSignal() removed to simplify the code
+* PhurpleClient::connect() added (at least disconnect and is planed for next release)
+* PhurpleClient::setUserDir() is no more alias for purple.custom_user_directory
+* purple.custom_user_directory ini setting removed
+* PhurpleClient::setDebug() added instead of the purple.debug_enabled ini setting
+* PhurpleClient::setUiId() added instead of the purple.ui_id ini setting
+* purple.plugin_save_pref ini setting removed 'cause it's useless
+* phurple.custom_plugin_path is the only true ini setting which wasn't deleted
+* PhurpleClient::__clone() is now private final
 
 v0.3.0 alpha:
 * PurpleAccount::isConnecting() added

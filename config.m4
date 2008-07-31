@@ -1,12 +1,12 @@
-dnl config.m4 for extension purple
+dnl config.m4 for extension phurple
 
-dnl PHP_ARG_WITH(purple, for purple support,
-dnl [  --with-purple             Include purple support])
+dnl PHP_ARG_WITH(purple, for phurple support,
+dnl [  --with-purple             Include phurple support])
 
-PHP_ARG_ENABLE(purple, whether to enable purple support,
-[  --enable-purple           Enable purple support])
+PHP_ARG_ENABLE(phurple, whether to enable phurple support,
+[  --enable-phurple           Enable phurple support])
 
-if test "$PHP_PURPLE" != "no"; then
+if test "$PHP_PHURPLE" != "no"; then
 
 	dnl check for glib
 	
@@ -50,22 +50,22 @@ if test "$PHP_PURPLE" != "no"; then
 
 	SEARCH_PATH="/usr/local /usr"
 	SEARCH_FOR="include/libpurple"
-	if test -r $PHP_PURPLE/$SEARCH_FOR; then # path given as parameter
-		PURPLE_DIR=$PHP_PURPLE
+	if test -r $PHP_PHURPLE/$SEARCH_FOR; then # path given as parameter
+		PHURPLE_DIR=$PHP_PHURPLE
 	else # search default path list
 		AC_MSG_CHECKING([for purple files in default path])
 		for i in $SEARCH_PATH ; do
 			if test -r $i/$SEARCH_FOR; then
-				PURPLE_DIR=$i
+				PHURPLE_DIR=$i
 				AC_MSG_RESULT(found in $i)
 				break
 			fi
 		done
 	fi
   
-	if test -z "$PURPLE_DIR"; then
+	if test -z "$PHURPLE_DIR"; then
 		AC_MSG_RESULT([not found])
-		AC_MSG_ERROR([Please reinstall the purple distribution])
+		AC_MSG_ERROR([Please reinstall the phurple distribution])
 	fi
 
 	LIBNAME=purple
@@ -73,19 +73,19 @@ if test "$PHP_PURPLE" != "no"; then
 
 	PHP_CHECK_LIBRARY($LIBNAME,$LIBSYMBOL,
 	[
-		PHP_ADD_INCLUDE($PURPLE_DIR/include/libpurple)
-		PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $PURPLE_DIR/lib, PURPLE_SHARED_LIBADD)
-		AC_DEFINE(HAVE_PURPLELIB,1,[ ])
+		PHP_ADD_INCLUDE($PHURPLE_DIR/include/libpurple)
+		PHP_ADD_LIBRARY_WITH_PATH($LIBNAME, $PHURPLE_DIR/lib, PHURPLE_SHARED_LIBADD)
+		AC_DEFINE(HAVE_PHURPLELIB,1,[ ])
 	],[
 		AC_MSG_ERROR([wrong purple lib version or lib not found])
 	],[
-		-L$PURPLE_DIR/lib -lpurple
+		-L$PHURPLE_DIR/lib -lpurple
 	])
 	
-	PHP_SUBST(PURPLE_SHARED_LIBADD)
+	PHP_SUBST(PHURPLE_SHARED_LIBADD)
 
 	dnl end check for libpurple
 
-  PHP_NEW_EXTENSION(purple, [ purple.c ], $ext_shared)
+  PHP_NEW_EXTENSION(phurple, [ phurple.c ], $ext_shared)
 
 fi
