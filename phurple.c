@@ -60,25 +60,28 @@
 #define PHURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PHURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
-static void phurple_php_ui_init();
-static zval *phurple_php_string_zval(const char *str);
-static zval *phurple_php_long_zval(long l);
+static void phurple_ui_init();
+static zval *phurple_string_zval(const char *str);
+static zval *phurple_long_zval(long l);
 static void phurple_glib_io_destroy(gpointer data);
 static gboolean phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data);
 static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function, gpointer data);
-static void phurple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime);
-static void phurple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime);
-static void phurple_php_signed_on_function(PurpleConnection *gc, gpointer null);
-static void phurple_php_signed_off_function(PurpleConnection *gc, gpointer null);
+static void phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime);
+static void phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime);
+static void phurple_signed_on_function(PurpleConnection *gc, gpointer null);
+static void phurple_signed_off_function(PurpleConnection *gc, gpointer null);
 static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... );
-static char *phurple_php_tolower(const char *s);
-static char *phurple_php_get_protocol_id_by_name(const char *name);
-static void phurple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
-static void phurple_php_g_loop_callback(void);
-static int phurple_php_hash_index_find(HashTable *ht, void *element);
-static int phurple_php_heartbeat_callback(gpointer data);
-static void *phurple_php_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message,
+static char *phurple_tolower(const char *s);
+static char *phurple_get_protocol_id_by_name(const char *name);
+static void phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
+static void phurple_g_loop_callback(void);
+static int phurple_hash_index_find(HashTable *ht, void *element);
+static int phurple_heartbeat_callback(gpointer data);
+static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message,
                                           gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb,void *user_data);
+#if PHURPLE_INTERNAL_DEBUG
+static void phurple_dump_zval(zval *var);
+#endif
 
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
@@ -153,8 +156,8 @@ static PurpleConversationUiOps php_conv_uiops =
 	NULL,                      /* create_conversation  */
 	NULL,                      /* destroy_conversation */
 	NULL,            /* write_chat           */
-	phurple_php_write_im_function,              /* write_im             */
-	phurple_php_write_conv_function,            /* write_conv           */
+	phurple_write_im_function,              /* write_im             */
+	phurple_write_conv_function,            /* write_conv           */
 	NULL,                      /* chat_add_users       */
 	NULL,                      /* chat_rename_user     */
 	NULL,                      /* chat_remove_users    */
@@ -176,7 +179,7 @@ static PurpleCoreUiOps php_core_uiops =
 {
 	NULL,
 	NULL,
-	phurple_php_ui_init,
+	phurple_ui_init,
 	NULL,
 	NULL,
 	NULL,
@@ -190,7 +193,7 @@ static PurpleAccountUiOps php_account_uiops =
 	NULL,				/* notify added */
 	NULL,				/* status changed */
 	NULL,				/* request add */
-	phurple_php_request_authorize,				/* request authorize */
+	phurple_request_authorize,				/* request authorize */
 	NULL,				/* close account request */
 	NULL,
 	NULL,
@@ -200,10 +203,10 @@ static PurpleAccountUiOps php_account_uiops =
 
 ZEND_DECLARE_MODULE_GLOBALS(phurple);
 
-void php_phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
+void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {
-	ALLOC_INIT_ZVAL(phurple_globals->phurple_php_client_obj);
-	Z_TYPE_P(phurple_globals->phurple_php_client_obj) = IS_OBJECT;
+	ALLOC_INIT_ZVAL(phurple_globals->phurple_client_obj);
+	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;
 	
 	zend_hash_init(&(phurple_globals->ppos).buddy, 20, NULL, NULL, 0);
 	zend_hash_init(&(phurple_globals->ppos).group, 20, NULL, NULL, 0);
@@ -214,7 +217,7 @@ void php_phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	phurple_globals->ui_id = estrdup("PHP");
 }
 
-void php_phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC) { }
+void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC) { }
 
 /* True global resources - no need for thread safety here */
 static int le_phurple;
@@ -252,7 +255,7 @@ zend_function_entry PhurpleClient_methods[] = {
 	/*PHP_ME(PhurpleClient, set, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, get, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)*/
 	PHP_ME(PhurpleClient, connect, NULL, ZEND_ACC_PUBLIC)
-	/*PHP_ME(PhurpleClient, disconnect, NULL, ZEND_ACC_PUBLIC)*/
+	PHP_ME(PhurpleClient, disconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setDebug, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setUiId, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -378,15 +381,15 @@ PHP_MINIT_FUNCTION(phurple)
 #ifdef ZTS
 	ts_allocate_id(&phurple_globals_id,
 			sizeof(zend_phurple_globals),
-			(ts_allocate_ctor)php_phurple_globals_ctor,
-			(ts_allocate_dtor)php_phurple_globals_dtor);
+			(ts_allocate_ctor)phurple_globals_ctor,
+			(ts_allocate_dtor)phurple_globals_dtor);
 #else
-	php_phurple_globals_ctor(&phurple_globals TSRMLS_CC);
+	phurple_globals_ctor(&phurple_globals TSRMLS_CC);
 #endif
 	
 	REGISTER_INI_ENTRIES();
 
-	g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_LEVEL_CRITICAL | G_LOG_FLAG_RECURSION, phurple_php_g_log_handler, NULL);
+	g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_LEVEL_CRITICAL | G_LOG_FLAG_RECURSION, phurple_g_log_handler, NULL);
 	
 	/* initalizing classes */
 	zend_class_entry ce;
@@ -541,7 +544,7 @@ PHP_MSHUTDOWN_FUNCTION(phurple)
 #ifdef ZTS
 	ts_free_id(phurple_globals_id);
 #else
-	php_phurple_globals_dtor(&phurple_globals TSRMLS_CC);
+	phurple_globals_dtor(&phurple_globals TSRMLS_CC);
 #endif
 	
 	return SUCCESS;
@@ -604,10 +607,10 @@ PHP_METHOD(PhurpleClient, runLoop)
 		RETURN_NULL();
 	}
 	
-	phurple_php_g_loop_callback();
+	phurple_g_loop_callback();
 	
 	if(interval) {
-		g_timeout_add(interval, (GSourceFunc)phurple_php_heartbeat_callback, NULL);
+		g_timeout_add(interval, (GSourceFunc)phurple_heartbeat_callback, NULL);
 	}
 	
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
@@ -668,14 +671,14 @@ PHP_METHOD(PhurpleClient, addAccount)
 	port = emalloc(offsets[11] - offsets[10] + 1);
 	php_sprintf(port, "%.*s", offsets[11] - offsets[10], account_dsn + offsets[10]);
 
-	account = purple_account_new(estrdup(nick), phurple_php_get_protocol_id_by_name(protocol));
+	account = purple_account_new(estrdup(nick), phurple_get_protocol_id_by_name(protocol));
 
 	if(NULL != account) {
 
 		purple_account_set_password(account, estrdup(password));
 
 		if(strlen(host)) {
-			phurple_account_set_string(account, "server", host);
+			purple_account_set_string(account, "server", host);
 		}
 
 		if(strlen(port) && atoi(port)) {
@@ -800,7 +803,7 @@ PHP_METHOD(PhurpleClient, getCoreVersion)
 	creates new PhurpleClient instance*/
 PHP_METHOD(PhurpleClient, getInstance)
 {
-	if(NULL == zend_objects_get_address(PHURPLE_G(phurple_php_client_obj) TSRMLS_CC)) {
+	if(NULL == zend_objects_get_address(PHURPLE_G(phurple_client_obj) TSRMLS_CC)) {
 
 		/**
 		 * phurple initialization stuff
@@ -829,16 +832,16 @@ PHP_METHOD(PhurpleClient, getInstance)
 		purple_savedstatus_activate(saved_status);
 
 
-		MAKE_STD_ZVAL(PHURPLE_G(phurple_php_client_obj));
-		Z_TYPE_P(PHURPLE_G(phurple_php_client_obj)) = IS_OBJECT;
+		MAKE_STD_ZVAL(PHURPLE_G(phurple_client_obj));
+		Z_TYPE_P(PHURPLE_G(phurple_client_obj)) = IS_OBJECT;
 #if USING_PHP_53
-		object_init_ex(PHURPLE_G(phurple_php_client_obj), EG(called_scope));
+		object_init_ex(PHURPLE_G(phurple_client_obj), EG(called_scope));
 #else
 		zend_class_entry **ce = NULL;
 		zend_hash_find(EG(class_table), "customphurpleclient", sizeof("customphurpleclient"), (void **) &ce);
 
 		if(ce && (*ce)->parent && 0 == strcmp(PHURPLE_CLIENT_CLASS_NAME, (*ce)->parent->name)) {
-			object_init_ex(PHURPLE_G(phurple_php_client_obj), *ce);
+			object_init_ex(PHURPLE_G(phurple_client_obj), *ce);
 		} else {
 			zend_throw_exception(NULL,
 			                     "The "
@@ -850,10 +853,10 @@ PHP_METHOD(PhurpleClient, getInstance)
 		/* object_init_ex(tmp, EG(current_execute_data->fbc->common.scope)); would be beautiful but works not as expected */
 		
 #endif
-		*return_value = *PHURPLE_G(phurple_php_client_obj);
+		*return_value = *PHURPLE_G(phurple_client_obj);
 
-		call_custom_method(&PHURPLE_G(phurple_php_client_obj),
-		                   Z_OBJCE_P(PHURPLE_G(phurple_php_client_obj)),
+		call_custom_method(&PHURPLE_G(phurple_client_obj),
+		                   Z_OBJCE_P(PHURPLE_G(phurple_client_obj)),
 		                   NULL,
 		                   "initinternal",
 		                   sizeof("initinternal")-1,
@@ -863,7 +866,7 @@ PHP_METHOD(PhurpleClient, getInstance)
 		return;
 	}
 
-	*return_value = *PHURPLE_G(phurple_php_client_obj);
+	*return_value = *PHURPLE_G(phurple_client_obj);
 	
 	return;
 }
@@ -976,12 +979,10 @@ PHP_METHOD(PhurpleClient, iterate)
 	Connect the client*/
 PHP_METHOD(PhurpleClient, connect)
 {
-	static int handle;
-
 	purple_signal_connect(purple_connections_get_handle(),
 	                      estrdup(SIGNAL_SIGNED_ON),
-	                      &handle,
-	                      PURPLE_CALLBACK(phurple_php_signed_on_function),
+	                      &PHURPLE_G(connection_handle),
+	                      PURPLE_CALLBACK(phurple_signed_on_function),
 	                      NULL
 	                      );
 }
@@ -990,17 +991,23 @@ PHP_METHOD(PhurpleClient, connect)
 
 /* {{{ proto void PhurpleClient::disconnect()
 	Close all client connections*/
-/*PHP_METHOD(PhurpleClient, disconnect)
+PHP_METHOD(PhurpleClient, disconnect)
 {
-	zval *this = getThis();
+	GList *iter = purple_accounts_get_all();
+
+	for (; iter; iter = iter->next)
+	{
+		PurpleAccount *account = iter->data;
+		purple_account_disconnect(account);
+	}
 
 	purple_signal_connect(purple_connections_get_handle(),
 	                      SIGNAL_SIGNED_OFF,
-	                      &this,
-	                      PURPLE_CALLBACK(phurple_php_signed_off_function),
+	                      &PHURPLE_G(connection_handle),
+	                      PURPLE_CALLBACK(phurple_signed_off_function),
 	                      NULL
 	                      );
-}*/
+}
 /* }}} */
 
 
@@ -1175,7 +1182,7 @@ PHP_METHOD(PhurpleAccount, __construct)
 		RETURN_NULL();
 	}
 
-	account = purple_account_new(estrdup(username), phurple_php_get_protocol_id_by_name(protocol_name));
+	account = purple_account_new(estrdup(username), phurple_get_protocol_id_by_name(protocol_name));
 	purple_accounts_add(account);
 	if(NULL != account) {
 		accounts = purple_accounts_get_all();
@@ -1260,13 +1267,14 @@ PHP_METHOD(PhurpleAccount, addBuddy)
 	ZVAL_LONG(account_index, Z_LVAL_P(zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
 	
 	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
-	if(NULL != paccount) {
-		struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	if(paccount) {
+		struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
 		buddy_index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
 		zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(buddy_index), (void**)&pbuddy);
 
 		if(pbuddy) {
+			purple_blist_add_buddy(pbuddy, NULL, NULL, NULL);
 			purple_account_add_buddy(paccount, pbuddy);
 			RETURN_TRUE;
 		}
@@ -1293,7 +1301,7 @@ PHP_METHOD(PhurpleAccount, removeBuddy)
 	
 	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
 	if(NULL != paccount) {
-		struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+		struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
 		buddy_index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
 		zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(buddy_index), (void**)&pbuddy);
@@ -1548,12 +1556,14 @@ PHP_METHOD(PhurpleAccount, getPassword)
 	Creates a new conversation of the specified type */
 PHP_METHOD(PhurpleConversation, __construct)
 {
-	int type, name_len;
+	int type, name_len, conv_list_position = -1;
 	char *name;
 	PurpleConversation *conv = NULL;
 	PurpleAccount *paccount = NULL;
-	GList *conversations = NULL;
+	GList *conversations = NULL, *cnv;
 	zval *account, *account_index;
+	gchar *name1;
+	const gchar *name2;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lOs", &type, &account, PhurpleAccount_ce, &name, &name_len) == FAILURE) {
 		RETURN_NULL();
@@ -1565,13 +1575,39 @@ PHP_METHOD(PhurpleConversation, __construct)
 	if(NULL != account) {
 		conv = purple_conversation_new(type, paccount, estrdup(name));
 		conversations = purple_get_conversations();
-
+/*
 		zend_update_property_long(PhurpleConversation_ce,
 		                          getThis(),
 		                          "index",
 		                          sizeof("index")-1,
 		                          (long)g_list_position(conversations, g_list_last(conversations)) TSRMLS_CC
+		                          );*/
+		cnv = conversations;
+		name1 = g_strdup(purple_normalize(paccount, name));
+
+		for (; cnv != NULL; cnv = cnv->next) {
+// 			if((PurpleConversation *)cnv->data == conv) {
+// 				conv_list_position = g_list_position(conversations, cnv);
+// 			}
+			name2 = purple_normalize(paccount, purple_conversation_get_name((PurpleConversation *)cnv->data));
+
+			if ((paccount == purple_conversation_get_account((PurpleConversation *)cnv->data)) &&
+					!purple_utf8_strcasecmp(name1, name2)) {
+				conv_list_position = g_list_position(conversations, cnv);
+			}
+		}
+
+		conv_list_position = conv_list_position == -1
+		                     ? g_list_position(conversations, g_list_last(conversations))
+		                     : conv_list_position;
+
+		zend_update_property_long(PhurpleConversation_ce,
+		                          getThis(),
+		                          "index",
+		                          sizeof("index")-1,
+		                          (long)conv_list_position TSRMLS_CC
 		                          );
+
 		return;
 	}
 
@@ -1618,7 +1654,7 @@ PHP_METHOD(PhurpleConversation, sendIM)
 	conversation = g_list_nth_data (purple_get_conversations(), (guint)Z_LVAL_P(conversation_index));
 
 	if(NULL != conversation) {
-		purple_conv_im_send (PURPLE_CONV_IM(conversation), estrdup(message));
+		purple_conv_im_send(PURPLE_CONV_IM(conversation), estrdup(message));
 	}
 }
 /* }}} */
@@ -1700,8 +1736,8 @@ PHP_METHOD(PhurpleBuddy, __construct)
 {
 	PurpleAccount *paccount = NULL;
 	PurpleBuddy *pbuddy = NULL;
-	char *name, *alias;
-	int name_len, alias_len, account_index;
+	char *name, *alias = "";
+	int name_len, alias_len = 0, account_index;
 	zval *account;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Os|s", &account, PhurpleAccount_ce, &name, &name_len, &alias, &alias_len) == FAILURE) {
@@ -1712,11 +1748,11 @@ PHP_METHOD(PhurpleBuddy, __construct)
 
 	if(paccount) {
 		pbuddy = purple_find_buddy(paccount, name);
-		struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+		struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
 		if(pbuddy) {
 
-			int ind = phurple_php_hash_index_find(&pp->buddy, pbuddy);
+			int ind = phurple_hash_index_find(&pp->buddy, pbuddy);
 			
 			if(ind == FAILURE) {
 				ulong nextid = zend_hash_next_free_element(&pp->buddy);
@@ -1738,7 +1774,7 @@ PHP_METHOD(PhurpleBuddy, __construct)
 
 			return;
 		} else {
-			pbuddy = purple_buddy_new(paccount, name, alias ? alias : NULL);
+			pbuddy = purple_buddy_new(paccount, name, alias_len ? alias : name);
 			ulong nextid = zend_hash_next_free_element(&pp->buddy);
 			zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
 			zend_update_property_long(PhurpleBuddy_ce,
@@ -1807,7 +1843,7 @@ PHP_METHOD(PhurpleBuddy, getGroup)
 	zval *index, *tmp;
 	PurpleBuddy *pbuddy = NULL;
 	PurpleGroup *pgroup = NULL;
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 			
 	index = zend_read_property(PhurpleBuddy_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
 	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
@@ -1817,7 +1853,7 @@ PHP_METHOD(PhurpleBuddy, getGroup)
 
 		pgroup = purple_buddy_get_group(pbuddy);
 		if(pgroup) {
-			int ind = phurple_php_hash_index_find(&pp->group, pgroup);
+			int ind = phurple_hash_index_find(&pp->group, pgroup);
 			if(ind == FAILURE) {
 				ulong nextid = zend_hash_next_free_element(&pp->group);
 				zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
@@ -1855,7 +1891,7 @@ PHP_METHOD(PhurpleBuddy, getAccount)
 	zval *index;
 	PurpleBuddy *pbuddy = NULL;
 	PurpleAccount *paccount = NULL;
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 	GList *accounts = NULL;
 			
 	index = zend_read_property(PhurpleBuddy_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
@@ -1891,7 +1927,7 @@ PHP_METHOD(PhurpleBuddy, isOnline)
 	zval *index;
 	PurpleBuddy *pbuddy = NULL;
 
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 			
 	index = zend_read_property(PhurpleBuddy_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
 	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
@@ -1935,7 +1971,7 @@ PHP_METHOD(PhurpleBuddyList, addBuddy)
 		RETURN_NULL();
 	}
 
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
 	index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
 	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
@@ -1964,7 +2000,7 @@ PHP_METHOD(PhurpleBuddyList, addGroup)
 		RETURN_NULL();
 	}
 
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 	
 	index = zend_read_property(PhurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0 TSRMLS_CC);
 	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
@@ -1993,7 +2029,7 @@ PHP_METHOD(PhurpleBuddyList, findBuddy)
 		RETURN_NULL();
 	}
 
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
 	index = zend_read_property(PhurpleAccount_ce, account, "index", sizeof("index")-1, 0 TSRMLS_CC);
 	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
@@ -2002,7 +2038,7 @@ PHP_METHOD(PhurpleBuddyList, findBuddy)
 		pbuddy = purple_find_buddy(paccount, name);
 
 		if(pbuddy) {
-			int ind = phurple_php_hash_index_find(&pp->buddy, pbuddy);
+			int ind = phurple_hash_index_find(&pp->buddy, pbuddy);
 			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
 			
 			if(ind == FAILURE) {
@@ -2037,10 +2073,11 @@ PHP_METHOD(PhurpleBuddyList, findBuddy)
 /* {{{ proto void PhurpleBuddyList::load(void)
 	loads the blist.xml from the homedir */
 PHP_METHOD(PhurpleBuddyList, load)
-{
+{/*
 	purple_blist_load();
 
-	purple_set_blist(purple_get_blist());
+	purple_set_blist(purple_get_blist());*/
+/* dead method, do nothing here*/
 }
 /* }}} */
 
@@ -2113,7 +2150,7 @@ PHP_METHOD(PhurpleBuddyList, removeBuddy)
 		RETURN_FALSE;
 	}
 
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
 	index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
 	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
@@ -2143,7 +2180,7 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 		RETURN_FALSE;
 	}
 
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
 	index = zend_read_property(PhurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0 TSRMLS_CC);
 	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
@@ -2195,12 +2232,12 @@ PHP_METHOD(PhurpleBuddyGroup, __construct)
 		RETURN_NULL();
 	}
 
-	struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
+	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 	pgroup = purple_find_group(name);
 
 	if(pgroup) {
 
-		int ind = phurple_php_hash_index_find(&pp->group, pgroup);
+		int ind = phurple_hash_index_find(&pp->group, pgroup);
 
 		if(ind == FAILURE) {
 			ulong nextid = zend_hash_next_free_element(&pp->group);
@@ -2354,7 +2391,7 @@ PHP_METHOD(PhurpleBuddyGroup, getName)
 
 /* {{{ */
 static void
-phurple_php_ui_init()
+phurple_ui_init()
 {
 	purple_conversations_set_ui_ops(&php_conv_uiops);
 }
@@ -2421,7 +2458,8 @@ sighandler(int sig)
 
 
 /* {{{ just took this two functions from the readline extension */
-static zval *phurple_php_string_zval(const char *str)
+static zval
+*phurple_string_zval(const char *str)
 {
 	zval *ret;
 	
@@ -2439,7 +2477,8 @@ static zval *phurple_php_string_zval(const char *str)
 
 
 /* {{{ */
-static zval *phurple_php_long_zval(long l)
+static zval
+*phurple_long_zval(long l)
 {
 	zval *ret;
 	MAKE_STD_ZVAL(ret);
@@ -2453,7 +2492,8 @@ static zval *phurple_php_long_zval(long l)
 
 
 /* {{{ */
-static void phurple_glib_io_destroy(gpointer data)
+static void
+phurple_glib_io_destroy(gpointer data)
 {
 	g_free(data);
 }
@@ -2461,7 +2501,8 @@ static void phurple_glib_io_destroy(gpointer data)
 
 
 /* {{{ */
-static gboolean phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+static gboolean
+phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
 {
 	PurpleGLibIOClosure *closure = data;
 	PurpleInputCondition phurple_cond = 0;
@@ -2472,7 +2513,7 @@ static gboolean phurple_glib_io_invoke(GIOChannel *source, GIOCondition conditio
 		phurple_cond |= PURPLE_INPUT_WRITE;
 	
 	closure->function(closure->data, g_io_channel_unix_get_fd(source),
-				phurple_cond);
+	                  phurple_cond);
 	
 	return TRUE;
 }
@@ -2480,7 +2521,8 @@ static gboolean phurple_glib_io_invoke(GIOChannel *source, GIOCondition conditio
 
 
 /* {{{ */
-static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
+static guint
+glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
                                gpointer data)
 {
 	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
@@ -2497,7 +2539,7 @@ static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInput
 	
 	channel = g_io_channel_unix_new(fd);
 	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
-							phurple_glib_io_invoke, closure, phurple_glib_io_destroy);
+	                                      phurple_glib_io_invoke, closure, phurple_glib_io_destroy);
 	
 	g_io_channel_unref(channel);
 	return closure->result;
@@ -2507,7 +2549,7 @@ static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInput
 
 /* {{{ */
 static void
-phurple_php_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime)
+phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime)
 {
 	const int PARAMS_COUNT = 5;
 	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
@@ -2525,7 +2567,7 @@ phurple_php_write_conv_function(PurpleConversation *conv, const char *who, const
 	                          (long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
 	                          );
 
-	zval *client = PHURPLE_G(phurple_php_client_obj);
+	zval *client = PHURPLE_G(phurple_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 	
 	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
@@ -2533,8 +2575,8 @@ phurple_php_write_conv_function(PurpleConversation *conv, const char *who, const
 		pbuddy = purple_find_buddy(paccount, !who ? purple_conversation_get_name(conv) : who);
 		
 		if(pbuddy) {
-			struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
-			int ind = phurple_php_hash_index_find(&pp->buddy, pbuddy);
+			struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+			int ind = phurple_hash_index_find(&pp->buddy, pbuddy);
 			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
 			
 			if(ind == FAILURE) {
@@ -2556,16 +2598,16 @@ phurple_php_write_conv_function(PurpleConversation *conv, const char *who, const
 			}
 		} else {
 			if(who) {
-				buddy = phurple_php_string_zval(who);
+				buddy = phurple_string_zval(who);
 			} else {
-				buddy = phurple_php_string_zval("");
+				ALLOC_INIT_ZVAL(buddy);
 			}
 		}
 	}
 	
-	tmp1 = phurple_php_string_zval(message);
-	tmp2 = phurple_php_long_zval((long)flags);
-	tmp3 = phurple_php_long_zval((long)mtime);
+	tmp1 = phurple_string_zval(message);
+	tmp2 = phurple_long_zval((long)flags);
+	tmp3 = phurple_long_zval((long)mtime);
 
 	call_custom_method(&client,
 	                   ce,
@@ -2590,7 +2632,7 @@ phurple_php_write_conv_function(PurpleConversation *conv, const char *who, const
 
 /* {{{ */
 static void
-phurple_php_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime)
+phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime)
 {
 	const int PARAMS_COUNT = 5;
 	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
@@ -2608,7 +2650,7 @@ phurple_php_write_im_function(PurpleConversation *conv, const char *who, const c
 	                          (long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
 	                          );
 
-	zval *client = PHURPLE_G(phurple_php_client_obj);
+	zval *client = PHURPLE_G(phurple_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 	
 	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
@@ -2616,8 +2658,8 @@ phurple_php_write_im_function(PurpleConversation *conv, const char *who, const c
 		pbuddy = purple_find_buddy(paccount, !who ? purple_conversation_get_name(conv) : who);
 		
 		if(pbuddy) {
-			struct php_phurple_object_storage *pp = &PHURPLE_G(ppos);
-			int ind = phurple_php_hash_index_find(&pp->buddy, pbuddy);
+			struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+			int ind = phurple_hash_index_find(&pp->buddy, pbuddy);
 			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
 			
 			if(ind == FAILURE) {
@@ -2639,16 +2681,16 @@ phurple_php_write_im_function(PurpleConversation *conv, const char *who, const c
 			}
 		} else {
 			if(who) {
-				buddy = phurple_php_string_zval(who);
+				buddy = phurple_string_zval(who);
 			} else {
-				buddy = phurple_php_string_zval("");
+				ALLOC_INIT_ZVAL(buddy);
 			}
 		}
 	}
 	
-	tmp1 = phurple_php_string_zval(message);
-	tmp2 = phurple_php_long_zval((long)flags);
-	tmp3 = phurple_php_long_zval((long)mtime);
+	tmp1 = phurple_string_zval(message);
+	tmp2 = phurple_long_zval((long)flags);
+	tmp3 = phurple_long_zval((long)mtime);
 
 	call_custom_method(&client,
 	                   ce,
@@ -2667,6 +2709,7 @@ phurple_php_write_im_function(PurpleConversation *conv, const char *who, const c
 	zval_ptr_dtor(&tmp1);
 	zval_ptr_dtor(&tmp2);
 	zval_ptr_dtor(&tmp3);
+	zval_ptr_dtor(&conversation);
 
 }
 /* }}} */
@@ -2674,14 +2717,14 @@ phurple_php_write_im_function(PurpleConversation *conv, const char *who, const c
 
 /* {{{ */
 static void
-phurple_php_signed_on_function(PurpleConnection *conn, gpointer null)
+phurple_signed_on_function(PurpleConnection *conn, gpointer null)
 {
 	zval *connection, *retval;
 	GList *connections = NULL;
 	
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_php_client_obj);
+	zval *client = PHURPLE_G(phurple_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 	
 	connections = purple_connections_get_all();
@@ -2713,21 +2756,29 @@ phurple_php_signed_on_function(PurpleConnection *conn, gpointer null)
 static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... )
 {
 	TSRMLS_FETCH();
-	
+#if PHURPLE_INTERNAL_DEBUG
+	php_printf("==================== call_custom_method begin ============================\n");
+	php_printf("class: %s\n", obj_ce->name);
+	php_printf("method name: %s\n", function_name);
+#endif
 	int result, i;
 	zend_fcall_info fci;
-	zval z_fname;
-	zval *retval, *null, **tmp;
+	zval z_fname, ***params, *retval;
 	HashTable *function_table;
-
 	va_list given_params;
-	zval ***params;
+
 	params = (zval ***) safe_emalloc(param_count, sizeof(zval **), 0);
 
 	va_start(given_params, param_count);
 
+#if PHURPLE_INTERNAL_DEBUG
+	php_printf("param count: %d\n", param_count);
+#endif
 	for(i=0;i<param_count;i++) {
 		params[i] = va_arg(given_params, zval **);
+#if PHURPLE_INTERNAL_DEBUG
+		php_printf("i=>%d: ", i);phurple_dump_zval(*params[i]);php_printf("\n");
+#endif
 	}
 	va_end(given_params);
 	
@@ -2773,6 +2824,7 @@ static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend
 		fcic.object_pp = object_pp;
 		result = zend_call_function(&fci, &fcic TSRMLS_CC);
 	}
+
 	if (result == FAILURE) {
 		/* error at c-level */
 		if (!obj_ce) {
@@ -2782,22 +2834,27 @@ static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend
 			zend_error(E_CORE_ERROR, "Couldn't execute method %s%s%s", obj_ce ? obj_ce->name : "", obj_ce ? "::" : "", function_name);
 		}
 	}
+
 	if(params) {
 		efree(params);
 	}
+#if PHURPLE_INTERNAL_DEBUG
+	php_printf("==================== call_custom_method end ============================\n\n");
+#endif
 	if (!retval_ptr_ptr) {
 		if (retval) {
 			zval_ptr_dtor(&retval);
 		}
 		return NULL;
 	}
+
 	return *retval_ptr_ptr;
 }
 /* }}} */
 
 
 /* {{{ */
-static char *phurple_php_tolower(const char *s)
+static char *phurple_tolower(const char *s)
 {
 	int  i = 0;
 	char *r = estrdup(s);
@@ -2814,7 +2871,7 @@ static char *phurple_php_tolower(const char *s)
 
 
 /* {{{ */
-static char *phurple_php_get_protocol_id_by_name(const char *protocol_name)
+static char *phurple_get_protocol_id_by_name(const char *protocol_name)
 {
 	GList *iter;
 
@@ -2823,7 +2880,7 @@ static char *phurple_php_get_protocol_id_by_name(const char *protocol_name)
 	for (; iter; iter = iter->next) {
 		PurplePlugin *plugin = iter->data;
 		PurplePluginInfo *info = plugin->info;
-		if (info && info->name && 0 == strcmp(phurple_php_tolower(info->name), phurple_php_tolower(protocol_name))) {
+		if (info && info->name && 0 == strcmp(phurple_tolower(info->name), phurple_tolower(protocol_name))) {
 			return estrdup(info->id);
 		}
 	}
@@ -2834,7 +2891,7 @@ static char *phurple_php_get_protocol_id_by_name(const char *protocol_name)
 
 
 /* {{{ */
-static int phurple_php_hash_index_find(HashTable *ht, void *element)
+static int phurple_hash_index_find(HashTable *ht, void *element)
 {
 	ulong i;
 
@@ -2851,7 +2908,7 @@ static int phurple_php_hash_index_find(HashTable *ht, void *element)
 
 /* {{{ */
 static void
-phurple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
 {
 	/**
 	 * @todo call here some php callback
@@ -2861,11 +2918,11 @@ phurple_php_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, con
 
 
 /* {{{ */
-static void phurple_php_g_loop_callback(void)
+static void phurple_g_loop_callback(void)
 {
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_php_client_obj);
+	zval *client = PHURPLE_G(phurple_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 
 	call_custom_method(&client,
@@ -2880,11 +2937,11 @@ static void phurple_php_g_loop_callback(void)
 
 
 /* {{{ */
-static int phurple_php_heartbeat_callback(gpointer data)
+static int phurple_heartbeat_callback(gpointer data)
 {
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_php_client_obj);
+	zval *client = PHURPLE_G(phurple_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 
 	call_custom_method(&client,
@@ -2901,7 +2958,7 @@ static int phurple_php_heartbeat_callback(gpointer data)
 
 /* {{{ */
 static void *
-phurple_php_request_authorize(PurpleAccount *account,
+phurple_request_authorize(PurpleAccount *account,
                              const char *remote_user,
                              const char *id,
                              const char *alias,
@@ -2913,7 +2970,7 @@ phurple_php_request_authorize(PurpleAccount *account,
 {
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_php_client_obj);
+	zval *client = PHURPLE_G(phurple_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 	
 	zval *result, *php_account, *php_on_list, *php_remote_user, *php_message;
@@ -2935,8 +2992,8 @@ phurple_php_request_authorize(PurpleAccount *account,
 	MAKE_STD_ZVAL(php_on_list);
 	ZVAL_BOOL(php_on_list, (long)on_list);
 	
-	php_message = phurple_php_string_zval(message);
-	php_remote_user = phurple_php_string_zval(remote_user);
+	php_message = phurple_string_zval(message);
+	php_remote_user = phurple_string_zval(remote_user);
 	
 	call_custom_method(&client,
 	                   ce,
@@ -2965,14 +3022,14 @@ phurple_php_request_authorize(PurpleAccount *account,
 
 /* {{{ */
 static void
-phurple_php_signed_off_function(PurpleConnection *conn, gpointer null)
+phurple_signed_off_function(PurpleConnection *conn, gpointer null)
 {
 	zval *connection, *retval;
 	GList *connections = NULL;
 
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_php_client_obj);
+	zval *client = PHURPLE_G(phurple_client_obj);
 	zend_class_entry *ce = Z_OBJCE_P(client);
 	
 	connections = purple_connections_get_all();
@@ -2997,6 +3054,45 @@ phurple_php_signed_off_function(PurpleConnection *conn, gpointer null)
 	zval_ptr_dtor(&connection);
 }
 /* }}} */
+
+#if PHURPLE_INTERNAL_DEBUG
+static void phurple_dump_zval(zval *var)
+{
+
+TSRMLS_FETCH();
+
+    switch (Z_TYPE_P(var)) {
+        case IS_NULL:
+            php_printf("NULL ");
+            break;
+        case IS_BOOL:
+            php_printf("Boolean: %s ", Z_LVAL_P(var) ? "TRUE" : "FALSE");
+            break;
+        case IS_LONG:
+            php_printf("Long: %ld ", Z_LVAL_P(var));
+            break;
+        case IS_DOUBLE:
+            php_printf("Double: %f ", Z_DVAL_P(var));
+            break;
+        case IS_STRING:
+            php_printf("String: ");
+            PHPWRITE(Z_STRVAL_P(var), Z_STRLEN_P(var));
+            php_printf(" ");
+            break;
+        case IS_RESOURCE:
+            php_printf("Resource ");
+            break;
+        case IS_ARRAY:
+            php_printf("Array ");
+            break;
+        case IS_OBJECT:
+            php_printf("Object ");
+            break;
+        default:
+            php_printf("Unknown ");
+    }
+}
+#endif
 
 /*
 **

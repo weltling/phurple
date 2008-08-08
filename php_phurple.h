@@ -59,7 +59,7 @@ PHP_METHOD(PhurpleClient, iterate);
 /*PHP_METHOD(PhurpleClient, set);
 PHP_METHOD(PhurpleClient, get);*/
 PHP_METHOD(PhurpleClient, connect);
-/*PHP_METHOD(PhurpleClient, disconnect);*/
+PHP_METHOD(PhurpleClient, disconnect);
 PHP_METHOD(PhurpleClient, setUserDir);
 PHP_METHOD(PhurpleClient, setDebug);
 PHP_METHOD(PhurpleClient, setUiId);
@@ -125,15 +125,17 @@ ZEND_BEGIN_MODULE_GLOBALS(phurple)
 	char *ui_id;
 	int debug;
 
+	int connection_handle;
+
 	/**
-	 * @todo move the phurple_php_client_obj into the ppos struct
+	 * @todo move the phurple_client_obj into the ppos struct
 	 */
-	zval *phurple_php_client_obj;
+	zval *phurple_client_obj;
 
 	/**
 	 * php phurple object storage
 	 */
-	struct php_phurple_object_storage
+	struct phurple_object_storage
 	{
 		HashTable buddy;
 		HashTable group;
@@ -165,6 +167,8 @@ ZEND_END_MODULE_GLOBALS(phurple)
  * Changing the MAKE_STD_ZVAL to ZVAL_NULL does work, why?
  */
 #define PHURPLE_MK_OBJ(o, c) 	MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
+
+#define PHURPLE_INTERNAL_DEBUG 0
 
 #endif	/* PHP_PHURPLE_H */
 
