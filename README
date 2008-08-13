@@ -1,5 +1,5 @@
-See extension docs at http://phpurple.rubay.de/
-Please ask your questions using the forums at http://sourceforge.net/projects/phpurple/
+See extension docs at http://phurple.rubay.de/
+Please ask your questions using the forums at http://sourceforge.net/projects/phurple/
 
 Changelog:
 
@@ -26,7 +26,8 @@ v0.4.0 alpha:
 * phurple.custom_plugin_path is the only true ini setting which wasn't deleted
 * PhurpleClient::__clone() is now private final so there can be only one client
   instance per script
-* fixed PurpleConversation gets overwritten when creating multiple conversations
+* fixed the bug where a PurpleConversation instance gets overwritten when creating 
+  multiple conversations
 
 v0.3.0 alpha:
 * PurpleAccount::isConnecting() added

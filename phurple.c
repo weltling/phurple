@@ -255,7 +255,7 @@ zend_function_entry PhurpleClient_methods[] = {
 	/*PHP_ME(PhurpleClient, set, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, get, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)*/
 	PHP_ME(PhurpleClient, connect, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleClient, disconnect, NULL, ZEND_ACC_PUBLIC)
+	/*PHP_ME(PhurpleClient, disconnect, NULL, ZEND_ACC_PUBLIC)*/
 	PHP_ME(PhurpleClient, setUserDir, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setDebug, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setUiId, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -901,7 +901,7 @@ PHP_METHOD(PhurpleClient, getProtocols)
 /* }}} */
 
 
-/* {{{ proto void PhurpleClient::setUserDir([string $userDir])
+/* {{{ proto void PhurpleClient::setUserDir(string $user_dir)
 	Define a custom phurple settings directory, overriding the default (user's home directory/.phurple) */
 PHP_METHOD(PhurpleClient, setUserDir) {
 	char *user_dir;
@@ -918,6 +918,8 @@ PHP_METHOD(PhurpleClient, setUserDir) {
 /* }}} */
 
 
+/* {{{ proto void PhurpleClient::setDebug(boolean $debug)
+	Turn debug on or off, default off*/
 PHP_METHOD(PhurpleClient, setDebug)
 {
 	zval *debug;
@@ -934,8 +936,11 @@ PHP_METHOD(PhurpleClient, setDebug)
 		PHURPLE_G(debug) = Z_DVAL_P(debug) == 0 ? 0 : 1;
 	}
 }
+/* }}} */
 
 
+/* {{{ proto void PhurpleClient::setUiId(string $ui_id)
+	Set ui id*/
 PHP_METHOD(PhurpleClient, setUiId)
 {
 	char *ui_id;
@@ -947,6 +952,7 @@ PHP_METHOD(PhurpleClient, setUiId)
 
 	PHURPLE_G(ui_id) = estrdup(ui_id);
 }
+/* }}} */
 
 
 /* {{{ proto boolean PhurpleClient::iterate(void)
@@ -991,7 +997,7 @@ PHP_METHOD(PhurpleClient, connect)
 
 /* {{{ proto void PhurpleClient::disconnect()
 	Close all client connections*/
-PHP_METHOD(PhurpleClient, disconnect)
+/*PHP_METHOD(PhurpleClient, disconnect)
 {
 	GList *iter = purple_accounts_get_all();
 
@@ -1007,7 +1013,7 @@ PHP_METHOD(PhurpleClient, disconnect)
 	                      PURPLE_CALLBACK(phurple_signed_off_function),
 	                      NULL
 	                      );
-}
+}*/
 /* }}} */
 
 
@@ -1339,8 +1345,7 @@ PHP_METHOD(PhurpleAccount, clearSettings)
 
 
 /* {{{ proto void PhurpleAccount::set(string name, string value)
-	Sets a protocol-specific setting for an account.
-	The value types expected are int, string or bool. */
+	Sets a protocol-specific setting for an account. The value types expected are int, string or bool. */
 PHP_METHOD(PhurpleAccount, set)
 {
 	PurpleAccount *paccount = NULL;
@@ -1386,9 +1391,7 @@ PHP_METHOD(PhurpleAccount, set)
 
 
 /* {{{ proto mixed PhurpleAccount::get($key)
-	Sets a protocol-specific setting for an account.
-	Possible return datatypes are int|boolean|string or null 
-	if the setting isn't set or not found*/
+	Gets a protocol-specific setting for an account. Possible return datatypes are int|boolean|string or null if the setting isn't set or not found*/
 PHP_METHOD(PhurpleAccount, get)
 {
 	PurpleAccount *paccount = NULL;
@@ -1573,22 +1576,19 @@ PHP_METHOD(PhurpleConversation, __construct)
 	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
 
 	if(NULL != account) {
+		/**
+		 * It were possible to push the phurple_object_storage,
+		 * there is a way to read the directly from the libpurple.
+		 * With buddies this possibility is bloked because the
+		 * buddies container is static.
+		 */
 		conv = purple_conversation_new(type, paccount, estrdup(name));
 		conversations = purple_get_conversations();
-/*
-		zend_update_property_long(PhurpleConversation_ce,
-		                          getThis(),
-		                          "index",
-		                          sizeof("index")-1,
-		                          (long)g_list_position(conversations, g_list_last(conversations)) TSRMLS_CC
-		                          );*/
+
 		cnv = conversations;
 		name1 = g_strdup(purple_normalize(paccount, name));
 
 		for (; cnv != NULL; cnv = cnv->next) {
-// 			if((PurpleConversation *)cnv->data == conv) {
-// 				conv_list_position = g_list_position(conversations, cnv);
-// 			}
 			name2 = purple_normalize(paccount, purple_conversation_get_name((PurpleConversation *)cnv->data));
 
 			if ((paccount == purple_conversation_get_account((PurpleConversation *)cnv->data)) &&

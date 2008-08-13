@@ -59,7 +59,7 @@ PHP_METHOD(PhurpleClient, iterate);
 /*PHP_METHOD(PhurpleClient, set);
 PHP_METHOD(PhurpleClient, get);*/
 PHP_METHOD(PhurpleClient, connect);
-PHP_METHOD(PhurpleClient, disconnect);
+/*PHP_METHOD(PhurpleClient, disconnect);*/
 PHP_METHOD(PhurpleClient, setUserDir);
 PHP_METHOD(PhurpleClient, setDebug);
 PHP_METHOD(PhurpleClient, setUiId);
