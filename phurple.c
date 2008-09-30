@@ -24,7 +24,12 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
-#include <pcre/pcrelib/pcre.h>
+
+#ifdef HAVE_BUNDLED_PCRE
+#include "pcre/pcrelib/pcre.h"
+#elif HAVE_PCRE
+#include <pcre.h>
+#endif
 
 #include "php_phurple.h"
 
@@ -2755,7 +2760,11 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer null)
  Only returns the returned zval if retval_ptr != NULL */
 static zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... )
 {
+        /**
+         * TODO Remove this call and pass the tsrm_ls directly as param
+         */
 	TSRMLS_FETCH();
+
 #if PHURPLE_INTERNAL_DEBUG
 	php_printf("==================== call_custom_method begin ============================\n");
 	php_printf("class: %s\n", obj_ce->name);

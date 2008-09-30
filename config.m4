@@ -86,6 +86,13 @@ if test "$PHP_PHURPLE" != "no"; then
 
 	dnl end check for libpurple
 
-  PHP_NEW_EXTENSION(phurple, [ phurple.c ], $ext_shared)
+
+	dnl check for pcre, weither bundled or system header should be there
+	
+	AC_CHECK_HEADER([pcre.h], [], AC_MSG_ERROR([pcre.h not found]))
+
+	dnl end check for pcre
+
+	PHP_NEW_EXTENSION(phurple, [ phurple.c ], $ext_shared)
 
 fi
