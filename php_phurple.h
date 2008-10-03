@@ -33,6 +33,8 @@ extern zend_module_entry phurple_module_entry;
 #include "TSRM.h"
 #endif
 
+#include <purple.h>
+
 PHP_MINIT_FUNCTION(phurple);
 PHP_MSHUTDOWN_FUNCTION(phurple);
 PHP_RINIT_FUNCTION(phurple);
@@ -139,8 +141,16 @@ ZEND_BEGIN_MODULE_GLOBALS(phurple)
 	{
 		HashTable buddy;
 		HashTable group;
-	} ppos; 
+	} ppos;
+	
+	/**
+	 * Libpurple options
+	 */
+	PurpleCoreUiOps php_core_uiops;
+	PurpleAccountUiOps php_account_uiops;
 ZEND_END_MODULE_GLOBALS(phurple)
+
+ZEND_EXTERN_MODULE_GLOBALS(phurple)
 
 /**
  * Signal names
@@ -169,6 +179,58 @@ ZEND_END_MODULE_GLOBALS(phurple)
 #define PHURPLE_MK_OBJ(o, c) 	MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
 
 #define PHURPLE_INTERNAL_DEBUG 0
+
+extern zend_module_entry phurple_module_entry;
+
+extern zend_class_entry *PhurpleClient_ce;
+extern zend_class_entry *PhurpleConversation_ce;
+extern zend_class_entry *PhurpleAccount_ce;
+extern zend_class_entry *PhurpleConnection_ce;
+extern zend_class_entry *PhurpleBuddy_ce;
+extern zend_class_entry *PhurpleBuddyList_ce;
+extern zend_class_entry *PhurpleBuddyGroup_ce;
+
+#if USING_PHP_53
+#define PHURPLE_CLIENT_CLASS_NAME "Client"
+#else
+#define PHURPLE_CLIENT_CLASS_NAME "PhurpleClient"
+#endif
+
+#if USING_PHP_53
+#define PHURPLE_CONVERSATION_CLASS_NAME "Conversation"
+#else
+#define PHURPLE_CONVERSATION_CLASS_NAME "PhurpleConversation"
+#endif
+
+#if USING_PHP_53
+#define PHURPLE_ACCOUNT_CLASS_NAME "Account"
+#else
+#define PHURPLE_ACCOUNT_CLASS_NAME "PhurpleAccount"
+#endif
+
+#if USING_PHP_53
+#define PHURPLE_CONNECION_CLASS_NAME "Connection"
+#else
+#define PHURPLE_CONNECION_CLASS_NAME "PhurpleConnection"
+#endif
+
+#if USING_PHP_53
+#define PHURPLE_BUDDY_CLASS_NAME "Buddy"
+#else
+#define PHURPLE_BUDDY_CLASS_NAME "PhurpleBuddy"
+#endif
+
+#if USING_PHP_53
+#define PHURPLE_BUDDYLIST_CLASS_NAME "BuddyList"
+#else
+#define PHURPLE_BUDDYLIST_CLASS_NAME "PhurpleBuddyList"
+#endif
+
+#if USING_PHP_53
+#define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple::BuddyGroup"
+#else
+#define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"
+#endif
 
 #endif	/* PHP_PHURPLE_H */
 
