@@ -41,13 +41,15 @@
 
 
 extern PurpleEventLoopUiOps glib_eventloops;
+extern PurpleCoreUiOps php_core_uiops;
+extern PurpleAccountUiOps php_account_uiops;
 extern char *segfault_message;
 
 extern char *phurple_get_protocol_id_by_name(const char *name);
 extern zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... );
 
 #if PHURPLE_INTERNAL_DEBUG
-void phurple_dump_zval(zval *var);
+extern void phurple_dump_zval(zval *var);
 #endif
 
 /* {{{ */
@@ -125,6 +127,7 @@ phurple_g_loop_callback(void)
 }
 /* }}} */
 
+
 /*
 **
 **
@@ -152,11 +155,12 @@ PHP_METHOD(PhurpleClient, runLoop)
 	
 	phurple_g_loop_callback();
 	
-	if(interval) {
+	if(interval > 0) {
 		g_timeout_add(interval, (GSourceFunc)phurple_heartbeat_callback, NULL);
 	}
 	
 	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+	
 	g_main_loop_run(loop);
 }
 /* }}} */
@@ -346,15 +350,19 @@ PHP_METHOD(PhurpleClient, getCoreVersion)
 	creates new PhurpleClient instance*/
 PHP_METHOD(PhurpleClient, getInstance)
 {	
-	if(!PHURPLE_G(phurple_client_obj) || NULL == zend_objects_get_address(PHURPLE_G(phurple_client_obj) TSRMLS_CC)) {
+	zval *tmp = NULL;
+	tmp = PHURPLE_G(phurple_client_obj);
+
+	if(NULL == zend_objects_get_address(tmp TSRMLS_CC)) {
+	/*if(NULL == PHURPLE_G(phurple_client_obj) || NULL == zend_objects_get_address(PHURPLE_G(phurple_client_obj) TSRMLS_CC)) {*/
 
 		/**
 		 * phurple initialization stuff
 		 */
 		purple_util_set_user_dir(PHURPLE_G(custom_user_dir));
 		purple_debug_set_enabled(PHURPLE_G(debug));
-		purple_core_set_ui_ops(&PHURPLE_G(php_core_uiops));
-		purple_accounts_set_ui_ops(&PHURPLE_G(php_account_uiops));
+		purple_core_set_ui_ops(&php_core_uiops);
+		purple_accounts_set_ui_ops(&php_account_uiops);
 		purple_eventloop_set_ui_ops(&glib_eventloops);
 		purple_plugins_add_search_path(INI_STR("phurple.custom_plugin_path"));
 

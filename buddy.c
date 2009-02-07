@@ -33,7 +33,7 @@
 #include <purple.h>
 
 #if PHURPLE_INTERNAL_DEBUG
-void phurple_dump_zval(zval *var);
+extern void phurple_dump_zval(zval *var);
 #endif
 
 /*
@@ -117,10 +117,11 @@ PHP_METHOD(PhurpleBuddy, getName)
 	zend_hash_index_find(&PHURPLE_G(ppos).buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
 
 	if(pbuddy) {
-		const char *name = purple_buddy_get_name(pbuddy);
-		if(name) {
+		/*const char *name = purple_buddy_get_name(pbuddy);
+		if(name && '\0' != name) {
 			RETURN_STRING(estrdup(name), 0);
-		}
+		}*/
+		RETURN_STRING((char*)purple_buddy_get_name(pbuddy), 0);
 	}
 	
 	RETURN_NULL();

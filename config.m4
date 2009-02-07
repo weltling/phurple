@@ -8,6 +8,8 @@ PHP_ARG_ENABLE(phurple, whether to enable phurple support,
 
 if test "$PHP_PHURPLE" != "no"; then
 
+	CFLAGS="$CFLAGS -g3"
+
 	dnl check for glib
 	
 	SEARCH_PATH="/usr/local /usr /opt/gnome"

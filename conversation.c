@@ -33,7 +33,7 @@
 #include <purple.h>
 
 #if PHURPLE_INTERNAL_DEBUG
-void phurple_dump_zval(zval *var);
+extern void phurple_dump_zval(zval *var);
 #endif
 
 /*
@@ -135,7 +135,7 @@ PHP_METHOD(PhurpleConversation, sendIM)
 	ZVAL_LONG(conversation_index, Z_LVAL_P(zend_read_property(PhurpleConversation_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
 	conversation = g_list_nth_data (purple_get_conversations(), (guint)Z_LVAL_P(conversation_index));
 
-	if(NULL != conversation) {
+	if(message_len && NULL != conversation) {
 		purple_conv_im_send(PURPLE_CONV_IM(conversation), estrdup(message));
 	}
 }

@@ -56,7 +56,7 @@ typedef struct
 } PurpleAccountSetting;
 
 #if PHURPLE_INTERNAL_DEBUG
-void phurple_dump_zval(zval *var);
+extern void phurple_dump_zval(zval *var);
 #endif
 
 /*

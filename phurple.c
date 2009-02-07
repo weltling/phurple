@@ -25,6 +25,13 @@
 #include <php_ini.h>
 #include <ext/standard/info.h>
 
+#include <main/php_config.h>
+#ifdef HAVE_BUNDLED_PCRE
+#include <ext/pcre/pcrelib/pcre.h>
+#elif HAVE_PCRE
+#include <pcre.h>
+#endif
+
 #include "php_phurple.h"
 
 #include <glib.h>
@@ -42,21 +49,18 @@
 #define PHURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PHURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
-static void phurple_ui_init();
-static zval *phurple_string_zval(const char *str);
-static zval *phurple_long_zval(long l);
+ZEND_DECLARE_MODULE_GLOBALS(phurple)
+
 static void phurple_glib_io_destroy(gpointer data);
 static gboolean phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data);
 static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function, gpointer data);
 static void phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime);
 static void phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime);
 static void phurple_signed_off_function(PurpleConnection *gc, gpointer null);
-zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... );
-static char *phurple_tolower(const char *s);
 static void phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
-static int phurple_hash_index_find(HashTable *ht, void *element);
+static void phurple_ui_init();
 static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message,
-                                          gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb,void *user_data);
+                                       gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
 
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
@@ -87,6 +91,7 @@ typedef struct _PurpleGLibIOClosure {
 	gpointer data;
 } PurpleGLibIOClosure;
 
+
 PurpleEventLoopUiOps glib_eventloops =
 {
 	g_timeout_add,
@@ -104,8 +109,8 @@ PurpleEventLoopUiOps glib_eventloops =
 	NULL
 };
 
-/*** Conversation uiops ***/
-static PurpleConversationUiOps php_conv_uiops =
+
+PurpleConversationUiOps php_conv_uiops =
 {
 	NULL,                      /* create_conversation  */
 	NULL,                      /* destroy_conversation */
@@ -128,13 +133,43 @@ static PurpleConversationUiOps php_conv_uiops =
 	NULL
 };
 
-ZEND_DECLARE_MODULE_GLOBALS(phurple);
+
+PurpleCoreUiOps php_core_uiops =
+{
+	NULL,
+	NULL,
+	phurple_ui_init,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
+
+
+PurpleAccountUiOps php_account_uiops = 
+{
+	NULL,				/* notify added */
+	NULL,				/* status changed */
+	NULL,				/* request add */
+	phurple_request_authorize,				/* request authorize */
+	NULL,				/* close account request */
+	NULL,
+	NULL,
+	NULL,
+	NULL
+};
+
+
+/* classes definitions*/
+zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce;
+
 
 void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {
-/*	ALLOC_INIT_ZVAL(phurple_globals->phurple_client_obj);
-	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;*/
-	phurple_globals->phurple_client_obj = NULL;
+	ALLOC_INIT_ZVAL(phurple_globals->phurple_client_obj);
+	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;
+	/*phurple_globals->phurple_client_obj = NULL;*/
 
 	zend_hash_init(&(phurple_globals->ppos).buddy, 16, NULL, NULL, 0);
 	zend_hash_init(&(phurple_globals->ppos).group, 16, NULL, NULL, 0);
@@ -143,10 +178,6 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	phurple_globals->custom_user_dir = estrdup("/dev/null");
 	phurple_globals->custom_plugin_path = estrdup("");
 	phurple_globals->ui_id = estrdup("PHP");
-	
-	phurple_globals->php_core_uiops.ui_init = phurple_ui_init;
-	
-	phurple_globals->php_account_uiops.request_authorize = phurple_request_authorize;
 }
 
 void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC) { }
@@ -154,14 +185,9 @@ void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC) { }
 /* True global resources - no need for thread safety here */
 static int le_phurple;
 
-
-/* classes definitions*/
-zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce;
-
-
 /* {{{ phurple_functions[] */
 zend_function_entry phurple_functions[] = {
-	{NULL, NULL, NULL}	/* Must be the last line in phurple_functions[] */
+	{NULL, NULL, NULL}
 };
 /* }}} */
 
@@ -310,14 +336,7 @@ PHP_INI_END()
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(phurple)
 {
-#ifdef ZTS
-	ts_allocate_id(&phurple_globals_id,
-			sizeof(zend_phurple_globals),
-			(ts_allocate_ctor)phurple_globals_ctor,
-			(ts_allocate_dtor)phurple_globals_dtor);
-#else
-	phurple_globals_ctor(&phurple_globals TSRMLS_CC);
-#endif
+	ZEND_INIT_MODULE_GLOBALS(phurple, phurple_globals_ctor, phurple_globals_dtor);
 	
 	REGISTER_INI_ENTRIES();
 
@@ -499,6 +518,7 @@ PHP_MINFO_FUNCTION(phurple)
 }
 /* }}} */
 
+
 #if PHURPLE_INTERNAL_DEBUG
 void
 phurple_dump_zval(zval *var)
@@ -539,44 +559,6 @@ TSRMLS_FETCH();
 }
 #endif
 
-/* {{{ */
-char *phurple_get_protocol_id_by_name(const char *protocol_name)
-{
-	GList *iter;
-
-	iter = purple_plugins_get_protocols();
-
-	for (; iter; iter = iter->next) {
-		PurplePlugin *plugin = iter->data;
-		PurplePluginInfo *info = plugin->info;
-		if (info && info->name && 0 == strcmp(phurple_tolower(info->name), phurple_tolower(protocol_name))) {
-			return estrdup(info->id);
-		}
-	}
-
-	return "";
-}
-/* }}} */
-
-/*
-**
-**
-** Phurple pounce methods
-**
-*/
-
-/*
-**
-**
-** End phurple pounce methods
-**
-*/
-
-/*
-**
-** Helper functions
-**
-*/
 
 /* {{{ */
 static void
@@ -587,68 +569,9 @@ phurple_ui_init()
 /* }}} */
 
 
-#ifdef HAVE_SIGNAL_H
-/* {{{ */
-static void
-clean_pid()
-{
-	int status;
-	pid_t pid;
-
-	do {
-		pid = waitpid(-1, &status, WNOHANG);
-	} while (pid != 0 && pid != (pid_t)-1);
-
-	if ((pid == (pid_t) - 1) && (errno != ECHILD)) {
-		char errmsg[BUFSIZ];
-		snprintf(errmsg, BUFSIZ, "Warning: waitpid() returned %d", pid);
-		perror(errmsg);
-	}
-
-	/* Restore signal catching */
-	signal(SIGALRM, sighandler);
-}
-/* }}} */
-
-
-/* {{{ */
-static void
-sighandler(int sig)
-{
-	switch (sig) {
-	case SIGHUP:
-		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
-		purple_connections_disconnect_all();
-		break;
-	case SIGSEGV:
-		fprintf(stderr, "%s", segfault_message);
-		abort();
-		break;
-	case SIGCHLD:
-		/* Restore signal catching */
-		signal(SIGCHLD, sighandler);
-		alarm(1);
-		break;
-	case SIGALRM:
-		clean_pid();
-		break;
-	default:
-		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
-		
-		purple_connections_disconnect_all();
-
-		purple_plugins_unload_all();
-
-		exit(0);
-	}
-}
-/* }}} */
-#endif
-
-
 /* {{{ just took this two functions from the readline extension */
-static zval
-*phurple_string_zval(const char *str)
+zval*
+phurple_string_zval(const char *str)
 {
 	zval *ret;
 	
@@ -666,8 +589,8 @@ static zval
 
 
 /* {{{ */
-static zval
-*phurple_long_zval(long l)
+zval*
+phurple_long_zval(long l)
 {
 	zval *ret;
 	MAKE_STD_ZVAL(ret);
@@ -681,231 +604,65 @@ static zval
 
 
 /* {{{ */
-static void
-phurple_glib_io_destroy(gpointer data)
+char*
+phurple_tolower(const char *s)
 {
-	g_free(data);
+	int  i = 0;
+	char *r = estrdup(s);
+
+	while (r[i])
+	{
+		r[i] = tolower(r[i]);
+		i++;
+	}
+
+	return r;
 }
 /* }}} */
 
 
 /* {{{ */
-static gboolean
-phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+int
+phurple_hash_index_find(HashTable *ht, void *element)
 {
-	PurpleGLibIOClosure *closure = data;
-	PurpleInputCondition phurple_cond = 0;
-	
-	if (condition & PHURPLE_GLIB_READ_COND)
-		phurple_cond |= PURPLE_INPUT_READ;
-	if (condition & PHURPLE_GLIB_WRITE_COND)
-		phurple_cond |= PURPLE_INPUT_WRITE;
-	
-	closure->function(closure->data, g_io_channel_unix_get_fd(source),
-	                  phurple_cond);
-	
-	return TRUE;
-}
-/* }}} */
+	ulong i;
 
-
-/* {{{ */
-static guint
-glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
-                               gpointer data)
-{
-	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
-	GIOChannel *channel;
-	GIOCondition cond = 0;
-	
-	closure->function = function;
-	closure->data = data;
-	
-	if (condition & PURPLE_INPUT_READ)
-		cond |= PHURPLE_GLIB_READ_COND;
-	if (condition & PURPLE_INPUT_WRITE)
-		cond |= PHURPLE_GLIB_WRITE_COND;
-	
-	channel = g_io_channel_unix_new(fd);
-	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
-	                                      phurple_glib_io_invoke, closure, phurple_glib_io_destroy);
-	
-	g_io_channel_unref(channel);
-	return closure->result;
-}
-/* }}} */
-
-
-/* {{{ */
-static void
-phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime)
-{
-	const int PARAMS_COUNT = 5;
-	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
-	GList *conversations = purple_get_conversations();
-	PurpleBuddy *pbuddy = NULL;
-	PurpleAccount *paccount = NULL;
-
-	TSRMLS_FETCH();
-
-	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
-	zend_update_property_long(PhurpleConversation_ce,
-	                          conversation,
-	                          "index",
-	                          sizeof("index")-1,
-	                          (long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
-	                          );
-
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
-	if(paccount) {
-		pbuddy = purple_find_buddy(paccount, !who ? purple_conversation_get_name(conv) : who);
-		
-		if(pbuddy) {
-			struct phurple_object_storage *pp = &PHURPLE_G(ppos);
-			int ind = phurple_hash_index_find(&pp->buddy, pbuddy);
-			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
-			
-			if(ind == FAILURE) {
-				ulong nextid = zend_hash_next_free_element(&pp->buddy);
-				zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
-				zend_update_property_long(PhurpleBuddy_ce,
-				                          buddy,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)nextid TSRMLS_CC
-				                          );
-			} else {
-				zend_update_property_long(PhurpleBuddy_ce,
-				                          buddy,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)ind TSRMLS_CC
-				                          );
-			}
-		} else {
-			if(who) {
-				buddy = phurple_string_zval(who);
-			} else {
-				ALLOC_INIT_ZVAL(buddy);
-			}
+	for(i=0; i<zend_hash_num_elements(ht); i++) {
+		if(zend_hash_index_find(ht, i, &element) != FAILURE) {
+			return (int)i;
 		}
 	}
-	
-	tmp1 = phurple_string_zval(message);
-	tmp2 = phurple_long_zval((long)flags);
-	tmp3 = phurple_long_zval((long)mtime);
 
-	call_custom_method(&client,
-	                   ce,
-	                   NULL,
-	                   "writeconv",
-	                   sizeof("writeconv")-1,
-	                   NULL,
-	                   PARAMS_COUNT,
-	                   &conversation,
-	                   &buddy,
-	                   &tmp1,
-	                   &tmp2,
-	                   &tmp3
-	                   );
-
-	zval_ptr_dtor(&tmp1);
-	zval_ptr_dtor(&tmp2);
-	zval_ptr_dtor(&tmp3);
+	return FAILURE;
 }
 /* }}} */
 
 
 /* {{{ */
-static void
-phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime)
+char*
+phurple_get_protocol_id_by_name(const char *protocol_name)
 {
-	const int PARAMS_COUNT = 5;
-	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
-	GList *conversations = purple_get_conversations();
-	PurpleBuddy *pbuddy = NULL;
-	PurpleAccount *paccount = NULL;
+	GList *iter;
 
-	TSRMLS_FETCH();
+	iter = purple_plugins_get_protocols();
 
-	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
-	zend_update_property_long(PhurpleConversation_ce,
-	                          conversation,
-	                          "index",
-	                          sizeof("index")-1,
-	                          (long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
-	                          );
-
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
-	if(paccount) {
-		pbuddy = purple_find_buddy(paccount, !who ? purple_conversation_get_name(conv) : who);
-		
-		if(pbuddy) {
-			struct phurple_object_storage *pp = &PHURPLE_G(ppos);
-			int ind = phurple_hash_index_find(&pp->buddy, pbuddy);
-			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
-			
-			if(ind == FAILURE) {
-				ulong nextid = zend_hash_next_free_element(&pp->buddy);
-				zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
-				zend_update_property_long(PhurpleBuddy_ce,
-				                          buddy,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)nextid TSRMLS_CC
-				                          );
-			} else {
-				zend_update_property_long(PhurpleBuddy_ce,
-				                          buddy,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)ind TSRMLS_CC
-				                         );
-			}
-		} else {
-			if(who) {
-				buddy = phurple_string_zval(who);
-			} else {
-				ALLOC_INIT_ZVAL(buddy);
-			}
+	for (; iter; iter = iter->next) {
+		PurplePlugin *plugin = iter->data;
+		PurplePluginInfo *info = plugin->info;
+		if (info && info->name && 0 == strcmp(phurple_tolower(info->name), phurple_tolower(protocol_name))) {
+			return estrdup(info->id);
 		}
 	}
-	
-	tmp1 = phurple_string_zval(message);
-	tmp2 = phurple_long_zval((long)flags);
-	tmp3 = phurple_long_zval((long)mtime);
 
-	call_custom_method(&client,
-	                   ce,
-	                   NULL,
-	                   "writeim",
-	                   sizeof("writeim")-1,
-	                   NULL,
-	                   PARAMS_COUNT,
-	                   &conversation,
-	                   &buddy,
-	                   &tmp1,
-	                   &tmp2,
-	                   &tmp3
-	                   );
-
-	zval_ptr_dtor(&tmp1);
-	zval_ptr_dtor(&tmp2);
-	zval_ptr_dtor(&tmp3);
-	zval_ptr_dtor(&conversation);
-
+	return "";
 }
 /* }}} */
+
 
 /* {{{
  Only returns the returned zval if retval_ptr != NULL */
-zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... )
+zval*
+call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... )
 {
         /**
          * TODO Remove this call and pass the tsrm_ls directly as param
@@ -1010,50 +767,7 @@ zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_functi
 
 
 /* {{{ */
-static char *phurple_tolower(const char *s)
-{
-	int  i = 0;
-	char *r = estrdup(s);
-
-	while (r[i])
-	{
-		r[i] = tolower(r[i]);
-		i++;
-	}
-
-	return r;
-}
-/* }}} */
-
-
-/* {{{ */
-static int phurple_hash_index_find(HashTable *ht, void *element)
-{
-	ulong i;
-
-	for(i=0; i<zend_hash_num_elements(ht); i++) {
-		if(zend_hash_index_find(ht, i, &element) != FAILURE) {
-			return (int)i;
-		}
-	}
-
-	return FAILURE;
-}
-/* }}} */
-
-
-/* {{{ */
-static void
-phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
-{
-	/**
-	 * @todo call here some php callback
-	 */
-}
-/* }}} */
-
-/* {{{ */
-static void *
+static void*
 phurple_request_authorize(PurpleAccount *account,
                              const char *remote_user,
                              const char *id,
@@ -1116,6 +830,236 @@ phurple_request_authorize(PurpleAccount *account,
 /* }}} */
 
 
+#ifdef HAVE_SIGNAL_H
+/* {{{ */
+static void
+clean_pid()
+{
+	int status;
+	pid_t pid;
+
+	do {
+		pid = waitpid(-1, &status, WNOHANG);
+	} while (pid != 0 && pid != (pid_t)-1);
+
+	if ((pid == (pid_t) - 1) && (errno != ECHILD)) {
+		char errmsg[BUFSIZ];
+		snprintf(errmsg, BUFSIZ, "Warning: waitpid() returned %d", pid);
+		perror(errmsg);
+	}
+
+	/* Restore signal catching */
+	signal(SIGALRM, sighandler);
+}
+/* }}} */
+
+
+/* {{{ */
+static void
+sighandler(int sig)
+{
+	switch (sig) {
+	case SIGHUP:
+		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
+		purple_connections_disconnect_all();
+		break;
+	case SIGSEGV:
+		fprintf(stderr, "%s", segfault_message);
+		abort();
+		break;
+	case SIGCHLD:
+		/* Restore signal catching */
+		signal(SIGCHLD, sighandler);
+		alarm(1);
+		break;
+	case SIGALRM:
+		clean_pid();
+		break;
+	default:
+		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
+		
+		purple_connections_disconnect_all();
+
+		purple_plugins_unload_all();
+
+		exit(0);
+	}
+}
+/* }}} */
+#endif
+
+/* {{{ */
+static void
+phurple_glib_io_destroy(gpointer data)
+{
+	g_free(data);
+}
+/* }}} */
+
+
+/* {{{ */
+static gboolean
+phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+{
+	PurpleGLibIOClosure *closure = data;
+	PurpleInputCondition purple_cond = 0;
+	
+	if(condition & PHURPLE_GLIB_READ_COND) {
+		purple_cond |= PURPLE_INPUT_READ;
+	}
+	
+	if(condition & PHURPLE_GLIB_WRITE_COND) {
+		purple_cond |= PURPLE_INPUT_WRITE;
+	}
+	
+	closure->function(closure->data, g_io_channel_unix_get_fd(source), purple_cond);
+	
+	return TRUE;
+}
+/* }}} */
+
+
+/* {{{ */
+static guint
+glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
+                               gpointer data)
+{
+	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
+	GIOChannel *channel;
+	GIOCondition cond = 0;
+	
+	closure->function = function;
+	closure->data = data;
+	
+	if (condition & PURPLE_INPUT_READ) {
+		cond |= PHURPLE_GLIB_READ_COND;
+	}
+	
+	if (condition & PURPLE_INPUT_WRITE) {
+		cond |= PHURPLE_GLIB_WRITE_COND;
+	}
+	
+	channel = g_io_channel_unix_new(fd);
+	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
+	                                      phurple_glib_io_invoke, closure, phurple_glib_io_destroy);
+	
+	g_io_channel_unref(channel);
+	return closure->result;
+}
+/* }}} */
+
+
+/* {{{ */
+static void
+phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime)
+{
+	/**
+	 * Just mirroring phurple_write_im_function despite we
+	 * loose the alias to just not to implement the same twice
+	 */
+	phurple_write_im_function(conv, who, message, flags, mtime);
+}
+/* }}} */
+
+
+/* {{{ */
+static void
+phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime)
+{
+	const int PARAMS_COUNT = 5;
+	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
+	GList *conversations = purple_get_conversations();
+	PurpleBuddy *pbuddy = NULL;
+	PurpleAccount *paccount = NULL;
+
+	char *who_san = (!who || '\0' == who) ? "" : (char*)who;
+	char *message_san = (!message || '\0' == message) ? "" : (char*)message;
+
+	TSRMLS_FETCH();
+
+	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
+	zend_update_property_long(PhurpleConversation_ce,
+	                          conversation,
+	                          "index",
+	                          sizeof("index")-1,
+	                          (long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
+	                          );
+
+	zval *client = PHURPLE_G(phurple_client_obj);
+	zend_class_entry *ce = Z_OBJCE_P(client);
+	
+	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
+	if(paccount) {
+		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
+		
+		if(NULL != pbuddy) {
+			int ind = phurple_hash_index_find(&(PHURPLE_G(ppos).buddy), pbuddy);
+			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
+			
+			if(ind == FAILURE) {
+				ulong nextid = zend_hash_next_free_element(&(PHURPLE_G(ppos).buddy));
+				zend_hash_index_update(&(PHURPLE_G(ppos).buddy), nextid, (void*)pbuddy, sizeof(PurpleBuddy), NULL);
+				zend_update_property_long(PhurpleBuddy_ce,
+				                          buddy,
+				                          "index",
+				                          sizeof("index")-1,
+				                          (long)nextid TSRMLS_CC
+				                          );
+			} else {
+				zend_update_property_long(PhurpleBuddy_ce,
+				                          buddy,
+				                          "index",
+				                          sizeof("index")-1,
+				                          (long)ind TSRMLS_CC
+				                         );
+			}
+		} else {
+			if(who_san) {
+				buddy = phurple_string_zval(who_san);
+			} else {
+				ALLOC_INIT_ZVAL(buddy);
+			}
+		}
+	}
+	
+	tmp1 = phurple_string_zval(message_san);
+	tmp2 = phurple_long_zval((long)flags);
+	tmp3 = phurple_long_zval((long)mtime);
+
+	call_custom_method(&client,
+	                   ce,
+	                   NULL,
+	                   "writeim",
+	                   sizeof("writeim")-1,
+	                   NULL,
+	                   PARAMS_COUNT,
+	                   &conversation,
+	                   &buddy,
+	                   &tmp1,
+	                   &tmp2,
+	                   &tmp3
+	                   );
+
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+	zval_ptr_dtor(&tmp3);
+	zval_ptr_dtor(&conversation);
+
+}
+/* }}} */
+
+
+/* {{{ */
+static void
+phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+{
+	/**
+	 * @todo put here some php callback
+	 */
+}
+/* }}} */
+
+
 /* {{{ */
 static void
 phurple_signed_off_function(PurpleConnection *conn, gpointer null)
@@ -1151,11 +1095,6 @@ phurple_signed_off_function(PurpleConnection *conn, gpointer null)
 }
 /* }}} */
 
-/*
-**
-** End helper functions
-**
-*/
 
 /*
  * Local variables:

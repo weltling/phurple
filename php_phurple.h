@@ -142,15 +142,7 @@ ZEND_BEGIN_MODULE_GLOBALS(phurple)
 		HashTable buddy;
 		HashTable group;
 	} ppos;
-	
-	/**
-	 * Libpurple options
-	 */
-	PurpleCoreUiOps php_core_uiops;
-	PurpleAccountUiOps php_account_uiops;
 ZEND_END_MODULE_GLOBALS(phurple)
-
-ZEND_EXTERN_MODULE_GLOBALS(phurple)
 
 /**
  * Signal names
@@ -170,17 +162,17 @@ ZEND_EXTERN_MODULE_GLOBALS(phurple)
 #define PHURPLE_G(v) (phurple_globals.v)
 #endif
 
+ZEND_EXTERN_MODULE_GLOBALS(phurple)
+
 /**
  * @todo At many places this macros was used as follows:
  * PHURPLE_MK_OBJ(return_value, PhurpleAccount_ce);
  * But it doesn't really affect the return_value
  * Changing the MAKE_STD_ZVAL to ZVAL_NULL does work, why?
  */
-#define PHURPLE_MK_OBJ(o, c) 	MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
+#define PHURPLE_MK_OBJ(o, c) MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
 
 #define PHURPLE_INTERNAL_DEBUG 0
-
-extern zend_module_entry phurple_module_entry;
 
 extern zend_class_entry *PhurpleClient_ce;
 extern zend_class_entry *PhurpleConversation_ce;
