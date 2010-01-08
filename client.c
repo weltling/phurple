@@ -350,10 +350,9 @@ PHP_METHOD(PhurpleClient, getCoreVersion)
 	creates new PhurpleClient instance*/
 PHP_METHOD(PhurpleClient, getInstance)
 {	
-	zval *tmp = NULL;
-	tmp = PHURPLE_G(phurple_client_obj);
-
-	if(NULL == zend_objects_get_address(tmp TSRMLS_CC)) {
+	if(NULL == PHURPLE_G(phurple_client_obj)) {
+	/*if(NULL == Z_OBJVAL_P(PHURPLE_G(phurple_client_obj))) {*/
+	/*if(NULL == zend_objects_get_address(PHURPLE_G(phurple_client_obj) TSRMLS_CC)) {*/
 	/*if(NULL == PHURPLE_G(phurple_client_obj) || NULL == zend_objects_get_address(PHURPLE_G(phurple_client_obj) TSRMLS_CC)) {*/
 
 		/**
@@ -381,7 +380,6 @@ PHP_METHOD(PhurpleClient, getInstance)
 
 		PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
 		purple_savedstatus_activate(saved_status);
-
 
 		MAKE_STD_ZVAL(PHURPLE_G(phurple_client_obj));
 		Z_TYPE_P(PHURPLE_G(phurple_client_obj)) = IS_OBJECT;
@@ -415,6 +413,8 @@ PHP_METHOD(PhurpleClient, getInstance)
 		                  0);
 
 		return;
+	} else {
+		ZVAL_ADDREF(PHURPLE_G(phurple_client_obj));
 	}
 
 	*return_value = *PHURPLE_G(phurple_client_obj);

@@ -167,9 +167,10 @@ zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce,
 
 void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {
-	ALLOC_INIT_ZVAL(phurple_globals->phurple_client_obj);
-	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;
-	/*phurple_globals->phurple_client_obj = NULL;*/
+	/*MAKE_STD_ZVAL(phurple_globals->phurple_client_obj);*/
+	/*ALLOC_INIT_ZVAL(phurple_globals->phurple_client_obj);
+	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;*/
+	phurple_globals->phurple_client_obj = NULL;
 
 	zend_hash_init(&(phurple_globals->ppos).buddy, 16, NULL, NULL, 0);
 	zend_hash_init(&(phurple_globals->ppos).group, 16, NULL, NULL, 0);
@@ -180,7 +181,19 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	phurple_globals->ui_id = estrdup("PHP");
 }
 
-void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC) { }
+void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
+{
+	if(NULL != phurple_globals->phurple_client_obj) {
+		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
+	}
+
+	/*zend_hash_destroy(&(phurple_globals->ppos).buddy);
+	zend_hash_destroy(&(phurple_globals->ppos).group);
+
+	efree(phurple_globals->custom_user_dir);
+	efree(phurple_globals->custom_plugin_path);
+	efree(phurple_globals->ui_id);*/
+}
 
 /* True global resources - no need for thread safety here */
 static int le_phurple;
@@ -346,12 +359,7 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_class_entry ce;
 	
 	/* classes definitions */
-
-#if USING_PHP_53
-	INIT_CLASS_ENTRY(ce, "Phurple::Client", PhurpleClient_methods);
-#else
 	INIT_CLASS_ENTRY(ce, PHURPLE_CLIENT_CLASS_NAME, PhurpleClient_methods);
-#endif
 	PhurpleClient_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	/* A type of conversation */
@@ -384,50 +392,26 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_declare_class_constant_long(PhurpleClient_ce, "STATUS_AWAY", sizeof("STATUS_AWAY")-1, PURPLE_STATUS_AWAY TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleClient_ce, "STATUS_MOBILE", sizeof("STATUS_MOBILE")-1, PURPLE_STATUS_MOBILE TSRMLS_CC);
 	
-#if USING_PHP_53
-	INIT_CLASS_ENTRY(ce, "Phurple::Conversation", PhurpleConversation_methods);
-#else
 	INIT_CLASS_ENTRY(ce, PHURPLE_CONVERSATION_CLASS_NAME, PhurpleConversation_methods);
-#endif
 	PhurpleConversation_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PhurpleConversation_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
 
-#if USING_PHP_53
-	INIT_CLASS_ENTRY(ce, "Phurple::Account", PhurpleAccount_methods);
-#else
 	INIT_CLASS_ENTRY(ce, PHURPLE_ACCOUNT_CLASS_NAME, PhurpleAccount_methods);
-#endif
 	PhurpleAccount_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PhurpleAccount_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
-	
-#if USING_PHP_53
-	INIT_CLASS_ENTRY(ce, "Phurple::Connection", PhurpleConnection_methods);
-#else
+
 	INIT_CLASS_ENTRY(ce, PHURPLE_CONNECION_CLASS_NAME, PhurpleConnection_methods);
-#endif
 	PhurpleConnection_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PhurpleConnection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
-#if USING_PHP_53
-	INIT_CLASS_ENTRY(ce, "Phurple::Buddy", PhurpleBuddy_methods);
-#else
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_CLASS_NAME, PhurpleBuddy_methods);
-#endif
 	PhurpleBuddy_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PhurpleBuddy_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
-#if USING_PHP_53
-	INIT_CLASS_ENTRY(ce, "Phurple::BuddyList", PhurpleBuddyList_methods);
-#else
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDYLIST_CLASS_NAME, PhurpleBuddyList_methods);
-#endif
 	PhurpleBuddyList_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-#if USING_PHP_53
-	INIT_CLASS_ENTRY(ce, "Phurple::BuddyGroup", PhurpleBuddyGroup_methods);
-#else
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_GROUP_CLASS_NAME, PhurpleBuddyGroup_methods);
-#endif
 	PhurpleBuddyGroup_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	

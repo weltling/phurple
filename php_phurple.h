@@ -183,43 +183,43 @@ extern zend_class_entry *PhurpleBuddyList_ce;
 extern zend_class_entry *PhurpleBuddyGroup_ce;
 
 #if USING_PHP_53
-#define PHURPLE_CLIENT_CLASS_NAME "Client"
+#define PHURPLE_CLIENT_CLASS_NAME "Phurple\Client"
 #else
 #define PHURPLE_CLIENT_CLASS_NAME "PhurpleClient"
 #endif
 
 #if USING_PHP_53
-#define PHURPLE_CONVERSATION_CLASS_NAME "Conversation"
+#define PHURPLE_CONVERSATION_CLASS_NAME "Phurple\Conversation"
 #else
 #define PHURPLE_CONVERSATION_CLASS_NAME "PhurpleConversation"
 #endif
 
 #if USING_PHP_53
-#define PHURPLE_ACCOUNT_CLASS_NAME "Account"
+#define PHURPLE_ACCOUNT_CLASS_NAME "Phurple\Account"
 #else
 #define PHURPLE_ACCOUNT_CLASS_NAME "PhurpleAccount"
 #endif
 
 #if USING_PHP_53
-#define PHURPLE_CONNECION_CLASS_NAME "Connection"
+#define PHURPLE_CONNECION_CLASS_NAME "Phurple\Connection"
 #else
 #define PHURPLE_CONNECION_CLASS_NAME "PhurpleConnection"
 #endif
 
 #if USING_PHP_53
-#define PHURPLE_BUDDY_CLASS_NAME "Buddy"
+#define PHURPLE_BUDDY_CLASS_NAME "Phurple\Buddy"
 #else
 #define PHURPLE_BUDDY_CLASS_NAME "PhurpleBuddy"
 #endif
 
 #if USING_PHP_53
-#define PHURPLE_BUDDYLIST_CLASS_NAME "BuddyList"
+#define PHURPLE_BUDDYLIST_CLASS_NAME "Phurple\BuddyList"
 #else
 #define PHURPLE_BUDDYLIST_CLASS_NAME "PhurpleBuddyList"
 #endif
 
 #if USING_PHP_53
-#define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple::BuddyGroup"
+#define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple\BuddyGroup"
 #else
 #define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"
 #endif
