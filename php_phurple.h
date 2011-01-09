@@ -154,7 +154,7 @@ ZEND_END_MODULE_GLOBALS(phurple)
  * At the moment we only take care about PHP versions 5.3 or 5.2,
  * mostly because of namespaces. 
  */
-#define USING_PHP_53 ZEND_MODULE_API_NO >= 20071006
+#define PHURPLE_USING_PHP_53 ZEND_MODULE_API_NO >= 20071006
 
 #ifdef ZTS
 #define PHURPLE_G(v) TSRMG(phurple_globals_id, zend_phurple_globals *, v)
@@ -172,7 +172,7 @@ ZEND_EXTERN_MODULE_GLOBALS(phurple)
  */
 #define PHURPLE_MK_OBJ(o, c) MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
 
-#define PHURPLE_INTERNAL_DEBUG 0
+#define PHURPLE_INTERNAL_DEBUG 1
 
 extern zend_class_entry *PhurpleClient_ce;
 extern zend_class_entry *PhurpleConversation_ce;
@@ -182,43 +182,43 @@ extern zend_class_entry *PhurpleBuddy_ce;
 extern zend_class_entry *PhurpleBuddyList_ce;
 extern zend_class_entry *PhurpleBuddyGroup_ce;
 
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 #define PHURPLE_CLIENT_CLASS_NAME "Phurple\\Client"
 #else
 #define PHURPLE_CLIENT_CLASS_NAME "PhurpleClient"
 #endif
 
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 #define PHURPLE_CONVERSATION_CLASS_NAME "Phurple\\Conversation"
 #else
 #define PHURPLE_CONVERSATION_CLASS_NAME "PhurpleConversation"
 #endif
 
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 #define PHURPLE_ACCOUNT_CLASS_NAME "Phurple\\Account"
 #else
 #define PHURPLE_ACCOUNT_CLASS_NAME "PhurpleAccount"
 #endif
 
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 #define PHURPLE_CONNECION_CLASS_NAME "Phurple\\Connection"
 #else
 #define PHURPLE_CONNECION_CLASS_NAME "PhurpleConnection"
 #endif
 
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 #define PHURPLE_BUDDY_CLASS_NAME "Phurple\\Buddy"
 #else
 #define PHURPLE_BUDDY_CLASS_NAME "PhurpleBuddy"
 #endif
 
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 #define PHURPLE_BUDDYLIST_CLASS_NAME "Phurple\\BuddyList"
 #else
 #define PHURPLE_BUDDYLIST_CLASS_NAME "PhurpleBuddyList"
 #endif
 
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 #define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple\\BuddyGroup"
 #else
 #define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"

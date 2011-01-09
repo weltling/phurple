@@ -648,6 +648,12 @@ phurple_get_protocol_id_by_name(const char *protocol_name)
 zval*
 call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... )
 {
+	int result, i;
+	zend_fcall_info fci;
+	zval z_fname, ***params, *retval;
+	HashTable *function_table;
+	va_list given_params;
+	zend_fcall_info_cache fcic;
 		/**
 		 * TODO Remove this call and pass the tsrm_ls directly as param
 		 */
@@ -658,11 +664,6 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **f
 	php_printf("class: %s\n", obj_ce->name);
 	php_printf("method name: %s\n", function_name);
 #endif
-	int result, i;
-	zend_fcall_info fci;
-	zval z_fname, ***params, *retval;
-	HashTable *function_table;
-	va_list given_params;
 
 	params = (zval ***) safe_emalloc(param_count, sizeof(zval **), 0);
 
@@ -680,9 +681,7 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **f
 	va_end(given_params);
 	
 	fci.size = sizeof(fci);
-#if USING_PHP_53
-	fci.object_ptr = *object_pp;
-#else
+#if !PHURPLE_USING_PHP_53
 	fci.object_pp = object_pp;
 #endif
 	fci.function_name = &z_fname;
@@ -699,8 +698,6 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **f
 		fci.function_table = !object_pp ? EG(function_table) : NULL;
 		result = zend_call_function(&fci, NULL TSRMLS_CC);
 	} else {
-		zend_fcall_info_cache fcic;
-
 		fcic.initialized = 1;
 		if (!obj_ce) {
 			obj_ce = object_pp ? Z_OBJCE_PP(object_pp) : NULL;
@@ -722,11 +719,10 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **f
 			fcic.function_handler = *fn_proxy;
 		}
 		fcic.calling_scope = obj_ce;
-#if USING_PHP_53
-		fci.object_ptr = *object_pp;
-#else
-		fcic.object_pp = object_pp;
+#if PHURPLE_USING_PHP_53
+	fcic.object_ptr = *object_pp;
 #endif
+
 		result = zend_call_function(&fci, &fcic TSRMLS_CC);
 	}
 

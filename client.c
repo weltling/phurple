@@ -383,7 +383,7 @@ PHP_METHOD(PhurpleClient, getInstance)
 
 		MAKE_STD_ZVAL(PHURPLE_G(phurple_client_obj));
 		Z_TYPE_P(PHURPLE_G(phurple_client_obj)) = IS_OBJECT;
-#if USING_PHP_53
+#if PHURPLE_USING_PHP_53
 		object_init_ex(PHURPLE_G(phurple_client_obj), EG(called_scope));
 #else
 		zend_class_entry **ce = NULL;

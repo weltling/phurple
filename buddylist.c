@@ -180,6 +180,9 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 {
 	PurpleGroup *pgroup = NULL;
 	zval *name, *retval_ptr;
+	zval ***params;
+	zend_fcall_info fci;
+	zend_fcall_info_cache fcc;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &name) == FAILURE) {
 		RETURN_NULL();
@@ -188,10 +191,6 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 	pgroup = purple_find_group(Z_STRVAL_P(name));
 
 	if(pgroup) {
-		zval ***params;
-		zend_fcall_info fci;
-		zend_fcall_info_cache fcc;
-
 		params = safe_emalloc(sizeof(zval **), 1, 0);
 		params[0] = &name;
 		
@@ -201,9 +200,7 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		fci.function_table = EG(function_table);
 		fci.function_name = NULL;
 		fci.symbol_table = NULL;
-#if USING_PHP_53
-		fci.object_ptr = return_value;
-#else
+#if !PHURPLE_USING_PHP_53
 		fci.object_pp = &return_value;
 #endif
 		fci.retval_ptr_ptr = &retval_ptr;
@@ -214,7 +211,10 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		fcc.initialized = 1;
 		fcc.function_handler = PhurpleBuddyGroup_ce->constructor;
 		fcc.calling_scope = EG(scope);
-		
+#if PHURPLE_USING_PHP_53
+	fcc.object_ptr = return_value;
+#endif
+
 		if (zend_call_function(&fci, &fcc TSRMLS_CC) == FAILURE) {
 			efree(params);
 			zval_ptr_dtor(&retval_ptr);
