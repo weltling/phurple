@@ -62,12 +62,12 @@ phurple_heartbeat_callback(gpointer data)
 	zend_class_entry *ce = Z_OBJCE_P(client);
 
 	call_custom_method(&client,
-	                   ce,
-	                   NULL,
-	                   "loopheartbeat",
-	                   sizeof("loopheartbeat")-1,
-	                   NULL,
-	                   0);
+					   ce,
+					   NULL,
+					   "loopheartbeat",
+					   sizeof("loopheartbeat")-1,
+					   NULL,
+					   0);
 	
 	return 1;
 }
@@ -89,20 +89,20 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer null)
 
 	PHURPLE_MK_OBJ(connection, PhurpleConnection_ce);
 	zend_update_property_long(PhurpleConnection_ce,
-	                          connection,
-	                          "index",
-	                          sizeof("index")-1,
-	                          (long)g_list_position(connections, g_list_find(connections, conn)) TSRMLS_CC
-	                          );
+							  connection,
+							  "index",
+							  sizeof("index")-1,
+							  (long)g_list_position(connections, g_list_find(connections, conn)) TSRMLS_CC
+							  );
 
 	call_custom_method(&client,
-	                   ce,
-	                   NULL,
-	                   "onsignedon",
-	                   sizeof("onsignedon")-1,
-	                   NULL,
-	                   1,
-	                   &connection);
+					   ce,
+					   NULL,
+					   "onsignedon",
+					   sizeof("onsignedon")-1,
+					   NULL,
+					   1,
+					   &connection);
 	
 	zval_ptr_dtor(&connection);
 }
@@ -118,12 +118,12 @@ phurple_g_loop_callback(void)
 	zend_class_entry *ce = Z_OBJCE_P(client);
 
 	call_custom_method(&client,
-	                   ce,
-	                   NULL,
-	                   "loopcallback",
-	                   sizeof("loopcallback")-1,
-	                   NULL,
-	                   0);
+					   ce,
+					   NULL,
+					   "loopcallback",
+					   sizeof("loopcallback")-1,
+					   NULL,
+					   0);
 }
 /* }}} */
 
@@ -242,11 +242,11 @@ PHP_METHOD(PhurpleClient, addAccount)
 		Z_TYPE_P(return_value) = IS_OBJECT;
 		object_init_ex(return_value, PhurpleAccount_ce);
 		zend_update_property_long(PhurpleAccount_ce,
-		                          return_value,
-		                          "index",
-		                          sizeof("index")-1,
-		                          (long)g_list_position(accounts, g_list_find(accounts, account)) TSRMLS_CC
-		                          );
+								  return_value,
+								  "index",
+								  sizeof("index")-1,
+								  (long)g_list_position(accounts, g_list_find(accounts, account)) TSRMLS_CC
+								  );
 
 		efree(protocol);
 		efree(nick);
@@ -321,12 +321,12 @@ PHP_METHOD(PhurpleClient, findAccount)
 		Z_TYPE_P(return_value) = IS_OBJECT;
 		object_init_ex(return_value, PhurpleAccount_ce);
 		zend_update_property_long(PhurpleAccount_ce,
-		                          return_value,
-		                          "index",
-		                          sizeof("index")-1,
-		                          (long)g_list_position(purple_accounts_get_all(),
-		                          g_list_find(purple_accounts_get_all(), paccount)) TSRMLS_CC
-		                         );
+								  return_value,
+								  "index",
+								  sizeof("index")-1,
+								  (long)g_list_position(purple_accounts_get_all(),
+								  g_list_find(purple_accounts_get_all(), paccount)) TSRMLS_CC
+								 );
 		return;
 	}
 	
@@ -393,10 +393,10 @@ PHP_METHOD(PhurpleClient, getInstance)
 			object_init_ex(PHURPLE_G(phurple_client_obj), *ce);
 		} else {
 			zend_throw_exception(NULL,
-			                     "The "
-			                     PHURPLE_CLIENT_CLASS_NAME
-			                     " child class must be named CustomPhurpleClient for PHP < v5.3",
-			                     0 TSRMLS_CC);
+								 "The "
+								 PHURPLE_CLIENT_CLASS_NAME
+								 " child class must be named CustomPhurpleClient for PHP < v5.3",
+								 0 TSRMLS_CC);
 			return;
 		}
 		/* object_init_ex(tmp, EG(current_execute_data->fbc->common.scope)); would be beautiful but works not as expected */
@@ -405,12 +405,12 @@ PHP_METHOD(PhurpleClient, getInstance)
 		*return_value = *PHURPLE_G(phurple_client_obj);
 
 		call_custom_method(&PHURPLE_G(phurple_client_obj),
-		                   Z_OBJCE_P(PHURPLE_G(phurple_client_obj)),
-		                   NULL,
-		                   "initinternal",
-		                   sizeof("initinternal")-1,
-		                   NULL,
-		                  0);
+						   Z_OBJCE_P(PHURPLE_G(phurple_client_obj)),
+						   NULL,
+						   "initinternal",
+						   sizeof("initinternal")-1,
+						   NULL,
+						  0);
 
 		return;
 	} else {
@@ -537,11 +537,11 @@ PHP_METHOD(PhurpleClient, iterate)
 PHP_METHOD(PhurpleClient, connect)
 {
 	purple_signal_connect(purple_connections_get_handle(),
-	                      estrdup(SIGNAL_SIGNED_ON),
-	                      &PHURPLE_G(connection_handle),
-	                      PURPLE_CALLBACK(phurple_signed_on_function),
-	                      NULL
-	                      );
+						  estrdup(SIGNAL_SIGNED_ON),
+						  &PHURPLE_G(connection_handle),
+						  PURPLE_CALLBACK(phurple_signed_on_function),
+						  NULL
+						  );
 }
 /* }}} */
 
@@ -559,11 +559,11 @@ PHP_METHOD(PhurpleClient, connect)
 	}
 
 	purple_signal_connect(purple_connections_get_handle(),
-	                      SIGNAL_SIGNED_OFF,
-	                      &PHURPLE_G(connection_handle),
-	                      PURPLE_CALLBACK(phurple_signed_off_function),
-	                      NULL
-	                      );
+						  SIGNAL_SIGNED_OFF,
+						  &PHURPLE_G(connection_handle),
+						  PURPLE_CALLBACK(phurple_signed_off_function),
+						  NULL
+						  );
 }*/
 /* }}} */
 

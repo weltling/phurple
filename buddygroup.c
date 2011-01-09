@@ -66,18 +66,18 @@ PHP_METHOD(PhurpleBuddyGroup, __construct)
 			ulong nextid = zend_hash_next_free_element(&pp->group);
 			zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
 			zend_update_property_long(PhurpleBuddyGroup_ce,
-			                          getThis(),
-			                          "index",
-			                          sizeof("index")-1,
-			                          (long)nextid TSRMLS_CC
-			                          );
+									  getThis(),
+									  "index",
+									  sizeof("index")-1,
+									  (long)nextid TSRMLS_CC
+									  );
 		} else {
 			zend_update_property_long(PhurpleBuddyGroup_ce,
-			                          getThis(),
-			                          "index",
-			                          sizeof("index")-1,
-			                          (long)ind TSRMLS_CC
-			                          );
+									  getThis(),
+									  "index",
+									  sizeof("index")-1,
+									  (long)ind TSRMLS_CC
+									  );
 		}
 
 		return;
@@ -86,11 +86,11 @@ PHP_METHOD(PhurpleBuddyGroup, __construct)
 		ulong nextid = zend_hash_next_free_element(&pp->group);
 		zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
 		zend_update_property_long(PhurpleBuddyGroup_ce,
-		                          getThis(),
-		                          "index",
-		                          sizeof("index")-1,
-		                          (long)nextid TSRMLS_CC
-		                          );
+								  getThis(),
+								  "index",
+								  sizeof("index")-1,
+								  (long)nextid TSRMLS_CC
+								  );
 
 		return;
 	}
@@ -122,11 +122,11 @@ PHP_METHOD(PhurpleBuddyGroup, getAccounts)
 				
 				if (paccount) {
 					zend_update_property_long(PhurpleAccount_ce,
-					                          account,
-					                          "index",
-					                          sizeof("index")-1,
-					                          (long)g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)paccount)) TSRMLS_CC
-					                          );
+											  account,
+											  "index",
+											  sizeof("index")-1,
+											  (long)g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)paccount)) TSRMLS_CC
+											  );
 					add_next_index_zval(return_value, account);
 				}
 			}

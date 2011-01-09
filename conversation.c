@@ -80,15 +80,15 @@ PHP_METHOD(PhurpleConversation, __construct)
 		}
 
 		conv_list_position = conv_list_position == -1
-		                     ? g_list_position(conversations, g_list_last(conversations))
-		                     : conv_list_position;
+							 ? g_list_position(conversations, g_list_last(conversations))
+							 : conv_list_position;
 
 		zend_update_property_long(PhurpleConversation_ce,
-		                          getThis(),
-		                          "index",
-		                          sizeof("index")-1,
-		                          (long)conv_list_position TSRMLS_CC
-		                          );
+								  getThis(),
+								  "index",
+								  sizeof("index")-1,
+								  (long)conv_list_position TSRMLS_CC
+								  );
 
 		return;
 	}
@@ -159,12 +159,12 @@ PHP_METHOD(PhurpleConversation, getAccount)
 			Z_TYPE_P(return_value) = IS_OBJECT;
 			object_init_ex(return_value, PhurpleAccount_ce);
 			zend_update_property_long(PhurpleAccount_ce,
-			                          return_value,
-			                          "index",
-			                          sizeof("index")-1,
-			                          (long)g_list_position(purple_accounts_get_all(),
-			                          g_list_find(purple_accounts_get_all(), acc)) TSRMLS_CC
-			                          );
+									  return_value,
+									  "index",
+									  sizeof("index")-1,
+									  (long)g_list_position(purple_accounts_get_all(),
+									  g_list_find(purple_accounts_get_all(), acc)) TSRMLS_CC
+									  );
 			return;
 		}
 	}

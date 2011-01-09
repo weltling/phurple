@@ -85,11 +85,11 @@ PHP_METHOD(PhurpleAccount, __construct)
 		accounts = purple_accounts_get_all();
 
 		zend_update_property_long(PhurpleAccount_ce,
-		                          getThis(),
-		                          "index",
-		                          sizeof("index")-1,
-		                          (long)g_list_position(accounts, g_list_last(accounts)) TSRMLS_CC
-		                          );
+								  getThis(),
+								  "index",
+								  sizeof("index")-1,
+								  (long)g_list_position(accounts, g_list_last(accounts)) TSRMLS_CC
+								  );
 		return;
 		
 	}

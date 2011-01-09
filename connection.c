@@ -70,11 +70,11 @@ PHP_METHOD(PhurpleConnection, getAccount)
 			Z_TYPE_P(return_value) = IS_OBJECT;
 			object_init_ex(return_value, PhurpleAccount_ce);
 			zend_update_property_long(PhurpleAccount_ce,
-			                          return_value,
-			                          "index",
-			                          sizeof("index")-1,
-			                          (long)g_list_position(accounts, g_list_find(accounts, acc)) TSRMLS_CC
-			                          );
+									  return_value,
+									  "index",
+									  sizeof("index")-1,
+									  (long)g_list_position(accounts, g_list_find(accounts, acc)) TSRMLS_CC
+									  );
 			return;
 		}
 	}

@@ -71,18 +71,18 @@ PHP_METHOD(PhurpleBuddy, __construct)
 				ulong nextid = zend_hash_next_free_element(&pp->buddy);
 				zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
 				zend_update_property_long(PhurpleBuddy_ce,
-				                          getThis(),
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)nextid TSRMLS_CC
-				                          );
+										  getThis(),
+										  "index",
+										  sizeof("index")-1,
+										  (long)nextid TSRMLS_CC
+										  );
 			} else {
 				zend_update_property_long(PhurpleBuddy_ce,
-				                          getThis(),
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)ind TSRMLS_CC
-				                          );
+										  getThis(),
+										  "index",
+										  sizeof("index")-1,
+										  (long)ind TSRMLS_CC
+										  );
 			}
 
 			return;
@@ -91,11 +91,11 @@ PHP_METHOD(PhurpleBuddy, __construct)
 			ulong nextid = zend_hash_next_free_element(&pp->buddy);
 			zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
 			zend_update_property_long(PhurpleBuddy_ce,
-			                          getThis(),
-			                          "index",
-			                          sizeof("index")-1,
-			                          (long)nextid TSRMLS_CC
-			                          );
+									  getThis(),
+									  "index",
+									  sizeof("index")-1,
+									  (long)nextid TSRMLS_CC
+									  );
 
 			return;
 		}
@@ -172,18 +172,18 @@ PHP_METHOD(PhurpleBuddy, getGroup)
 				ulong nextid = zend_hash_next_free_element(&pp->group);
 				zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
 				zend_update_property_long(PhurpleBuddyGroup_ce,
-				                          tmp,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)nextid TSRMLS_CC
-				                          );
+										  tmp,
+										  "index",
+										  sizeof("index")-1,
+										  (long)nextid TSRMLS_CC
+										  );
 			} else {
 				zend_update_property_long(PhurpleBuddyGroup_ce,
-				                          tmp,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)ind TSRMLS_CC
-				                          );
+										  tmp,
+										  "index",
+										  sizeof("index")-1,
+										  (long)ind TSRMLS_CC
+										  );
 			}
 
 			*return_value = *tmp;
@@ -219,11 +219,11 @@ PHP_METHOD(PhurpleBuddy, getAccount)
 			accounts = purple_accounts_get_all();
 
 			zend_update_property_long(PhurpleAccount_ce,
-			                          return_value,
-			                          "index",
-			                          sizeof("index")-1,
-			                          (long)g_list_position(accounts, g_list_last(accounts)) TSRMLS_CC
-			                          );
+									  return_value,
+									  "index",
+									  sizeof("index")-1,
+									  (long)g_list_position(accounts, g_list_last(accounts)) TSRMLS_CC
+									  );
 			return;
 		}
 	}

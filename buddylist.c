@@ -137,18 +137,18 @@ PHP_METHOD(PhurpleBuddyList, findBuddy)
 				ulong nextid = zend_hash_next_free_element(&pp->buddy);
 				zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
 				zend_update_property_long(PhurpleBuddy_ce,
-				                          buddy,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)nextid TSRMLS_CC
-				                          );
+										  buddy,
+										  "index",
+										  sizeof("index")-1,
+										  (long)nextid TSRMLS_CC
+										  );
 			} else {
 				zend_update_property_long(PhurpleBuddy_ce,
-				                          buddy,
-				                          "index",
-				                          sizeof("index")-1,
-				                          (long)ind TSRMLS_CC
-				                          );
+										  buddy,
+										  "index",
+										  sizeof("index")-1,
+										  (long)ind TSRMLS_CC
+										  );
 			}
 
 			*return_value = *buddy;
@@ -201,7 +201,11 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		fci.function_table = EG(function_table);
 		fci.function_name = NULL;
 		fci.symbol_table = NULL;
+#if USING_PHP_53
+		fci.object_ptr = return_value;
+#else
 		fci.object_pp = &return_value;
+#endif
 		fci.retval_ptr_ptr = &retval_ptr;
 		fci.param_count = 1;
 		fci.params = params;
@@ -210,7 +214,6 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		fcc.initialized = 1;
 		fcc.function_handler = PhurpleBuddyGroup_ce->constructor;
 		fcc.calling_scope = EG(scope);
-		fcc.object_pp = &return_value;
 		
 		if (zend_call_function(&fci, &fcc TSRMLS_CC) == FAILURE) {
 			efree(params);
