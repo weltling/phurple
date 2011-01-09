@@ -11,6 +11,6 @@ be shure to set the rightly path to the phpdoc dir
 -->
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-<xsl:import href="/home/weltling/cvs/phpdoc/phpbook/phpbook-xsl/html.xsl"/>
+<xsl:import href="/usr/share/xml/docbook/stylesheet/nwalsh/html/chunk.xsl"/>
 <xsl:param name="chunker.output.encoding" select="'utf-8'"/>
 </xsl:stylesheet>
