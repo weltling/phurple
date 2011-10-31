@@ -329,7 +329,7 @@ zend_module_entry phurple_module_entry = {
 	PHP_RSHUTDOWN(phurple),
 	PHP_MINFO(phurple),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.4",
+	"0.4.1",
 #endif
 	STANDARD_MODULE_PROPERTIES
 };
