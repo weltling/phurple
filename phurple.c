@@ -1,20 +1,20 @@
 /**
- * Copyright (c) 2007-2008, Anatoliy Belsky
+ * Copyright (c) 2007-2011, Anatoliy Belsky <ab@php.net>
  *
  * This file is part of PHPurple.
  *
- * PHPhurple is free software: you can redistribute it and/or modify
+ * Phurple is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * PHPhurple is distributed in the hope that it will be useful,
+ * Phurple is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with PHPhurple.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Phurple.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -116,7 +116,7 @@ PurpleConversationUiOps php_conv_uiops =
 	NULL,					  /* destroy_conversation */
 	NULL,			/* write_chat		   */
 	phurple_write_im_function,			  /* write_im			 */
-	phurple_write_conv_function,			/* write_conv		   */
+	NULL, /*phurple_write_conv_function,*/			/* write_conv		   */
 	NULL,					  /* chat_add_users	   */
 	NULL,					  /* chat_rename_user	 */
 	NULL,					  /* chat_remove_users	*/
@@ -172,8 +172,8 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;*/
 	phurple_globals->phurple_client_obj = NULL;
 
-	zend_hash_init(&(phurple_globals->ppos).buddy, 32, NULL, NULL, 0);
-	zend_hash_init(&(phurple_globals->ppos).group, 32, NULL, NULL, 0);
+	zend_hash_init(&phurple_globals->ppos.buddy, 32, NULL, NULL, 1);
+	zend_hash_init(&phurple_globals->ppos.group, 32, NULL, NULL, 1);
 
 	phurple_globals->debug = 0;
 	phurple_globals->custom_user_dir = estrdup("/dev/null");
@@ -646,14 +646,17 @@ phurple_get_protocol_id_by_name(const char *protocol_name)
 /* {{{
  Only returns the returned zval if retval_ptr != NULL */
 zval*
-call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... )
+call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
+					zend_function **fn_proxy, char *function_name,
+					int function_name_len, zval **retval_ptr_ptr,
+					int param_count, ... )
 {
 	int result, i;
 	zend_fcall_info fci;
+	zend_fcall_info_cache fcic;
 	zval z_fname, ***params, *retval;
 	HashTable *function_table;
 	va_list given_params;
-	zend_fcall_info_cache fcic;
 		/**
 		 * TODO Remove this call and pass the tsrm_ls directly as param
 		 */
@@ -684,12 +687,13 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **f
 #if !PHURPLE_USING_PHP_53
 	fci.object_pp = object_pp;
 #endif
+	fci.function_table = EG(function_table);
 	fci.function_name = &z_fname;
+	fci.symbol_table = NULL;
 	fci.retval_ptr_ptr = retval_ptr_ptr ? retval_ptr_ptr : &retval;
 	fci.param_count = param_count;
 	fci.params = params;
 	fci.no_separation = 1;
-	fci.symbol_table = NULL;
 
 	if (!fn_proxy && !obj_ce) {
 		/* no interest in caching and no information already present that is
@@ -757,14 +761,14 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **f
 /* {{{ */
 static void*
 phurple_request_authorize(PurpleAccount *account,
-							 const char *remote_user,
-							 const char *id,
-							 const char *alias,
-							 const char *message,
-							 gboolean on_list,
-							 PurpleAccountRequestAuthorizationCb auth_cb,
-							 PurpleAccountRequestAuthorizationCb deny_cb,
-							 void *user_data)
+							const char *remote_user,
+							const char *id,
+							const char *alias,
+							const char *message,
+							gboolean on_list,
+							PurpleAccountRequestAuthorizationCb auth_cb,
+							PurpleAccountRequestAuthorizationCb deny_cb,
+							void *user_data)
 {
 	TSRMLS_FETCH();
 
@@ -965,6 +969,9 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 
 	TSRMLS_FETCH();
 
+	zval *client = PHURPLE_G(phurple_client_obj);
+	zend_class_entry *ce = Z_OBJCE_P(client);
+
 	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
 	zend_update_property_long(PhurpleConversation_ce,
 							  conversation,
@@ -973,9 +980,6 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 							  (long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
 							  );
 
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
-
 	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
 	if(paccount) {
 		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
@@ -983,10 +987,11 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 		if(NULL != pbuddy) {
 			int ind = phurple_hash_index_find(&(PHURPLE_G(ppos).buddy), pbuddy);
 			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
-			
+
 			if(ind == FAILURE) {
 				ulong nextid = zend_hash_next_free_element(&(PHURPLE_G(ppos).buddy));
-				zend_hash_index_update(&(PHURPLE_G(ppos).buddy), nextid, (void*)pbuddy, sizeof(PurpleBuddy*), NULL);
+				zend_hash_index_update(&PHURPLE_G(ppos.buddy), nextid,
+						               (void*)pbuddy, sizeof(PurpleBuddy), NULL);
 
 				zend_update_property_long(PhurpleBuddy_ce,
 										  buddy,

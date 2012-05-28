@@ -1,20 +1,20 @@
 /**
- * Copyright (c) 2007-2008, Anatoliy Belsky
+ * Copyright (c) 2007-2011, Anatoliy Belsky <ab@php.net>
  *
- * This file is part of PHPhurple.
+ * This file is part of Phurple.
  *
- * PHPhurple is free software: you can redistribute it and/or modify
+ * Phurple is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * PHPhurple is distributed in the hope that it will be useful,
+ * Phurple is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with PHPhurple.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Phurple.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef PHP_PHURPLE_H
@@ -172,7 +172,7 @@ ZEND_EXTERN_MODULE_GLOBALS(phurple)
  */
 #define PHURPLE_MK_OBJ(o, c) MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
 
-#define PHURPLE_INTERNAL_DEBUG 1
+#define PHURPLE_INTERNAL_DEBUG 0
 
 extern zend_class_entry *PhurpleClient_ce;
 extern zend_class_entry *PhurpleConversation_ce;

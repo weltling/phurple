@@ -1,7 +1,15 @@
-See extension docs at http://phurple.rubay.de/
+See extension docs at http://phurple.php.belsky.info/
 Please ask your questions using the forums at http://sourceforge.net/projects/phurple/
 
 Changelog:
+
+v0.4.1 alpha:
+* bugfix release
+* fixed PHP 5.3 compatibility, on 5.3 namespaces will be used, eq.
+ - php 5.2 : PhurpleClient
+ - php 5.3 : Phurple\Client
+* fixed several memory leaks
+* reorganized the source code so then each php class is holded in a separate file
 
 v0.4.0 alpha:
 * Project name changed to Phurple for two purposes:
