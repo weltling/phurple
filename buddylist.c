@@ -175,7 +175,7 @@ PHP_METHOD(PhurpleBuddyList, load)
 
 
 /* {{{ proto PhurpleGroup PhurpleBuddyList::findGroup(string group)
-	Finds group by name }}} */
+	Finds group by name */
 PHP_METHOD(PhurpleBuddyList, findGroup)
 {
 	PurpleGroup *pgroup = NULL;
@@ -306,3 +306,11 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 ** End phurple BuddyList methods
 **
 */
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

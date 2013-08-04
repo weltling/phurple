@@ -62,6 +62,7 @@ static void phurple_ui_init();
 static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message,
 									   gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
 
+/* {{{ libpurple definitions */
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
 static void clean_pid();
@@ -159,14 +160,13 @@ PurpleAccountUiOps php_account_uiops =
 	NULL,
 	NULL
 };
-
+/* }}} */
 
 /* classes definitions*/
 zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce;
 
-
 void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
-{
+{/*{{{*/
 	/*MAKE_STD_ZVAL(phurple_globals->phurple_client_obj);*/
 	/*ALLOC_INIT_ZVAL(phurple_globals->phurple_client_obj);
 	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;*/
@@ -179,10 +179,10 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	phurple_globals->custom_user_dir = estrdup("/dev/null");
 	phurple_globals->custom_plugin_path = estrdup("");
 	phurple_globals->ui_id = estrdup("PHP");
-}
+}/*}}}*/
 
 void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
-{
+{/*{{{*/
 	if(NULL != phurple_globals->phurple_client_obj) {
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
 	}
@@ -193,7 +193,7 @@ void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	efree(phurple_globals->custom_user_dir);
 	efree(phurple_globals->custom_plugin_path);
 	efree(phurple_globals->ui_id);*/
-}
+}/*}}}*/
 
 /* True global resources - no need for thread safety here */
 static int le_phurple;
@@ -472,7 +472,6 @@ PHP_MSHUTDOWN_FUNCTION(phurple)
 }
 /* }}} */
 
-
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(phurple)
 {
@@ -480,14 +479,12 @@ PHP_RINIT_FUNCTION(phurple)
 }
 /* }}} */
 
-
 /* {{{ PHP_RSHUTDOWN_FUNCTION */
 PHP_RSHUTDOWN_FUNCTION(phurple)
 {
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(phurple)
@@ -506,7 +503,7 @@ PHP_MINFO_FUNCTION(phurple)
 #if PHURPLE_INTERNAL_DEBUG
 void
 phurple_dump_zval(zval *var)
-{
+{/*{{{*/
 
 TSRMLS_FETCH();
 
@@ -540,23 +537,20 @@ TSRMLS_FETCH();
 		default:
 			php_printf("Unknown ");
 	}
-}
+}/*}}}*/
 #endif
 
-
-/* {{{ */
 static void
 phurple_ui_init()
 {
 	purple_conversations_set_ui_ops(&php_conv_uiops);
-}
+}/* {{{ */
 /* }}} */
 
-
-/* {{{ just took this two functions from the readline extension */
+/* just took this two functions from the readline extension */
 zval*
 phurple_string_zval(const char *str)
-{
+{/* {{{ */
 	zval *ret;
 	
 	MAKE_STD_ZVAL(ret);
@@ -571,11 +565,9 @@ phurple_string_zval(const char *str)
 }
 /* }}} */
 
-
-/* {{{ */
 zval*
 phurple_long_zval(long l)
-{
+{/* {{{ */
 	zval *ret;
 	MAKE_STD_ZVAL(ret);
 
@@ -586,11 +578,9 @@ phurple_long_zval(long l)
 }
 /* }}} */
 
-
-/* {{{ */
 char*
 phurple_tolower(const char *s)
-{
+{/* {{{ */
 	int  i = 0;
 	char *r = estrdup(s);
 
@@ -604,11 +594,9 @@ phurple_tolower(const char *s)
 }
 /* }}} */
 
-
-/* {{{ */
 int
 phurple_hash_index_find(HashTable *ht, void *element)
-{
+{/* {{{ */
 	ulong i;
 
 	for(i=0; i<zend_hash_num_elements(ht); i++) {
@@ -621,11 +609,9 @@ phurple_hash_index_find(HashTable *ht, void *element)
 }
 /* }}} */
 
-
-/* {{{ */
 char*
 phurple_get_protocol_id_by_name(const char *protocol_name)
-{
+{/* {{{ */
 	GList *iter;
 
 	iter = purple_plugins_get_protocols();
@@ -642,15 +628,13 @@ phurple_get_protocol_id_by_name(const char *protocol_name)
 }
 /* }}} */
 
-
-/* {{{
- Only returns the returned zval if retval_ptr != NULL */
+/* Only returns the returned zval if retval_ptr != NULL */
 zval*
 call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
 					zend_function **fn_proxy, char *function_name,
 					int function_name_len, zval **retval_ptr_ptr,
 					int param_count, ... )
-{
+{/* {{{ */
 	int result, i;
 	zend_fcall_info fci;
 	zend_fcall_info_cache fcic;
@@ -757,8 +741,6 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
 }
 /* }}} */
 
-
-/* {{{ */
 static void*
 phurple_request_authorize(PurpleAccount *account,
 							const char *remote_user,
@@ -769,7 +751,7 @@ phurple_request_authorize(PurpleAccount *account,
 							PurpleAccountRequestAuthorizationCb auth_cb,
 							PurpleAccountRequestAuthorizationCb deny_cb,
 							void *user_data)
-{
+{/* {{{ */
 	TSRMLS_FETCH();
 
 	zval *client = PHURPLE_G(phurple_client_obj);
@@ -821,12 +803,10 @@ phurple_request_authorize(PurpleAccount *account,
 }
 /* }}} */
 
-
 #ifdef HAVE_SIGNAL_H
-/* {{{ */
 static void
 clean_pid()
-{
+{/* {{{ */
 	int status;
 	pid_t pid;
 
@@ -845,11 +825,9 @@ clean_pid()
 }
 /* }}} */
 
-
-/* {{{ */
 static void
 sighandler(int sig)
-{
+{/* {{{ */
 	switch (sig) {
 	case SIGHUP:
 		purple_debug_warning("sighandler", "Caught signal %d\n", sig);
@@ -880,19 +858,16 @@ sighandler(int sig)
 /* }}} */
 #endif
 
-/* {{{ */
 static void
 phurple_glib_io_destroy(gpointer data)
-{
+{/* {{{ */
 	g_free(data);
 }
 /* }}} */
 
-
-/* {{{ */
 static gboolean
 phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
-{
+{/* {{{ */
 	PurpleGLibIOClosure *closure = data;
 	PurpleInputCondition purple_cond = 0;
 	
@@ -910,12 +885,10 @@ phurple_glib_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data
 }
 /* }}} */
 
-
-/* {{{ */
 static guint
 glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function,
 							   gpointer data)
-{
+{/* {{{ */
 	PurpleGLibIOClosure *closure = g_new0(PurpleGLibIOClosure, 1);
 	GIOChannel *channel;
 	GIOCondition cond = 0;
@@ -940,11 +913,9 @@ glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction func
 }
 /* }}} */
 
-
-/* {{{ */
 static void
 phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime)
-{
+{/* {{{ */
 	/**
 	 * Just mirroring phurple_write_im_function despite we
 	 * loose the alias to just not to implement the same twice
@@ -953,11 +924,9 @@ phurple_write_conv_function(PurpleConversation *conv, const char *who, const cha
 }
 /* }}} */
 
-
-/* {{{ */
 static void
 phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime)
-{
+{/* {{{ */
 	const int PARAMS_COUNT = 5;
 	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
 	GList *conversations = purple_get_conversations();
@@ -1042,22 +1011,18 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 }
 /* }}} */
 
-
-/* {{{ */
 static void
 phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
-{
+{/* {{{ */
 	/**
 	 * @todo put here some php callback
 	 */
 }
 /* }}} */
 
-
-/* {{{ */
 static void
 phurple_signed_off_function(PurpleConnection *conn, gpointer null)
-{
+{/* {{{ */
 	zval *connection, *retval;
 	GList *connections = NULL;
 

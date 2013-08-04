@@ -215,7 +215,7 @@ PHP_METHOD(PhurpleAccount, removeBuddy)
 
 
 /* {{{ proto void PhurpleAccount::clearSettings(void)
-	Clears all protocol-specific settings on an account. }}} */
+	Clears all protocol-specific settings on an account. */
 PHP_METHOD(PhurpleAccount, clearSettings)
 {
 	PurpleAccount *paccount = NULL;
@@ -422,3 +422,11 @@ PHP_METHOD(PhurpleAccount, getPassword)
 ** End phurple account methods
 **
 */
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */
