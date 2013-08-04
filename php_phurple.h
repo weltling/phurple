@@ -182,46 +182,22 @@ extern zend_class_entry *PhurpleBuddy_ce;
 extern zend_class_entry *PhurpleBuddyList_ce;
 extern zend_class_entry *PhurpleBuddyGroup_ce;
 
-#if PHURPLE_USING_PHP_53
-#define PHURPLE_CLIENT_CLASS_NAME "Phurple\\Client"
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
+# define PHURPLE_CLIENT_CLASS_NAME "Phurple\\Client"
+# define PHURPLE_CONVERSATION_CLASS_NAME "Phurple\\Conversation"
+# define PHURPLE_ACCOUNT_CLASS_NAME "Phurple\\Account"
+# define PHURPLE_CONNECION_CLASS_NAME "Phurple\\Connection"
+# define PHURPLE_BUDDY_CLASS_NAME "Phurple\\Buddy"
+# define PHURPLE_BUDDYLIST_CLASS_NAME "Phurple\\BuddyList"
+# define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple\\BuddyGroup"
 #else
-#define PHURPLE_CLIENT_CLASS_NAME "PhurpleClient"
-#endif
-
-#if PHURPLE_USING_PHP_53
-#define PHURPLE_CONVERSATION_CLASS_NAME "Phurple\\Conversation"
-#else
-#define PHURPLE_CONVERSATION_CLASS_NAME "PhurpleConversation"
-#endif
-
-#if PHURPLE_USING_PHP_53
-#define PHURPLE_ACCOUNT_CLASS_NAME "Phurple\\Account"
-#else
-#define PHURPLE_ACCOUNT_CLASS_NAME "PhurpleAccount"
-#endif
-
-#if PHURPLE_USING_PHP_53
-#define PHURPLE_CONNECION_CLASS_NAME "Phurple\\Connection"
-#else
-#define PHURPLE_CONNECION_CLASS_NAME "PhurpleConnection"
-#endif
-
-#if PHURPLE_USING_PHP_53
-#define PHURPLE_BUDDY_CLASS_NAME "Phurple\\Buddy"
-#else
-#define PHURPLE_BUDDY_CLASS_NAME "PhurpleBuddy"
-#endif
-
-#if PHURPLE_USING_PHP_53
-#define PHURPLE_BUDDYLIST_CLASS_NAME "Phurple\\BuddyList"
-#else
-#define PHURPLE_BUDDYLIST_CLASS_NAME "PhurpleBuddyList"
-#endif
-
-#if PHURPLE_USING_PHP_53
-#define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple\\BuddyGroup"
-#else
-#define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"
+# define PHURPLE_CLIENT_CLASS_NAME "PhurpleClient"
+# define PHURPLE_CONVERSATION_CLASS_NAME "PhurpleConversation"
+# define PHURPLE_ACCOUNT_CLASS_NAME "PhurpleAccount"
+# define PHURPLE_CONNECION_CLASS_NAME "PhurpleConnection"
+# define PHURPLE_BUDDY_CLASS_NAME "PhurpleBuddy"
+# define PHURPLE_BUDDYLIST_CLASS_NAME "PhurpleBuddyList"
+# define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"
 #endif
 
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
