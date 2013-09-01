@@ -329,7 +329,7 @@ zend_module_entry phurple_module_entry = {
 	PHP_RSHUTDOWN(phurple),
 	PHP_MINFO(phurple),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.4.1",
+	PHP_PHURPLE_VERSION,
 #endif
 	STANDARD_MODULE_PROPERTIES
 };
@@ -489,10 +489,11 @@ PHP_RSHUTDOWN_FUNCTION(phurple)
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(phurple)
 {
-/*	php_info_print_table_start();
+	php_info_print_table_start();
 	php_info_print_table_header(2, "phurple support", "enabled");
+	php_info_print_table_header(2, "phurple version", PHP_PHURPLE_VERSION);
 	php_info_print_table_end();
-*/
+
 	
 	DISPLAY_INI_ENTRIES();
 

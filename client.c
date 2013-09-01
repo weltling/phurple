@@ -52,10 +52,9 @@ extern zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend
 extern void phurple_dump_zval(zval *var);
 #endif
 
-/* {{{ */
 static int
 phurple_heartbeat_callback(gpointer data)
-{
+{/* {{{ */
 	TSRMLS_FETCH();
 
 	zval *client = PHURPLE_G(phurple_client_obj);
@@ -73,10 +72,9 @@ phurple_heartbeat_callback(gpointer data)
 }
 /* }}} */
 
-/* {{{ */
 static void
 phurple_signed_on_function(PurpleConnection *conn, gpointer null)
-{
+{/* {{{ */
 	zval *connection, *retval;
 	GList *connections = NULL;
 	
@@ -108,10 +106,9 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer null)
 }
 /* }}} */
 
-/* {{{ */
 static void
 phurple_g_loop_callback(void)
-{
+{/* {{{ */
 	TSRMLS_FETCH();
 
 	zval *client = PHURPLE_G(phurple_client_obj);
