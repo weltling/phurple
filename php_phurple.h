@@ -224,6 +224,10 @@ extern zend_class_entry *PhurpleBuddyGroup_ce;
 #define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"
 #endif
 
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
+# define ZVAL_ADDREF Z_ADDREF_P
+#endif
+
 #endif	/* PHP_PHURPLE_H */
 
 
