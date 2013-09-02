@@ -186,7 +186,7 @@ extern zend_class_entry *PhurpleBuddy_ce;
 extern zend_class_entry *PhurpleBuddyList_ce;
 extern zend_class_entry *PhurpleBuddyGroup_ce;
 
-#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
+#if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
 # define PHURPLE_CLIENT_CLASS_NAME "Phurple\\Client"
 # define PHURPLE_CONVERSATION_CLASS_NAME "Phurple\\Conversation"
 # define PHURPLE_ACCOUNT_CLASS_NAME "Phurple\\Account"
@@ -204,7 +204,7 @@ extern zend_class_entry *PhurpleBuddyGroup_ce;
 # define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"
 #endif
 
-#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
+#if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
 # define ZVAL_ADDREF Z_ADDREF_P
 #endif
 
