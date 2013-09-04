@@ -50,50 +50,44 @@ PHP_METHOD(PhurpleConversation, __construct)
 	int type, name_len, conv_list_position = -1;
 	char *name;
 	PurpleConversation *conv = NULL;
-	PurpleAccount *paccount = NULL;
 	GList *conversations = NULL, *cnv;
-	zval *account, *account_index;
+	zval *account;
 	gchar *name1;
 	const gchar *name2;
+	struct ze_account_obj *zao;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lOs", &type, &account, PhurpleAccount_ce, &name, &name_len) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	account_index = zend_read_property(PhurpleAccount_ce, account, "index", sizeof("index")-1, 0 TSRMLS_CC);
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
+	zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
 
-	if(NULL != account) {
-		conv = purple_conversation_new(type, paccount, estrdup(name));
-		conversations = purple_get_conversations();
+	conv = purple_conversation_new(type, zao->paccount, estrdup(name));
+	conversations = purple_get_conversations();
 
-		cnv = conversations;
-		name1 = g_strdup(purple_normalize(paccount, name));
+	cnv = conversations;
+	name1 = g_strdup(purple_normalize(zao->paccount, name));
 
-		for (; cnv != NULL; cnv = cnv->next) {
-			name2 = purple_normalize(paccount, purple_conversation_get_name((PurpleConversation *)cnv->data));
+	for (; cnv != NULL; cnv = cnv->next) {
+		name2 = purple_normalize(zao->paccount, purple_conversation_get_name((PurpleConversation *)cnv->data));
 
-			if ((paccount == purple_conversation_get_account((PurpleConversation *)cnv->data)) &&
-					!purple_utf8_strcasecmp(name1, name2)) {
-				conv_list_position = g_list_position(conversations, cnv);
-			}
+		if ((zao->paccount == purple_conversation_get_account((PurpleConversation *)cnv->data)) &&
+				!purple_utf8_strcasecmp(name1, name2)) {
+			conv_list_position = g_list_position(conversations, cnv);
 		}
-
-		conv_list_position = conv_list_position == -1
-							 ? g_list_position(conversations, g_list_last(conversations))
-							 : conv_list_position;
-
-		zend_update_property_long(PhurpleConversation_ce,
-								  getThis(),
-								  "index",
-								  sizeof("index")-1,
-								  (long)conv_list_position TSRMLS_CC
-								  );
-
-		return;
 	}
 
-	RETURN_NULL();
+	conv_list_position = conv_list_position == -1
+						 ? g_list_position(conversations, g_list_last(conversations))
+						 : conv_list_position;
+
+	zend_update_property_long(PhurpleConversation_ce,
+							  getThis(),
+							  "index",
+							  sizeof("index")-1,
+							  (long)conv_list_position TSRMLS_CC
+							  );
+
 }
 /* }}} */
 
@@ -155,16 +149,18 @@ PHP_METHOD(PhurpleConversation, getAccount)
 	if(NULL != conversation) {
 		acc = purple_conversation_get_account(conversation);
 		if(NULL != acc) {
-			ZVAL_NULL(return_value);
-			Z_TYPE_P(return_value) = IS_OBJECT;
-			object_init_ex(return_value, PhurpleAccount_ce);
-			zend_update_property_long(PhurpleAccount_ce,
-									  return_value,
-									  "index",
-									  sizeof("index")-1,
-									  (long)g_list_position(purple_accounts_get_all(),
-									  g_list_find(purple_accounts_get_all(), acc)) TSRMLS_CC
-									  );
+			zval *ret;
+			struct ze_account_obj *zao;
+
+			MAKE_STD_ZVAL(ret);
+			object_init_ex(ret, PhurpleAccount_ce);
+
+			zao = (struct ze_account_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+
+			zao->paccount = acc;
+
+			*return_value = *ret;
+
 			return;
 		}
 	}
@@ -178,8 +174,8 @@ PHP_METHOD(PhurpleConversation, getAccount)
 PHP_METHOD(PhurpleConversation, setAccount)
 {
 	PurpleConversation *pconv = NULL;
-	PurpleAccount *paccount = NULL;
 	zval *account;
+	struct ze_account_obj *zao;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &account, PhurpleAccount_ce) == FAILURE) {
 		RETURN_NULL();
@@ -188,11 +184,9 @@ PHP_METHOD(PhurpleConversation, setAccount)
 	pconv = g_list_nth_data (purple_get_conversations(), (guint)Z_LVAL_P(zend_read_property(PhurpleConversation_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
 	
 	if(pconv) {
-		paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(zend_read_property(PhurpleAccount_ce, account, "index", sizeof("index")-1, 0 TSRMLS_CC)));
-		
-		if(account) {
-			purple_conversation_set_account(pconv, paccount);
-		}
+			struct ze_account_obj *zao;
+			zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
+			purple_conversation_set_account(pconv, zao->paccount);
 	}
 }
 /* }}} */

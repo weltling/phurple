@@ -62,6 +62,18 @@ static void phurple_ui_init();
 static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message,
 									   gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
 
+extern zend_object_value
+php_buddy_obj_init(zend_class_entry *ce TSRMLS_DC);
+
+extern zend_object_value
+php_account_obj_init(zend_class_entry *ce TSRMLS_DC);
+
+extern zend_object_value
+php_buddygroup_obj_init(zend_class_entry *ce TSRMLS_DC);
+
+extern zend_object_value
+php_client_obj_init(zend_class_entry *ce TSRMLS_DC);
+
 /* {{{ libpurple definitions */
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
@@ -163,7 +175,7 @@ PurpleAccountUiOps php_account_uiops =
 /* }}} */
 
 /* classes definitions*/
-zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce;
+zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce, *PhurpleException_ce;
 
 void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
@@ -175,24 +187,28 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	zend_hash_init(&phurple_globals->ppos.buddy, 32, NULL, NULL, 1);
 	zend_hash_init(&phurple_globals->ppos.group, 32, NULL, NULL, 1);
 
-	phurple_globals->debug = 0;
 	phurple_globals->custom_user_dir = estrdup("/dev/null");
 	phurple_globals->custom_plugin_path = estrdup("");
 	phurple_globals->ui_id = estrdup("PHP");
+	phurple_globals->debug = 0;
+
 }/*}}}*/
 
 void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
-	if(NULL != phurple_globals->phurple_client_obj) {
+	/*if(NULL != phurple_globals->phurple_client_obj) {
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
+	}*/
+
+	/*if (phurple_globals->custom_user_dir) {
+		efree(phurple_globals->custom_user_dir);
 	}
-
-	/*zend_hash_destroy(&(phurple_globals->ppos).buddy);
-	zend_hash_destroy(&(phurple_globals->ppos).group);
-
-	efree(phurple_globals->custom_user_dir);
-	efree(phurple_globals->custom_plugin_path);
-	efree(phurple_globals->ui_id);*/
+	if (phurple_globals->custom_plugin_path) {
+		efree(phurple_globals->custom_plugin_path);
+	}
+	if (phurple_globals->ui_id) {
+		efree(phurple_globals->ui_id);
+	}*/
 }/*}}}*/
 
 /* True global resources - no need for thread safety here */
@@ -349,6 +365,8 @@ PHP_INI_END()
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(phurple)
 {
+	zend_class_entry ce;
+
 	ZEND_INIT_MODULE_GLOBALS(phurple, phurple_globals_ctor, phurple_globals_dtor);
 	
 	REGISTER_INI_ENTRIES();
@@ -356,10 +374,13 @@ PHP_MINIT_FUNCTION(phurple)
 	g_log_set_handler (NULL, G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_LEVEL_CRITICAL | G_LOG_FLAG_RECURSION, phurple_g_log_handler, NULL);
 	
 	/* initalizing classes */
-	zend_class_entry ce;
+	
+	memcpy(&default_phurple_obj_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	default_phurple_obj_handlers.clone_obj = NULL;
 	
 	/* classes definitions */
 	INIT_CLASS_ENTRY(ce, PHURPLE_CLIENT_CLASS_NAME, PhurpleClient_methods);
+	ce.create_object = php_client_obj_init;
 	PhurpleClient_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	/* A type of conversation */
@@ -397,24 +418,29 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_declare_property_long(PhurpleConversation_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_ACCOUNT_CLASS_NAME, PhurpleAccount_methods);
+	ce.create_object = php_account_obj_init;
 	PhurpleAccount_ce = zend_register_internal_class(&ce TSRMLS_CC);
-	zend_declare_property_long(PhurpleAccount_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_CONNECION_CLASS_NAME, PhurpleConnection_methods);
 	PhurpleConnection_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	zend_declare_property_long(PhurpleConnection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_CLASS_NAME, PhurpleBuddy_methods);
+	ce.create_object = php_buddy_obj_init;
 	PhurpleBuddy_ce = zend_register_internal_class(&ce TSRMLS_CC);
-	zend_declare_property_long(PhurpleBuddy_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDYLIST_CLASS_NAME, PhurpleBuddyList_methods);
 	PhurpleBuddyList_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_GROUP_CLASS_NAME, PhurpleBuddyGroup_methods);
+	ce.create_object = php_buddygroup_obj_init;
 	PhurpleBuddyGroup_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	
+	INIT_CLASS_ENTRY(ce, PHURPLE_EXCEPTION_CLASS_NAME, PhurpleBuddyGroup_methods);
+	PhurpleException_ce = zend_register_internal_class_ex(
+			&ce, NULL, "exception" TSRMLS_CC
+	);
+
 	/* end initalizing classes */
 	
 #ifdef HAVE_SIGNAL_H
@@ -620,12 +646,13 @@ phurple_get_protocol_id_by_name(const char *protocol_name)
 	for (; iter; iter = iter->next) {
 		PurplePlugin *plugin = iter->data;
 		PurplePluginInfo *info = plugin->info;
-		if (info && info->name && 0 == strcmp(phurple_tolower(info->name), phurple_tolower(protocol_name))) {
+
+		if (info && info->name && 0 == strcmp(info->name, protocol_name)) {
 			return estrdup(info->id);
 		}
 	}
 
-	return "";
+	return NULL;
 }
 /* }}} */
 
@@ -955,28 +982,14 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
 		
 		if(NULL != pbuddy) {
-			int ind = phurple_hash_index_find(&(PHURPLE_G(ppos).buddy), pbuddy);
+			struct ze_buddy_obj *zbo;
+
 			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
 
-			if(ind == FAILURE) {
-				ulong nextid = zend_hash_next_free_element(&(PHURPLE_G(ppos).buddy));
-				zend_hash_index_update(&PHURPLE_G(ppos.buddy), nextid,
-						               (void*)pbuddy, sizeof(PurpleBuddy), NULL);
+			zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
 
-				zend_update_property_long(PhurpleBuddy_ce,
-										  buddy,
-										  "index",
-										  sizeof("index")-1,
-										  (long)nextid TSRMLS_CC
-										  );
-			} else {
-				zend_update_property_long(PhurpleBuddy_ce,
-										  buddy,
-										  "index",
-										  sizeof("index")-1,
-										  (long)ind TSRMLS_CC
-										 );
-			}
+			zbo->pbuddy = pbuddy;
+
 		} else {
 			if(who_san) {
 				buddy = phurple_string_zval(who_san);

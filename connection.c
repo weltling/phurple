@@ -58,23 +58,23 @@ PHP_METHOD(PhurpleConnection, getAccount)
 {
 	PurpleConnection *conn = NULL;
 	PurpleAccount *acc = NULL;
-	GList *accounts = NULL;
 
 	conn = g_list_nth_data (purple_connections_get_all(), (guint)Z_LVAL_P(zend_read_property(PhurpleConnection_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
 	if(NULL != conn) {
 		acc = purple_connection_get_account(conn);
 		if(NULL != acc) {
-			accounts = purple_accounts_get_all();
+			zval *ret;
+			struct ze_account_obj *zao;
 
-			ZVAL_NULL(return_value);
-			Z_TYPE_P(return_value) = IS_OBJECT;
-			object_init_ex(return_value, PhurpleAccount_ce);
-			zend_update_property_long(PhurpleAccount_ce,
-									  return_value,
-									  "index",
-									  sizeof("index")-1,
-									  (long)g_list_position(accounts, g_list_find(accounts, acc)) TSRMLS_CC
-									  );
+			MAKE_STD_ZVAL(ret);
+			object_init_ex(ret, PhurpleAccount_ce);
+
+			zao = (struct ze_account_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+
+			zao->paccount = acc;
+
+			*return_value = *ret;
+
 			return;
 		}
 	}

@@ -36,6 +36,51 @@
 extern void phurple_dump_zval(zval *var);
 #endif
 
+void
+php_buddygroup_obj_destroy(void *obj TSRMLS_DC)
+{
+	struct ze_buddygroup_obj *zgo = (struct ze_buddygroup_obj *)obj;
+
+	zend_object_std_dtor(&zgo->zo TSRMLS_CC);
+
+	if (zgo->pbuddygroup) {
+		purple_group_destroy(zgo->pbuddygroup);
+	}
+
+	efree(zgo);
+}
+
+zend_object_value
+php_buddygroup_obj_init(zend_class_entry *ce TSRMLS_DC)
+{
+	zend_object_value ret;
+	struct ze_buddygroup_obj *zgo;
+#if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+	zval *tmp;
+#endif
+
+	zgo = (struct ze_buddygroup_obj *) emalloc(sizeof(struct ze_buddygroup_obj));
+	memset(&zgo->zo, 0, sizeof(zend_object));
+
+	zend_object_std_init(&zgo->zo, ce TSRMLS_CC);
+#if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION== 5 && PHP_MINOR_VERSION < 4
+	zend_hash_copy(zgo->zo.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,
+					(void *) &tmp, sizeof(zval *));
+#else
+	object_properties_init(&zgo->zo, ce);
+#endif
+
+	zgo->pbuddygroup = NULL;
+
+	ret.handle = zend_objects_store_put(zgo, NULL,
+								(zend_objects_free_object_storage_t) php_buddygroup_obj_destroy,
+								NULL TSRMLS_CC);
+
+	ret.handlers = &default_phurple_obj_handlers;
+
+	return ret;
+}
+
 /*
 **
 **
@@ -47,55 +92,25 @@ extern void phurple_dump_zval(zval *var);
 	constructor*/
 PHP_METHOD(PhurpleBuddyGroup, __construct)
 {
-	PurpleGroup *pgroup = NULL;
 	char *name;
 	int name_len;
+	struct ze_buddygroup_obj *zgo;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
-	pgroup = purple_find_group(name);
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	zgo->pbuddygroup = purple_find_group(name);
 
-	if(pgroup) {
-
-		int ind = phurple_hash_index_find(&pp->group, pgroup);
-
-		if(ind == FAILURE) {
-			ulong nextid = zend_hash_next_free_element(&pp->group);
-			zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
-			zend_update_property_long(PhurpleBuddyGroup_ce,
-									  getThis(),
-									  "index",
-									  sizeof("index")-1,
-									  (long)nextid TSRMLS_CC
-									  );
-		} else {
-			zend_update_property_long(PhurpleBuddyGroup_ce,
-									  getThis(),
-									  "index",
-									  sizeof("index")-1,
-									  (long)ind TSRMLS_CC
-									  );
-		}
-
-		return;
-	} else {
-		pgroup = purple_group_new(name);
-		ulong nextid = zend_hash_next_free_element(&pp->group);
-		zend_hash_index_update(&pp->group, nextid, pgroup, sizeof(PurpleGroup), NULL);
-		zend_update_property_long(PhurpleBuddyGroup_ce,
-								  getThis(),
-								  "index",
-								  sizeof("index")-1,
-								  (long)nextid TSRMLS_CC
-								  );
-
-		return;
+	if(zgo->pbuddygroup) {
+		zgo->pbuddygroup = purple_group_new(name);
 	}
 
-	RETURN_NULL();
+	if (NULL == zgo->pbuddygroup) {
+		zend_throw_exception_ex(PhurpleException_ce, "Failed to create group", 0 TSRMLS_CC);
+		return;
+	}
 }
 /* }}} */
 
@@ -104,35 +119,36 @@ PHP_METHOD(PhurpleBuddyGroup, __construct)
 	gets all the accounts related to the group */
 PHP_METHOD(PhurpleBuddyGroup, getAccounts)
 {
-	PurpleGroup *pgroup = NULL;
-	zval *index, *account;
+	struct ze_buddygroup_obj *zgo;
+	GSList *iter;
 
-	index = zend_read_property(PhurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&PHURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	
-	if(pgroup) {
-		GSList *iter = purple_group_get_accounts(pgroup);
+	iter = purple_group_get_accounts(zgo->pbuddygroup);
 		
-		if(iter && g_slist_length(iter)) {
-			array_init(return_value);
-			PHURPLE_MK_OBJ(account, PhurpleAccount_ce);
+	if(iter && g_slist_length(iter)) {
+		array_init(return_value);
+		
+		for (; iter; iter = iter->next) {
+			PurpleAccount *paccount = iter->data;
 			
-			for (; iter; iter = iter->next) {
-				PurpleAccount *paccount = iter->data;
-				
-				if (paccount) {
-					zend_update_property_long(PhurpleAccount_ce,
-											  account,
-											  "index",
-											  sizeof("index")-1,
-											  (long)g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)paccount)) TSRMLS_CC
-											  );
-					add_next_index_zval(return_value, account);
-				}
-			}
+			if (paccount) {
+				zval *account;
+				struct ze_account_obj *zao;
 
-			return;
+				PHURPLE_MK_OBJ(account, PhurpleAccount_ce);
+				zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
+				zao->paccount = paccount;
+
+				add_next_index_zval(return_value, account);
+			}
 		}
+
+		return;
 	}
 	
 	RETURN_NULL();
@@ -144,17 +160,15 @@ PHP_METHOD(PhurpleBuddyGroup, getAccounts)
 	gets the count of the buddies in the group */
 PHP_METHOD(PhurpleBuddyGroup, getSize)
 {
-	PurpleGroup *pgroup = NULL;
-	zval *index;
-	
-	index = zend_read_property(PhurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&PHURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+	struct ze_buddygroup_obj *zgo;
 
-	if(pgroup) {
-			RETURN_LONG(purple_blist_get_group_size(pgroup, (gboolean)TRUE));
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-	
-	RETURN_NULL();
+
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	RETURN_LONG(purple_blist_get_group_size(zgo->pbuddygroup, (gboolean)TRUE));
 }
 /* }}} */
 
@@ -163,17 +177,15 @@ PHP_METHOD(PhurpleBuddyGroup, getSize)
 	gets the count of the buddies in the group with the status online*/
 PHP_METHOD(PhurpleBuddyGroup, getOnlineCount)
 {
-	PurpleGroup *pgroup = NULL;
-	zval *index;
+	struct ze_buddygroup_obj *zgo;
 
-	index = zend_read_property(PhurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&PHURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
-
-	if(pgroup) {
-			RETURN_LONG(purple_blist_get_group_online_count(pgroup));
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-	
-	RETURN_NULL();
+
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	RETURN_LONG(purple_blist_get_group_online_count(zgo->pbuddygroup));
 }
 /* }}} */
 
@@ -182,19 +194,20 @@ PHP_METHOD(PhurpleBuddyGroup, getOnlineCount)
 	gets the name of the group */
 PHP_METHOD(PhurpleBuddyGroup, getName)
 {
-	PurpleGroup *pgroup = NULL;
-	zval *index;
+	struct ze_buddygroup_obj *zgo;
+	char *name;
 
-	index = zend_read_property(PhurpleBuddyGroup_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&PHURPLE_G(ppos).group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
-
-	if(pgroup) {
-		const char *name = purple_group_get_name(pgroup);
-		if(name) {
-			RETURN_STRING(estrdup(name), 0);
-		}
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-	
+
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	name = purple_group_get_name(zgo->pbuddygroup);
+	if(name) {
+		RETURN_STRING(name, 1);
+	}
+
 	RETURN_NULL();
 }
 /* }}} */

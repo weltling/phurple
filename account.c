@@ -59,6 +59,51 @@ typedef struct
 extern void phurple_dump_zval(zval *var);
 #endif
 
+void
+php_account_obj_destroy(void *obj TSRMLS_DC)
+{
+	struct ze_account_obj *zao = (struct ze_account_obj *)obj;
+
+	zend_object_std_dtor(&zao->zo TSRMLS_CC);
+
+	if (zao->paccount) {
+		purple_account_destroy(zao->paccount);
+	}
+
+	efree(zao);
+}
+
+zend_object_value
+php_account_obj_init(zend_class_entry *ce TSRMLS_DC)
+{
+	zend_object_value ret;
+	struct ze_account_obj *zao;
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+	zval *tmp;
+#endif
+
+	zao = (struct ze_account_obj *) emalloc(sizeof(struct ze_account_obj));
+	memset(&zao->zo, 0, sizeof(zend_object));
+
+	zend_object_std_init(&zao->zo, ce TSRMLS_CC);
+#if PHP_MAJOR_VERSION== 5 && PHP_MINOR_VERSION < 4
+	zend_hash_copy(zao->zo.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,
+					(void *) &tmp, sizeof(zval *));
+#else
+	object_properties_init(&zao->zo, ce);
+#endif
+
+	zao->paccount = NULL;
+
+	ret.handle = zend_objects_store_put(zao, NULL,
+								(zend_objects_free_object_storage_t) php_account_obj_destroy,
+								NULL TSRMLS_CC);
+
+	ret.handlers = &default_phurple_obj_handlers;
+
+	return ret;
+}
+
 /*
 **
 **
@@ -70,31 +115,24 @@ extern void phurple_dump_zval(zval *var);
 	Creates a new account*/
 PHP_METHOD(PhurpleAccount, __construct)
 {
-	char *username, *protocol_name, *protocol_id;
+	char *username, *protocol_name;
 	int username_len, protocol_name_len;
-	GList *iter, *accounts;
-	PurpleAccount *account = NULL;
+	struct ze_account_obj *zao;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &username, &username_len, &protocol_name, &protocol_name_len) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	account = purple_account_new(estrdup(username), phurple_get_protocol_id_by_name(protocol_name));
-	purple_accounts_add(account);
-	if(NULL != account) {
-		accounts = purple_accounts_get_all();
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-		zend_update_property_long(PhurpleAccount_ce,
-								  getThis(),
-								  "index",
-								  sizeof("index")-1,
-								  (long)g_list_position(accounts, g_list_last(accounts)) TSRMLS_CC
-								  );
+	zao->paccount = purple_account_new(username, phurple_get_protocol_id_by_name(protocol_name));
+
+	if (NULL == zao->paccount) {
+		zend_throw_exception_ex(PhurpleException_ce, "Failed to create new account", 0 TSRMLS_CC);
 		return;
-		
 	}
-	
-	RETURN_NULL();
+
+	purple_accounts_add(zao->paccount);
 }
 /* }}} */
 
@@ -105,22 +143,15 @@ PHP_METHOD(PhurpleAccount, setPassword)
 {
 	int password_len;
 	char *password;
-	PurpleAccount *account = NULL;
-	zval *account_index;
+	struct ze_account_obj *zao;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &password, &password_len) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	ALLOC_INIT_ZVAL(account_index);
-	ZVAL_LONG(account_index, Z_LVAL_P(zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	/*php_printf("account_index = %d\n", Z_LVAL_P(account_index));*/
-
- 	account = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
-	if(NULL != account) {
-		purple_account_set_password(account, estrdup(password));
-	}
+	purple_account_set_password(zao->paccount, password);
 }
 /* }}} */
 
@@ -130,20 +161,15 @@ PHP_METHOD(PhurpleAccount, setPassword)
 PHP_METHOD(PhurpleAccount, setEnabled)
 {
 	zend_bool enabled;
-	PurpleAccount *account = NULL;
-	zval *account_index;
+	struct ze_account_obj *zao;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &enabled) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	ALLOC_INIT_ZVAL(account_index);
-	ZVAL_LONG(account_index, Z_LVAL_P(zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	
-	account = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
-	if(NULL != account) {
-		purple_account_set_enabled(account, PHURPLE_G(ui_id), (gboolean) enabled);
-	}
+	purple_account_set_enabled(zao->paccount, PHURPLE_G(ui_id), (gboolean) enabled);
 }
 /* }}} */
 
@@ -152,32 +178,21 @@ PHP_METHOD(PhurpleAccount, setEnabled)
 	Adds a buddy to the server-side buddy list for the specified account */
 PHP_METHOD(PhurpleAccount, addBuddy)
 {
-	PurpleAccount *paccount = NULL;
-	PurpleBuddy *pbuddy = NULL;
-	zval *account_index, *buddy_index, *buddy;
+	zval *buddy;
+	struct ze_account_obj *zao;
+	struct ze_buddy_obj *zbo;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &buddy, PhurpleBuddy_ce) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	ALLOC_INIT_ZVAL(account_index);
-	ZVAL_LONG(account_index, Z_LVAL_P(zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
-	if(paccount) {
-		struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
 
-		buddy_index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
-		zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(buddy_index), (void**)&pbuddy);
+	purple_blist_add_buddy(zbo->pbuddy, NULL, NULL, NULL);
+	purple_account_add_buddy(zao->paccount, zbo->pbuddy);
 
-		if(pbuddy) {
-			purple_blist_add_buddy(pbuddy, NULL, NULL, NULL);
-			purple_account_add_buddy(paccount, pbuddy);
-			RETURN_TRUE;
-		}
-	}
-
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -185,31 +200,20 @@ PHP_METHOD(PhurpleAccount, addBuddy)
 	Removes a buddy from the server-side buddy list for the specified account */
 PHP_METHOD(PhurpleAccount, removeBuddy)
 {
-	PurpleAccount *paccount = NULL;
-	PurpleBuddy *pbuddy = NULL;
-	zval *account_index, *buddy_index, *buddy;
+	zval *buddy;
+	struct ze_account_obj *zao;
+	struct ze_buddy_obj *zbo;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &buddy, PhurpleBuddy_ce) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	ALLOC_INIT_ZVAL(account_index);
-	ZVAL_LONG(account_index, Z_LVAL_P(zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(account_index));
-	if(NULL != paccount) {
-		struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
 
-		buddy_index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
-		zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(buddy_index), (void**)&pbuddy);
+	purple_account_remove_buddy(zao->paccount, zbo->pbuddy, purple_buddy_get_group(zbo->pbuddy));
 
-		if(pbuddy) {
-			purple_account_remove_buddy(paccount, pbuddy, purple_buddy_get_group(pbuddy));
-			RETURN_TRUE;
-		}
-	}
-
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -218,19 +222,16 @@ PHP_METHOD(PhurpleAccount, removeBuddy)
 	Clears all protocol-specific settings on an account. */
 PHP_METHOD(PhurpleAccount, clearSettings)
 {
-	PurpleAccount *paccount = NULL;
-	zval *index;
+	struct ze_account_obj *zao;
 	
-	index = zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
-	
-	if(paccount) {
-		purple_account_clear_settings(paccount);
-		RETURN_TRUE;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-	
-	RETURN_FALSE;
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	purple_account_clear_settings(zao->paccount);
+
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -239,44 +240,38 @@ PHP_METHOD(PhurpleAccount, clearSettings)
 	Sets a protocol-specific setting for an account. The value types expected are int, string or bool. */
 PHP_METHOD(PhurpleAccount, set)
 {
-	PurpleAccount *paccount = NULL;
-	zval *index, *value;
+	zval *value;
 	char *name;
 	int name_len;
+	struct ze_account_obj *zao;
 	
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &name, &name_len, &value) == FAILURE) {
 		RETURN_FALSE;
 	}
 	
-	index = zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
-	
-	if(paccount) {
-		switch (Z_TYPE_P(value)) {
-			case IS_BOOL:
-				purple_account_set_ui_bool (paccount, PHURPLE_G(ui_id), name, (gboolean) Z_LVAL_P(value));
-			break;
+	switch (Z_TYPE_P(value)) {
+		case IS_BOOL:
+			purple_account_set_ui_bool (zao->paccount, PHURPLE_G(ui_id), name, (gboolean) Z_LVAL_P(value));
+		break;
+		
+		case IS_LONG:
+		case IS_DOUBLE:
+			purple_account_set_ui_int (zao->paccount, PHURPLE_G(ui_id), name, (int) Z_LVAL_P(value));
+		break;
 			
-			case IS_LONG:
-			case IS_DOUBLE:
-				purple_account_set_ui_int (paccount, PHURPLE_G(ui_id), name, (int) Z_LVAL_P(value));
-			break;
-				
-			case IS_STRING:
-				purple_account_set_ui_string (paccount, PHURPLE_G(ui_id), name, Z_STRVAL_P(value));
-			break;
-				
-			default:
-				RETURN_FALSE;
-			break;
-		}
-	
-		RETURN_TRUE;
+		case IS_STRING:
+			purple_account_set_ui_string (zao->paccount, PHURPLE_G(ui_id), name, Z_STRVAL_P(value));
+		break;
+			
+		default:
+			RETURN_FALSE;
+		break;
 	}
-	
-	RETURN_FALSE;
+
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -285,52 +280,41 @@ PHP_METHOD(PhurpleAccount, set)
 	Gets a protocol-specific setting for an account. Possible return datatypes are int|boolean|string or null if the setting isn't set or not found*/
 PHP_METHOD(PhurpleAccount, get)
 {
-	PurpleAccount *paccount = NULL;
 	PurpleAccountSetting *setting;
 	GHashTable *table;
-	zval *index;
 	char *name;
 	int name_len;
+	struct ze_account_obj *zao;
 	
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	index = zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
-
-	if(paccount) {
-
-		if((table = g_hash_table_lookup(paccount->ui_settings, PHURPLE_G(ui_id))) == NULL) {
-			RETURN_NULL();
-		}
-
-		setting = g_hash_table_lookup(table, name);
-		if(setting) {
-			switch(setting->type) {
-				case PURPLE_PREF_BOOLEAN:
-					RETVAL_BOOL(setting->value.boolean);
-					return;
-				break;
-
-				case PURPLE_PREF_INT:
-					RETVAL_LONG(setting->value.integer);
-					return;
-				break;
-
-				case PURPLE_PREF_STRING:
-					RETVAL_STRING(setting->value.string, 1);
-					return;
-				break;
-
-				default:
-					RETURN_NULL();
-				break;
-			}
-		}
+	if((table = g_hash_table_lookup(zao->paccount->ui_settings, PHURPLE_G(ui_id))) == NULL) {
 		RETURN_NULL();
+	}
+
+	setting = g_hash_table_lookup(table, name);
+	if(setting) {
+		switch(setting->type) {
+			case PURPLE_PREF_BOOLEAN:
+				RETVAL_BOOL(setting->value.boolean);
+				return;
+			break;
+
+			case PURPLE_PREF_INT:
+				RETVAL_LONG(setting->value.integer);
+				return;
+			break;
+
+			case PURPLE_PREF_STRING:
+				RETVAL_STRING(setting->value.string, 1);
+				return;
+			break;
+		}
 	}
 
 	RETURN_NULL();
@@ -341,19 +325,15 @@ PHP_METHOD(PhurpleAccount, get)
 	Returns whether or not the account is connected*/
 PHP_METHOD(PhurpleAccount, isConnected)
 {
-	PurpleAccount *paccount = NULL;
-	zval *index;
+	struct ze_account_obj *zao;
 	
-	index = zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
-	
-	if(paccount) {
-		RETVAL_BOOL((long) purple_account_is_connected(paccount));
+	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
 	
-	RETURN_FALSE;
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	RETVAL_BOOL((long) purple_account_is_connected(zao->paccount));
 }
 /* }}} */
 
@@ -362,19 +342,15 @@ PHP_METHOD(PhurpleAccount, isConnected)
 	Returns whether or not the account is connecting*/
 PHP_METHOD(PhurpleAccount, isConnecting)
 {
-	PurpleAccount *paccount = NULL;
-	zval *index;
+	struct ze_account_obj *zao;
 	
-	index = zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
-	
-	if(paccount) {
-		RETVAL_BOOL((long) purple_account_is_connecting(paccount));
+	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
 	
-	RETURN_FALSE;
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	RETVAL_BOOL((long) purple_account_is_connecting(zao->paccount));
 }
 /* }}} */
 
@@ -382,18 +358,15 @@ PHP_METHOD(PhurpleAccount, isConnecting)
 /* {{{ proto string PhurpleAccount::getUserName(void) Returns the account's username */
 PHP_METHOD(PhurpleAccount, getUserName)
 {
-	PurpleAccount *paccount = NULL;
-	zval *index;
+	struct ze_account_obj *zao;
 	
-	index = zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
-	
-	if(paccount) {
-		RETURN_STRING(estrdup(purple_account_get_username(paccount)), 0);
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 	
-	RETURN_NULL();
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	RETURN_STRING(purple_account_get_username(zao->paccount), 1);
 }
 /* }}} */
 
@@ -401,18 +374,15 @@ PHP_METHOD(PhurpleAccount, getUserName)
 /* {{{ proto string PhurpleAccount::getPassword(void) Returns the account's password */
 PHP_METHOD(PhurpleAccount, getPassword)
 {
-	PurpleAccount *paccount = NULL;
-	zval *index;
+	struct ze_account_obj *zao;
 	
-	index = zend_read_property(PhurpleAccount_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC);
-	
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
-	
-	if(paccount) {
-		RETURN_STRING(estrdup(purple_account_get_password(paccount)), 0);
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 	
-	RETURN_NULL();
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	RETURN_STRING(purple_account_get_password(zao->paccount), 1);
 }
 /* }}} */
 

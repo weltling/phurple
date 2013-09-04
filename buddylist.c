@@ -55,28 +55,22 @@ PHP_METHOD(PhurpleBuddyList, __construct)
 	adds the buddy to the blist (optionally to the given group in the blist, not implemented yet)*/
 PHP_METHOD(PhurpleBuddyList, addBuddy)
 {
-	zval *buddy, *group, *index;
-	PurpleBuddy *pbuddy = NULL;
-	PurpleGroup *pgroup = NULL;
+	zval *buddy, *group;
+	struct ze_buddy_obj *zbo;
+	struct ze_buddygroup_obj *zgo;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O|O", &buddy, PhurpleBuddy_ce, &group, PhurpleBuddyGroup_ce) == FAILURE) {
-		RETURN_NULL();
+		return;
 	}
 
 	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
 
-	index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
+	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
 
-	index = zend_read_property(PhurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
-	
-	if(pbuddy && pgroup) {
-		purple_blist_add_buddy(pbuddy, NULL, pgroup, NULL);
-		RETURN_TRUE;
-	}
+	purple_blist_add_buddy(zbo->pbuddy, NULL, zgo->pbuddygroup, NULL);
 
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -85,24 +79,18 @@ PHP_METHOD(PhurpleBuddyList, addBuddy)
 	Adds new group to the blist */
 PHP_METHOD(PhurpleBuddyList, addGroup)
 {
-	zval *group, *index;
-	PurpleGroup *pgroup;
+	zval *group;
+	struct ze_buddygroup_obj *zgo;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PhurpleBuddyGroup_ce) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
 	
-	index = zend_read_property(PhurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+	purple_blist_add_group(zgo->pbuddygroup, NULL);
 
-	if(pgroup) {
-		purple_blist_add_group(pgroup, NULL);
-		RETURN_TRUE;
-	}
-
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -111,50 +99,31 @@ PHP_METHOD(PhurpleBuddyList, addGroup)
 	returns the buddy, if found */
 PHP_METHOD(PhurpleBuddyList, findBuddy)
 {
-	zval *account, *index, *buddy;
+	zval *account;
 	char *name;
 	int name_len;
 	PurpleBuddy *pbuddy;
-	PurpleAccount *paccount;
+	struct ze_account_obj *zao;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Os", &account, PhurpleAccount_ce, &name, &name_len) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+	zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
 
-	index = zend_read_property(PhurpleAccount_ce, account, "index", sizeof("index")-1, 0 TSRMLS_CC);
-	paccount = g_list_nth_data (purple_accounts_get_all(), (guint)Z_LVAL_P(index));
+	pbuddy = purple_find_buddy(zao->paccount, name);
 
-	if(paccount) {
-		pbuddy = purple_find_buddy(paccount, name);
+	if(pbuddy) {
+		zval *buddy;
+		struct ze_buddy_obj *zbo;
+		PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
+		
+		zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
+		zbo->pbuddy = pbuddy;
 
-		if(pbuddy) {
-			int ind = phurple_hash_index_find(&pp->buddy, pbuddy);
-			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
-			
-			if(ind == FAILURE) {
-				ulong nextid = zend_hash_next_free_element(&pp->buddy);
-				zend_hash_index_update(&pp->buddy, nextid, pbuddy, sizeof(PurpleBuddy), NULL);
-				zend_update_property_long(PhurpleBuddy_ce,
-										  buddy,
-										  "index",
-										  sizeof("index")-1,
-										  (long)nextid TSRMLS_CC
-										  );
-			} else {
-				zend_update_property_long(PhurpleBuddy_ce,
-										  buddy,
-										  "index",
-										  sizeof("index")-1,
-										  (long)ind TSRMLS_CC
-										  );
-			}
+		*return_value = *buddy;
 
-			*return_value = *buddy;
-
-			return;
-		}
+		return;
 	}
 
 	RETURN_NULL();
@@ -238,28 +207,19 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 	Removes a buddy from the buddy list */
 PHP_METHOD(PhurpleBuddyList, removeBuddy)
 {
-	zval *buddy, *index;
+	zval *buddy;
 	PurpleBuddy *pbuddy = NULL;
+	struct ze_buddy_obj *zbo;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &buddy, PhurpleBuddy_ce) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
 
-	index = zend_read_property(PhurpleBuddy_ce, buddy, "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&pp->buddy, (ulong)Z_LVAL_P(index), (void**)&pbuddy);
+	purple_blist_remove_buddy(zbo->pbuddy);
 
-	if(pbuddy) {
-		purple_blist_remove_buddy(pbuddy);
-		zend_hash_index_del(&pp->buddy, (ulong)Z_LVAL_P(index));
-		zend_hash_clean(&pp->buddy);
-		zval_ptr_dtor(&buddy);
-
-		RETURN_TRUE;
-	}
-
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -268,35 +228,26 @@ PHP_METHOD(PhurpleBuddyList, removeBuddy)
 	Removes an empty group from the buddy list */
 PHP_METHOD(PhurpleBuddyList, removeGroup)
 {
-	zval *group, *index;
+	zval *group;
 	PurpleGroup *pgroup = NULL;
+	struct ze_buddygroup_obj *zgo;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PhurpleBuddyGroup_ce) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
+	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
 
-	index = zend_read_property(PhurpleBuddyGroup_ce, group, "index", sizeof("index")-1, 0 TSRMLS_CC);
-	zend_hash_index_find(&pp->group, (ulong)Z_LVAL_P(index), (void**)&pgroup);
+	PurpleBlistNode *node = (PurpleBlistNode *) zgo->pbuddygroup;
 
-	if(pgroup) {
-		PurpleBlistNode *node = (PurpleBlistNode *) group;
-
-		if(node->child) {
-			/* group isn't empty */
-			RETURN_FALSE;
-		}
-		
-		purple_blist_remove_group(pgroup);
-		zend_hash_index_del(&pp->group, (ulong)Z_LVAL_P(index));
-		zend_hash_clean(&pp->group);
-		zval_ptr_dtor(&group);
-
-		RETURN_TRUE;
+	if(node->child) {
+		/* group isn't empty */
+		RETURN_FALSE;
 	}
+	
+	purple_blist_remove_group(zgo->pbuddygroup);
 
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 /* }}} */
 

@@ -119,6 +119,7 @@ PHP_METHOD(PhurpleBuddyGroup, getName);
 
 ZEND_BEGIN_MODULE_GLOBALS(phurple)
 
+
 	/**
 	 * This are ini settings
 	 */
@@ -130,8 +131,6 @@ ZEND_BEGIN_MODULE_GLOBALS(phurple)
 	char *custom_user_dir;
 	char *ui_id;
 	int debug;
-
-	int connection_handle;
 
 	/**
 	 * @todo move the phurple_client_obj into the ppos struct
@@ -168,13 +167,7 @@ ZEND_END_MODULE_GLOBALS(phurple)
 
 ZEND_EXTERN_MODULE_GLOBALS(phurple)
 
-/**
- * @todo At many places this macros was used as follows:
- * PHURPLE_MK_OBJ(return_value, PhurpleAccount_ce);
- * But it doesn't really affect the return_value
- * Changing the MAKE_STD_ZVAL to ZVAL_NULL does work, why?
- */
-#define PHURPLE_MK_OBJ(o, c) MAKE_STD_ZVAL(o); Z_TYPE_P(o) = IS_OBJECT; object_init_ex(o, c);
+#define PHURPLE_MK_OBJ(o, c) MAKE_STD_ZVAL(o); object_init_ex(o, c);
 
 #define PHURPLE_INTERNAL_DEBUG 0
 
@@ -185,8 +178,8 @@ extern zend_class_entry *PhurpleConnection_ce;
 extern zend_class_entry *PhurpleBuddy_ce;
 extern zend_class_entry *PhurpleBuddyList_ce;
 extern zend_class_entry *PhurpleBuddyGroup_ce;
+extern zend_class_entry *PhurpleException_ce;
 
-#if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
 # define PHURPLE_CLIENT_CLASS_NAME "Phurple\\Client"
 # define PHURPLE_CONVERSATION_CLASS_NAME "Phurple\\Conversation"
 # define PHURPLE_ACCOUNT_CLASS_NAME "Phurple\\Account"
@@ -194,19 +187,39 @@ extern zend_class_entry *PhurpleBuddyGroup_ce;
 # define PHURPLE_BUDDY_CLASS_NAME "Phurple\\Buddy"
 # define PHURPLE_BUDDYLIST_CLASS_NAME "Phurple\\BuddyList"
 # define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple\\BuddyGroup"
-#else
-# define PHURPLE_CLIENT_CLASS_NAME "PhurpleClient"
-# define PHURPLE_CONVERSATION_CLASS_NAME "PhurpleConversation"
-# define PHURPLE_ACCOUNT_CLASS_NAME "PhurpleAccount"
-# define PHURPLE_CONNECION_CLASS_NAME "PhurpleConnection"
-# define PHURPLE_BUDDY_CLASS_NAME "PhurpleBuddy"
-# define PHURPLE_BUDDYLIST_CLASS_NAME "PhurpleBuddyList"
-# define PHURPLE_BUDDY_GROUP_CLASS_NAME "PhurpleBuddyGroup"
-#endif
+# define PHURPLE_EXCEPTION_CLASS_NAME "Phurple\\Exception"
 
-#if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 3
-# define ZVAL_ADDREF Z_ADDREF_P
-#endif
+struct ze_buddy_obj {
+	zend_object zo;
+	PurpleBuddy *pbuddy;
+};
+
+struct ze_buddygroup_obj {
+	zend_object zo;
+	PurpleGroup *pbuddygroup;
+};
+
+struct ze_account_obj {
+	zend_object zo;
+	PurpleAccount *paccount;
+};
+
+struct ze_conversation_obj {
+	zend_object zo;
+	PurpleConversation *pconversation;
+};
+
+struct ze_connection_obj {
+	zend_object zo;
+	PurpleConnection *pconnection;
+};
+
+struct ze_client_obj {
+	zend_object zo;
+	int connection_handle;
+};
+
+zend_object_handlers default_phurple_obj_handlers;
 
 #endif	/* PHP_PHURPLE_H */
 
