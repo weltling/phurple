@@ -80,6 +80,9 @@ php_client_obj_init(zend_class_entry *ce TSRMLS_DC);
 extern zend_object_value
 php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC);
 
+extern zend_object_value
+php_connection_obj_init(zend_class_entry *ce TSRMLS_DC);
+
 /* {{{ libpurple definitions */
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
@@ -197,9 +200,9 @@ void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
 	}
 
-	if (NULL != phurple_globals->custom_plugin_path) {
+	/*if (NULL != phurple_globals->custom_plugin_path) {
 		efree(phurple_globals->custom_plugin_path);
-	}
+	}*/
 
 }/*}}}*/
 
@@ -418,8 +421,8 @@ PHP_MINIT_FUNCTION(phurple)
 	PhurpleAccount_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_CONNECION_CLASS_NAME, PhurpleConnection_methods);
+	ce.create_object = php_connection_obj_init;
 	PhurpleConnection_ce = zend_register_internal_class(&ce TSRMLS_CC);
-	zend_declare_property_long(PhurpleConnection_ce, "index", sizeof("index")-1, -1, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_CLASS_NAME, PhurpleBuddy_methods);
 	ce.create_object = php_buddy_obj_init;
@@ -1021,23 +1024,19 @@ phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const g
 static void
 phurple_signed_off_function(PurpleConnection *conn, gpointer null)
 {/* {{{ */
-	zval *connection, *retval;
-	GList *connections = NULL;
+	zval *connection;
+	struct ze_connection_obj *zco;
+	zval *client;
+	zend_class_entry *ce;
 
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
 	
-	connections = purple_connections_get_all();
-
 	PHURPLE_MK_OBJ(connection, PhurpleConnection_ce);
-	zend_update_property_long(PhurpleConnection_ce,
-							  connection,
-							  "index",
-							  sizeof("index")-1,
-							  (long)g_list_position(connections, g_list_find(connections, conn)) TSRMLS_CC
-							  );
+	zco = (struct ze_connection_obj *) emalloc(sizeof(struct ze_connection_obj));
+	zco->pconnection = conn;
 
 	call_custom_method(&client,
 					   ce,

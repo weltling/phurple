@@ -78,24 +78,20 @@ phurple_heartbeat_callback(gpointer data)
 static void
 phurple_signed_on_function(PurpleConnection *conn, gpointer null)
 {/* {{{ */
-	zval *connection, *retval;
-	GList *connections = NULL;
+	zval *connection;
+	struct ze_connection_obj *zco;
+	zval *client;
+	zend_class_entry *ce;
 	
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
-	
-	connections = purple_connections_get_all();
-
 	PHURPLE_MK_OBJ(connection, PhurpleConnection_ce);
-	zend_update_property_long(PhurpleConnection_ce,
-							  connection,
-							  "index",
-							  sizeof("index")-1,
-							  (long)g_list_position(connections, g_list_find(connections, conn)) TSRMLS_CC
-							  );
+	zco = (struct ze_connection_obj *) zend_object_store_get_object(connection TSRMLS_CC);
+	zco->pconnection = conn;
 
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+	
 	call_custom_method(&client,
 					   ce,
 					   NULL,

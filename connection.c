@@ -39,6 +39,51 @@ php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 extern void phurple_dump_zval(zval *var);
 #endif
 
+void
+php_connection_obj_destroy(void *obj TSRMLS_DC)
+{
+	struct ze_connection_obj *zco = (struct ze_connection_obj *)obj;
+
+	zend_object_std_dtor(&zco->zo TSRMLS_CC);
+
+	/*if (zco->pconnection) {
+		purple_connection_destroy(zco->pconnection);
+	}*/
+
+	efree(zco);
+}
+
+zend_object_value
+php_connection_obj_init(zend_class_entry *ce TSRMLS_DC)
+{
+	zend_object_value ret;
+	struct ze_connection_obj *zco;
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+	zval *tmp;
+#endif
+
+	zco = (struct ze_connection_obj *) emalloc(sizeof(struct ze_connection_obj));
+	memset(&zco->zo, 0, sizeof(zend_object));
+
+	zend_object_std_init(&zco->zo, ce TSRMLS_CC);
+#if PHP_MAJOR_VERSION== 5 && PHP_MINOR_VERSION < 4
+	zend_hash_copy(zco->zo.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,
+					(void *) &tmp, sizeof(zval *));
+#else
+	object_properties_init(&zco->zo, ce);
+#endif
+
+	zco->pconnection = NULL;
+
+	ret.handle = zend_objects_store_put(zco, NULL,
+								(zend_objects_free_object_storage_t) php_connection_obj_destroy,
+								NULL TSRMLS_CC);
+
+	ret.handlers = &default_phurple_obj_handlers;
+
+	return ret;
+}
+
 /*
 **
 **
@@ -50,7 +95,7 @@ extern void phurple_dump_zval(zval *var);
 	constructor*/
 PHP_METHOD(PhurpleConnection, __construct)
 {
-	
+	/* XXX to implement here */	
 }
 /* }}} */
 
@@ -59,12 +104,17 @@ PHP_METHOD(PhurpleConnection, __construct)
 		Returns the connection's account*/
 PHP_METHOD(PhurpleConnection, getAccount)
 {
-	PurpleConnection *conn = NULL;
 	PurpleAccount *acc = NULL;
+	struct ze_connection_obj *zco;
 
-	conn = g_list_nth_data (purple_connections_get_all(), (guint)Z_LVAL_P(zend_read_property(PhurpleConnection_ce, getThis(), "index", sizeof("index")-1, 0 TSRMLS_CC)));
-	if(NULL != conn) {
-		acc = purple_connection_get_account(conn);
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_connection_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if(NULL != zco->pconnection) {
+		acc = purple_connection_get_account(zco->pconnection);
 		if(NULL != acc) {
 			zval *ret = php_create_account_obj_zval(acc TSRMLS_CC);
 
