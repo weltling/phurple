@@ -32,6 +32,9 @@
 
 #include <purple.h>
 
+extern zval *
+php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
@@ -149,15 +152,7 @@ PHP_METHOD(PhurpleConversation, getAccount)
 	if(NULL != conversation) {
 		acc = purple_conversation_get_account(conversation);
 		if(NULL != acc) {
-			zval *ret;
-			struct ze_account_obj *zao;
-
-			MAKE_STD_ZVAL(ret);
-			object_init_ex(ret, PhurpleAccount_ce);
-
-			zao = (struct ze_account_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-
-			zao->paccount = acc;
+			zval *ret = php_create_account_obj_zval(acc TSRMLS_CC);
 
 			*return_value = *ret;
 

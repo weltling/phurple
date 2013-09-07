@@ -107,6 +107,22 @@ php_account_obj_init(zend_class_entry *ce TSRMLS_DC)
 	return ret;
 }
 
+zval *
+php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC)
+{
+	zval *ret;
+	struct ze_account_obj *zao;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, PhurpleAccount_ce);
+	INIT_PZVAL(ret);
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zao->paccount = paccount;
+
+	return ret;
+}
+
 /*
 **
 **

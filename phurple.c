@@ -68,6 +68,9 @@ php_buddy_obj_init(zend_class_entry *ce TSRMLS_DC);
 extern zend_object_value
 php_account_obj_init(zend_class_entry *ce TSRMLS_DC);
 
+extern zval *
+php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
+
 extern zend_object_value
 php_buddygroup_obj_init(zend_class_entry *ce TSRMLS_DC);
 
@@ -179,12 +182,9 @@ zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce,
 
 void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
-	/*MAKE_STD_ZVAL(phurple_globals->phurple_client_obj);*/
-	/*ALLOC_INIT_ZVAL(phurple_globals->phurple_client_obj);
-	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;*/
 	phurple_globals->phurple_client_obj = NULL;
 
-	phurple_globals->custom_plugin_path = estrdup("");
+	phurple_globals->custom_plugin_path = NULL;
 
 }/*}}}*/
 
@@ -192,6 +192,10 @@ void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
 	if(NULL != phurple_globals->phurple_client_obj) {
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
+	}
+
+	if (NULL != phurple_globals->custom_plugin_path) {
+		efree(phurple_globals->custom_plugin_path);
 	}
 
 }/*}}}*/
@@ -775,15 +779,7 @@ phurple_request_authorize(PurpleAccount *account,
 	zval *result, *php_account, *php_on_list, *php_remote_user, *php_message;
 	
 	if(NULL != account) {
-		ALLOC_INIT_ZVAL(php_account);
-		Z_TYPE_P(php_account) = IS_OBJECT;
-		object_init_ex(php_account, PhurpleAccount_ce);
-		zend_update_property_long(PhurpleAccount_ce,
-								  php_account,
-								  "index",
-								  sizeof("index")-1,
-								  (long)g_list_position(purple_accounts_get_all(), g_list_find(purple_accounts_get_all(), account)) TSRMLS_CC
-								  );
+		php_account = php_create_account_obj_zval(account TSRMLS_CC);
 	} else {
 		ALLOC_INIT_ZVAL(php_account);
 	}

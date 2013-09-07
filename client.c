@@ -48,6 +48,9 @@ extern char *segfault_message;
 extern char *phurple_get_protocol_id_by_name(const char *name);
 extern zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... );
 
+extern zval *
+php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
@@ -260,7 +263,6 @@ PHP_METHOD(PhurpleClient, addAccount)
 	account = purple_account_new(g_strdup(nick), phurple_get_protocol_id_by_name(protocol));
 
 	if(NULL != account) {
-		struct ze_account_obj *zao;
 		zval *ret;
 
 		purple_account_set_password(account, estrdup(password));
@@ -284,13 +286,7 @@ PHP_METHOD(PhurpleClient, addAccount)
 
 		accounts = purple_accounts_get_all();
 
-		ALLOC_ZVAL(ret);
-		object_init_ex(ret, PhurpleAccount_ce);
-		INIT_PZVAL(ret);
-
-		zao = (struct ze_account_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-		zao->paccount = account;
-
+		ret = php_create_account_obj_zval(account TSRMLS_CC);
 		*return_value = *ret;
 
 		efree(protocol);
@@ -368,15 +364,7 @@ PHP_METHOD(PhurpleClient, findAccount)
 	paccount = purple_accounts_find(account_name, NULL);
 
 	if(paccount) {
-		zval *ret;
-		struct ze_account_obj *zao;
-
-		MAKE_STD_ZVAL(ret);
-		object_init_ex(ret, PhurpleAccount_ce);
-
-		zao = (struct ze_account_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-
-		zao->paccount = paccount;
+		zval *ret = php_create_account_obj_zval(paccount TSRMLS_CC);
 
 		*return_value = *ret;
 
@@ -404,9 +392,6 @@ PHP_METHOD(PhurpleClient, getCoreVersion)
 PHP_METHOD(PhurpleClient, getInstance)
 {	
 	if(NULL == PHURPLE_G(phurple_client_obj)) {
-	/*if(NULL == Z_OBJVAL_P(PHURPLE_G(phurple_client_obj))) {*/
-	/*if(NULL == zend_objects_get_address(PHURPLE_G(phurple_client_obj) TSRMLS_CC)) {*/
-	/*if(NULL == PHURPLE_G(phurple_client_obj) || NULL == zend_objects_get_address(PHURPLE_G(phurple_client_obj) TSRMLS_CC)) {*/
 
 		struct ze_client_obj *zco;
 		zend_class_entry **ce = NULL;
@@ -414,7 +399,6 @@ PHP_METHOD(PhurpleClient, getInstance)
 		ALLOC_ZVAL(PHURPLE_G(phurple_client_obj));
 		object_init_ex(PHURPLE_G(phurple_client_obj), EG(called_scope));
 		INIT_PZVAL(PHURPLE_G(phurple_client_obj));
-		//zval_ptr_dtor(&PHURPLE_G(phurple_client_obj));
 		
 		zco = (struct ze_client_obj *) zend_object_store_get_object(PHURPLE_G(phurple_client_obj) TSRMLS_CC);
 
