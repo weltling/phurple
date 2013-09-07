@@ -736,8 +736,8 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
 		}
 		fcic.calling_scope = obj_ce;
 		fcic.object_ptr = *object_pp;
-		/* XXX should probably pass per additional param */
-		fcic.called_scope = NULL;
+		/* XXX should probably pass correct ce per additional param */
+		fcic.called_scope = PhurpleClient_ce;
 
 		result = zend_call_function(&fci, &fcic TSRMLS_CC);
 	}
