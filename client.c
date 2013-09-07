@@ -148,10 +148,6 @@ php_client_obj_init(zend_class_entry *ce TSRMLS_DC)
 
 
 	zend_object_std_init(&zco->zo, ce TSRMLS_CC);
-	/*if (ce->default_properties_count > 0) {
-		zco->zo.properties_table = emalloc((ce->default_properties_count + 1) * sizeof(zval));
-		zco->zo.properties_table[ce->default_properties_count] = NULL;
-	}*/
 
 #if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION== 5 && PHP_MINOR_VERSION < 4
 	zend_hash_copy(zco->zo.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,

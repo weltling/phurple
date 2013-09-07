@@ -119,25 +119,16 @@ PHP_METHOD(PhurpleBuddyGroup, getName);
 
 ZEND_BEGIN_MODULE_GLOBALS(phurple)
 
-
 	/**
 	 * This are ini settings
 	 */
 	char *custom_plugin_path;
 
 	/**
-	 * @todo move the phurple_client_obj into the ppos struct
+	 * Client singleton instance
 	 */
 	zval *phurple_client_obj;
 
-	/**
-	 * php phurple object storage
-	 */
-	struct phurple_object_storage
-	{
-		HashTable buddy;
-		HashTable group;
-	} ppos;
 ZEND_END_MODULE_GLOBALS(phurple)
 
 /**
@@ -145,12 +136,6 @@ ZEND_END_MODULE_GLOBALS(phurple)
  */
 #define SIGNAL_SIGNED_ON "signed-on"
 #define SIGNAL_SIGNED_OFF "signed-off"
-
-/**
- * At the moment we only take care about PHP versions 5.3 or 5.2,
- * mostly because of namespaces. 
- */
-#define PHURPLE_USING_PHP_53 ZEND_MODULE_API_NO >= 20071006
 
 #ifdef ZTS
 #define PHURPLE_G(v) TSRMG(phurple_globals_id, zend_phurple_globals *, v)

@@ -63,8 +63,6 @@ PHP_METHOD(PhurpleBuddyList, addBuddy)
 		return;
 	}
 
-	struct phurple_object_storage *pp = &PHURPLE_G(ppos);
-
 	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
 	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
 
@@ -169,9 +167,6 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		fci.function_table = EG(function_table);
 		fci.function_name = NULL;
 		fci.symbol_table = NULL;
-#if !PHURPLE_USING_PHP_53
-		fci.object_pp = &return_value;
-#endif
 		fci.retval_ptr_ptr = &retval_ptr;
 		fci.param_count = 1;
 		fci.params = params;
@@ -180,9 +175,7 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		fcc.initialized = 1;
 		fcc.function_handler = PhurpleBuddyGroup_ce->constructor;
 		fcc.calling_scope = EG(scope);
-#if PHURPLE_USING_PHP_53
 		fcc.object_ptr = return_value;
-#endif
 
 		if (zend_call_function(&fci, &fcc TSRMLS_CC) == FAILURE) {
 			efree(params);

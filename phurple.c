@@ -184,28 +184,16 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	Z_TYPE_P(phurple_globals->phurple_client_obj) = IS_OBJECT;*/
 	phurple_globals->phurple_client_obj = NULL;
 
-	zend_hash_init(&phurple_globals->ppos.buddy, 32, NULL, NULL, 1);
-	zend_hash_init(&phurple_globals->ppos.group, 32, NULL, NULL, 1);
-
 	phurple_globals->custom_plugin_path = estrdup("");
 
 }/*}}}*/
 
 void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
-	/*if(NULL != phurple_globals->phurple_client_obj) {
+	if(NULL != phurple_globals->phurple_client_obj) {
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
-	}*/
+	}
 
-	/*if (phurple_globals->custom_user_dir) {
-		efree(phurple_globals->custom_user_dir);
-	}
-	if (phurple_globals->custom_plugin_path) {
-		efree(phurple_globals->custom_plugin_path);
-	}
-	if (phurple_globals->ui_id) {
-		efree(phurple_globals->ui_id);
-	}*/
 }/*}}}*/
 
 /* True global resources - no need for thread safety here */
@@ -700,9 +688,6 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
 	va_end(given_params);
 	
 	fci.size = sizeof(fci);
-#if !PHURPLE_USING_PHP_53
-	fci.object_pp = object_pp;
-#endif
 	fci.function_table = EG(function_table);
 	fci.function_name = &z_fname;
 	fci.symbol_table = NULL;
@@ -739,9 +724,7 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
 			fcic.function_handler = *fn_proxy;
 		}
 		fcic.calling_scope = obj_ce;
-#if PHURPLE_USING_PHP_53
-	fcic.object_ptr = *object_pp;
-#endif
+		fcic.object_ptr = *object_pp;
 
 		result = zend_call_function(&fci, &fcic TSRMLS_CC);
 	}
