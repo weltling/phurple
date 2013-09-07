@@ -66,9 +66,12 @@ php_account_obj_destroy(void *obj TSRMLS_DC)
 
 	zend_object_std_dtor(&zao->zo TSRMLS_CC);
 
-	if (zao->paccount) {
+	/* IMPORTANT! don't destroy an account when object is destructing,
+	 	every account object is persistent within libpurple once created.
+		The same for buddy, group, etc. */
+	/*if (zao->paccount) {
 		purple_account_destroy(zao->paccount);
-	}
+	}*/
 
 	efree(zao);
 }
@@ -169,7 +172,12 @@ PHP_METHOD(PhurpleAccount, setEnabled)
 
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	
-	purple_account_set_enabled(zao->paccount, PHURPLE_G(ui_id), (gboolean) enabled);
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+#else
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+#endif
+	purple_account_set_enabled(zao->paccount, Z_STRVAL_PP(ui_id), (gboolean) enabled);
 }
 /* }}} */
 
@@ -244,6 +252,11 @@ PHP_METHOD(PhurpleAccount, set)
 	char *name;
 	int name_len;
 	struct ze_account_obj *zao;
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+#else
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+#endif
 	
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz", &name, &name_len, &value) == FAILURE) {
@@ -254,16 +267,16 @@ PHP_METHOD(PhurpleAccount, set)
 	
 	switch (Z_TYPE_P(value)) {
 		case IS_BOOL:
-			purple_account_set_ui_bool (zao->paccount, PHURPLE_G(ui_id), name, (gboolean) Z_LVAL_P(value));
+			purple_account_set_ui_bool (zao->paccount, Z_STRVAL_PP(ui_id), name, (gboolean) Z_LVAL_P(value));
 		break;
 		
 		case IS_LONG:
 		case IS_DOUBLE:
-			purple_account_set_ui_int (zao->paccount, PHURPLE_G(ui_id), name, (int) Z_LVAL_P(value));
+			purple_account_set_ui_int (zao->paccount, Z_STRVAL_PP(ui_id), name, (int) Z_LVAL_P(value));
 		break;
 			
 		case IS_STRING:
-			purple_account_set_ui_string (zao->paccount, PHURPLE_G(ui_id), name, Z_STRVAL_P(value));
+			purple_account_set_ui_string (zao->paccount, Z_STRVAL_PP(ui_id), name, Z_STRVAL_P(value));
 		break;
 			
 		default:
@@ -285,6 +298,11 @@ PHP_METHOD(PhurpleAccount, get)
 	char *name;
 	int name_len;
 	struct ze_account_obj *zao;
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+#else
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+#endif
 	
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
@@ -293,7 +311,7 @@ PHP_METHOD(PhurpleAccount, get)
 
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	if((table = g_hash_table_lookup(zao->paccount->ui_settings, PHURPLE_G(ui_id))) == NULL) {
+	if((table = g_hash_table_lookup(zao->paccount->ui_settings, Z_STRVAL_PP(ui_id))) == NULL) {
 		RETURN_NULL();
 	}
 

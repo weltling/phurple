@@ -219,13 +219,10 @@ PHP_METHOD(PhurpleClient, addAccount)
 	pcre *re;
 	PurpleAccount *account = NULL;
 	GList *accounts;
-	struct ze_client_obj *zco;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_dsn, &account_dsn_len) == FAILURE) {
 		RETURN_FALSE;
 	}
-
-	zco = (struct ze_client_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	re = pcre_compile("([a-zA-Z-]+)://([^:]+):?([^@]*)@?([a-zA-Z0-9-.]*):?([0-9]*)", 0, &error, &erroffset, NULL);
 
@@ -264,10 +261,11 @@ PHP_METHOD(PhurpleClient, addAccount)
 	port = emalloc(offsets[11] - offsets[10] + 1);
 	php_sprintf(port, "%.*s", offsets[11] - offsets[10], account_dsn + offsets[10]);
 
-	account = purple_account_new(estrdup(nick), phurple_get_protocol_id_by_name(protocol));
+	account = purple_account_new(g_strdup(nick), phurple_get_protocol_id_by_name(protocol));
 
 	if(NULL != account) {
 		struct ze_account_obj *zao;
+		zval *ret;
 
 		purple_account_set_password(account, estrdup(password));
 
@@ -279,18 +277,25 @@ PHP_METHOD(PhurpleClient, addAccount)
 			purple_account_set_int(account, "port", (int)atoi(port));
 		}
 
-		purple_account_set_enabled(account, PHURPLE_G(ui_id), 1);
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+#else
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+#endif
+		purple_account_set_enabled(account, g_strdup(Z_STRVAL_PP(ui_id)), 1);
 
 		purple_accounts_add(account);
 
 		accounts = purple_accounts_get_all();
 
-		MAKE_STD_ZVAL(return_value);
-		Z_TYPE_P(return_value) = IS_OBJECT;
-		object_init_ex(return_value, PhurpleAccount_ce);
+		ALLOC_ZVAL(ret);
+		object_init_ex(ret, PhurpleAccount_ce);
+		INIT_PZVAL(ret);
 
-		zao = (struct ze_account_obj *) zend_object_store_get_object(return_value TSRMLS_CC);
+		zao = (struct ze_account_obj *) zend_object_store_get_object(ret TSRMLS_CC);
 		zao->paccount = account;
+
+		*return_value = *ret;
 
 		efree(protocol);
 		efree(nick);
@@ -420,15 +425,30 @@ PHP_METHOD(PhurpleClient, getInstance)
 		/**
 		 * phurple initialization stuff
 		 */
-		purple_util_set_user_dir(PHURPLE_G(custom_user_dir));
-		purple_debug_set_enabled(PHURPLE_G(debug));
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+		zval **user_dir = zend_std_get_static_property(PhurpleClient_ce, "user_dir", sizeof("user_dir")-1, 0 TSRMLS_CC);
+#else
+		zval **user_dir = zend_std_get_static_property(PhurpleClient_ce, "user_dir", sizeof("user_dir")-1, 0, NULL TSRMLS_CC);
+#endif
+		purple_util_set_user_dir(g_strdup(Z_STRVAL_PP(user_dir)));
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+		zval **debug = zend_std_get_static_property(PhurpleClient_ce, "debug", sizeof("debug")-1, 0 TSRMLS_CC);
+#else
+		zval **debug = zend_std_get_static_property(PhurpleClient_ce, "debug", sizeof("debug")-1, 0, NULL TSRMLS_CC);
+#endif
+		purple_debug_set_enabled(Z_LVAL_PP(debug));
 		purple_core_set_ui_ops(&php_core_uiops);
 		purple_accounts_set_ui_ops(&php_account_uiops);
 		purple_eventloop_set_ui_ops(&glib_eventloops);
 		/*purple_plugins_add_search_path(PHURPLE_G(custom_plugin_path));*/
 		purple_plugins_add_search_path(INI_STR("phurple.custom_plugin_path"));
 
-		if (!purple_core_init(PHURPLE_G(ui_id))) {
+#if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+#else
+		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+#endif
+		if (!purple_core_init(g_strdup(Z_STRVAL_PP(ui_id)))) {
 #ifdef HAVE_SIGNAL_H
 			g_free(segfault_message);
 #endif
@@ -508,9 +528,9 @@ PHP_METHOD(PhurpleClient, setUserDir) {
 		efree(PHURPLE_G(custom_user_dir));
 	}*/
 
-	PHURPLE_G(custom_user_dir) = estrdup(user_dir);
+	zend_update_static_property_string(PhurpleClient_ce, "user_dir", strlen("user_dir"), user_dir TSRMLS_CC);
 	
-	purple_util_set_user_dir(user_dir);
+	purple_util_set_user_dir(g_strdup(user_dir));
 }
 /* }}} */
 
@@ -527,9 +547,9 @@ PHP_METHOD(PhurpleClient, setDebug)
 
 	convert_to_long(debug);
 
-	PHURPLE_G(debug) = Z_LVAL_P(debug);
+	zend_update_static_property_long(PhurpleClient_ce, "debug", sizeof("debug")-1, Z_LVAL_P(debug) TSRMLS_CC);
 
-	purple_debug_set_enabled(PHURPLE_G(debug));
+	purple_debug_set_enabled(Z_LVAL_P(debug));
 }
 /* }}} */
 
@@ -545,7 +565,7 @@ PHP_METHOD(PhurpleClient, setUiId)
 		return;
 	}
 
-	PHURPLE_G(ui_id) = estrdup(ui_id);
+	zend_update_static_property_string(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, ui_id TSRMLS_CC);
 }
 /* }}} */
 

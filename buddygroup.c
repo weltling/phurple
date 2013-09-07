@@ -43,9 +43,9 @@ php_buddygroup_obj_destroy(void *obj TSRMLS_DC)
 
 	zend_object_std_dtor(&zgo->zo TSRMLS_CC);
 
-	if (zgo->pbuddygroup) {
+	/*if (zgo->pbuddygroup) {
 		purple_group_destroy(zgo->pbuddygroup);
-	}
+	}*/
 
 	efree(zgo);
 }

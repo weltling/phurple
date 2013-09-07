@@ -43,9 +43,9 @@ php_buddy_obj_destroy(void *obj TSRMLS_DC)
 
 	zend_object_std_dtor(&zbo->zo TSRMLS_CC);
 
-	if (zbo->pbuddy) {
+	/*if (zbo->pbuddy) {
 		purple_buddy_destroy(zbo->pbuddy);
-	}
+	}*/
 
 	efree(zbo);
 }

@@ -126,13 +126,6 @@ ZEND_BEGIN_MODULE_GLOBALS(phurple)
 	char *custom_plugin_path;
 
 	/**
-	 * This are instance specific settings
-	 */
-	char *custom_user_dir;
-	char *ui_id;
-	int debug;
-
-	/**
 	 * @todo move the phurple_client_obj into the ppos struct
 	 */
 	zval *phurple_client_obj;
@@ -217,6 +210,7 @@ struct ze_connection_obj {
 struct ze_client_obj {
 	zend_object zo;
 	int connection_handle;
+	zend_class_entry *ce;
 };
 
 zend_object_handlers default_phurple_obj_handlers;

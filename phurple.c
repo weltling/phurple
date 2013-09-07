@@ -187,10 +187,7 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	zend_hash_init(&phurple_globals->ppos.buddy, 32, NULL, NULL, 1);
 	zend_hash_init(&phurple_globals->ppos.group, 32, NULL, NULL, 1);
 
-	phurple_globals->custom_user_dir = estrdup("/dev/null");
 	phurple_globals->custom_plugin_path = estrdup("");
-	phurple_globals->ui_id = estrdup("PHP");
-	phurple_globals->debug = 0;
 
 }/*}}}*/
 
@@ -382,6 +379,9 @@ PHP_MINIT_FUNCTION(phurple)
 	INIT_CLASS_ENTRY(ce, PHURPLE_CLIENT_CLASS_NAME, PhurpleClient_methods);
 	ce.create_object = php_client_obj_init;
 	PhurpleClient_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	zend_declare_property_string(PhurpleClient_ce, "user_dir", strlen("user_dir"), g_strdup("/dev/null"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_long(PhurpleClient_ce, "debug", strlen("debug"), 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_string(PhurpleClient_ce, "ui_id", strlen("ui_id"), g_strdup("PHP"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 
 	/* A type of conversation */
 	zend_declare_class_constant_long(PhurpleClient_ce, "CONV_TYPE_UNKNOWN", sizeof("CONV_TYPE_UNKNOWN")-1, PURPLE_CONV_TYPE_UNKNOWN TSRMLS_CC);
@@ -640,6 +640,7 @@ char*
 phurple_get_protocol_id_by_name(const char *protocol_name)
 {/* {{{ */
 	GList *iter;
+	char *lc_proto = phurple_tolower(protocol_name);
 
 	iter = purple_plugins_get_protocols();
 
@@ -647,8 +648,11 @@ phurple_get_protocol_id_by_name(const char *protocol_name)
 		PurplePlugin *plugin = iter->data;
 		PurplePluginInfo *info = plugin->info;
 
-		if (info && info->name && 0 == strcmp(info->name, protocol_name)) {
-			return estrdup(info->id);
+		if (info && info->name) {
+			char *lc_name = phurple_tolower(info->name);
+			if (0 == strcmp(lc_name, lc_proto)) {
+				return estrdup(info->id);
+			}
 		}
 	}
 
