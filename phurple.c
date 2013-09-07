@@ -77,6 +77,9 @@ php_buddygroup_obj_init(zend_class_entry *ce TSRMLS_DC);
 extern zend_object_value
 php_client_obj_init(zend_class_entry *ce TSRMLS_DC);
 
+extern zend_object_value
+php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC);
+
 /* {{{ libpurple definitions */
 #ifdef HAVE_SIGNAL_H
 static void sighandler(int sig);
@@ -371,6 +374,7 @@ PHP_MINIT_FUNCTION(phurple)
 	INIT_CLASS_ENTRY(ce, PHURPLE_CLIENT_CLASS_NAME, PhurpleClient_methods);
 	ce.create_object = php_client_obj_init;
 	PhurpleClient_ce = zend_register_internal_class(&ce TSRMLS_CC);
+
 	zend_declare_property_string(PhurpleClient_ce, "user_dir", strlen("user_dir"), g_strdup("/dev/null"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 	zend_declare_property_long(PhurpleClient_ce, "debug", strlen("debug"), 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 	zend_declare_property_string(PhurpleClient_ce, "ui_id", strlen("ui_id"), g_strdup("PHP"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
@@ -406,8 +410,8 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_declare_class_constant_long(PhurpleClient_ce, "STATUS_MOBILE", sizeof("STATUS_MOBILE")-1, PURPLE_STATUS_MOBILE TSRMLS_CC);
 	
 	INIT_CLASS_ENTRY(ce, PHURPLE_CONVERSATION_CLASS_NAME, PhurpleConversation_methods);
+	ce.create_object = php_conversation_obj_init;
 	PhurpleConversation_ce = zend_register_internal_class(&ce TSRMLS_CC);
-	zend_declare_property_long(PhurpleConversation_ce, "index", sizeof("index")-1, -1, ZEND_ACC_PRIVATE TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_ACCOUNT_CLASS_NAME, PhurpleAccount_methods);
 	ce.create_object = php_account_obj_init;
@@ -943,6 +947,7 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	GList *conversations = purple_get_conversations();
 	PurpleBuddy *pbuddy = NULL;
 	PurpleAccount *paccount = NULL;
+	struct ze_conversation_obj *zco;
 
 	char *who_san = (!who || '\0' == who) ? "" : (char*)who;
 	char *message_san = (!message || '\0' == message) ? "" : (char*)message;
@@ -953,14 +958,10 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	zend_class_entry *ce = Z_OBJCE_P(client);
 
 	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
-	zend_update_property_long(PhurpleConversation_ce,
-							  conversation,
-							  "index",
-							  sizeof("index")-1,
-							  (long)g_list_position(conversations, g_list_find(conversations, conv)) TSRMLS_CC
-							  );
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(conversation TSRMLS_CC);
+	zco->pconversation = conv;
 
-	paccount = g_list_nth_data (purple_accounts_get_all(), g_list_position(purple_accounts_get_all(),g_list_find(purple_accounts_get_all(), (gconstpointer)purple_conversation_get_account(conv))));
+	paccount = purple_conversation_get_account(conv);
 	if(paccount) {
 		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
 		
