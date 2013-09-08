@@ -35,16 +35,15 @@
     <preface id="intro">
       <title>Introduction</title>
       <para>Phurple is the libpurple PHP binding, which makes the use of the instant
-			messaging  protocols such AIM (ICQ, Oscar), MSN, Yahoo etc. in PHP possible. It's implemented as a set of the internal classes.
+			messaging  protocols such AIM (ICQ, Oscar), Skype, Yahoo etc. in PHP possible. It's implemented as a set of the internal classes.
 			Learn more about the libpurple at <ulink url="http://developer.pidgin.im/wiki/WhatIsLibphurple"><citetitle>http://developer.pidgin.im/wiki/WhatIsLibphurple</citetitle></ulink>.
 			libpurples docs can be found at <ulink url="http://developer.pidgin.im/doxygen/dev/html/files.html"><citetitle>
 			http://developer.pidgin.im/doxygen/dev/html/files.html</citetitle></ulink>
 		</para>
+		<para>Note that due to the nature of libpurple the extension is only safe to use in the non thread safe environments. However it'll work with the thread safe version of PHP when the thread safety isn't utilized. Say the TS version is ok using CLI or FastCGI, but will behave unpredictable with Apache Worker MPM.</para>
+		<para>Phurple\Client derivative is always a singleton instance within the same process. It's really like a desktop IM client used always per one user/process. That's why if it's required to work with different user dirs, always do it one per process.</para>
 		<para>
-			Actually, the Phurple is using the g_main_loop_run() function from the GLib to run the main loop. This makes impossible to use it within some webserver process. One of the possible models to use the extension for some web application could be AJAX web interface, which communicates with the Phurple through the inetd sevice. At the moment I'm working on the possibility to integrate the glibs main loop into some other main loop, which could give a chance to use this extension within a webserver (may be even multithreaded).
-		</para>
-		<para>
-			The last development news can be found at <ulink url="http://thinker.rubay.de/"><citetitle>http://thinker.rubay.de/</citetitle></ulink> or at <ulink url="http://sourceforge.net/projects/phurple/"><citetitle>http://sourceforge.net/projects/phurple/</citetitle></ulink>
+			The last development news can be found at <ulink url="http://belski.net/"><citetitle>http://belski.net/</citetitle></ulink> or at <ulink url="http://sourceforge.net/projects/phurple/"><citetitle>http://sourceforge.net/projects/phurple/</citetitle></ulink>
 		</para>
     </preface>
     <chapter id="requirements">
@@ -52,12 +51,12 @@
 	  <para>
 		The common requirements are:
 		<itemizedlist>
-			<listitem>PHP >=5.2.0 with pcre compiled in</listitem>
+			<listitem>PHP >=5.3.0 with pcre compiled in</listitem>
 			<listitem>libpurple >= 2.2.1</listitem>
 			<listitem>GLib >= 2.0</listitem>
 		</itemizedlist>
 	  </para>
-	  <para>Please let me know, if you've successfully compiled on earlier versions. Actually the extension is being developed on the php v5.2.6 with the option to be upcomming php v5.3 compatible.</para>
+	  <para>Please let me know, if you've successfully compiled on earlier versions. Support for PHP 5.2 and downwards was dropped with the Phurple 0.5.0.</para>
     </chapter>
     <chapter id="installation">
       <title>Installation</title>
