@@ -10,6 +10,10 @@ This libpurple PHP binding, which defines a set of internal classes, gives a pos
 - ./configure --with-phurple
 - make && sudo make install
 
+==Documentation==
+
+See extension docs at http://phurple.php.belski.net/
+
 ==Example==
 `<?php
  
@@ -195,9 +199,5 @@ try {
 }
 
 `
-
-==Documentation==
-
-See extension docs at http://phurple.php.belski.net/
 
 Enjoy :)
