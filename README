@@ -1,64 +1,203 @@
-See extension docs at http://phurple.php.belsky.info/
-Please ask your questions using the forums at http://sourceforge.net/projects/phurple/
+==Description==
 
-Changelog:
+This libpurple PHP binding, which defines a set of internal classes, gives a possibility to use AOL and ICQ (OSCAR), Yahoo, Jabber, IRC and much more protocols directly from PHP. Write your own IM chat client in PHP, as simply as PHP enables it.
 
-v0.5.0 alpha:
-* mega refactoring with
- - PHP 5.2 support dropped
- - compatibility ensured with PHP 5.3 onwards
- - get rid of most lunatic coding technics
+==Installation==
 
-v0.4.1 alpha:
-* bugfix release
-* fixed PHP 5.3 compatibility, on 5.3 namespaces will be used, eq.
- - php 5.2 : PhurpleClient
- - php 5.3 : Phurple\Client
-* fixed several memory leaks
-* reorganized the source code so then each php class is holded in a separate file
+- install glib and libpurple development packages
+- download and unpack
+- phpize
+- ./configure --with-phurple
+- make && sudo make install
 
-v0.4.0 alpha:
-* Project name changed to Phurple for two purposes:
-  - more flexible code processing of both extension and libpurple stuff
-  - php license compatibility (no word php in the extension title)
-  In general your old code should work if you simply replace purple with 
-  phurple case sensitive. The name was suggested on the pidgin mailing list,
-  i can't remember by who
-* libpurple initialization moved from the compile time to the runtime,
-  excactly - to the CustomPhurpleClient instantiation time
-* PhurpleClient::iterate() added
-* PhurpleClient::getProtocols() is no more static
-* PhurpleAccount::get() added
-* PhurpleClient::PURPLE_STATUS_* constant names changed to PhurpleClient::STATUS_*
-* PhurpleClient::connectToSignal() removed to simplify the code
-* PhurpleClient::connect() added (at least disconnect is planed for next release)
-* PhurpleClient::setUserDir() is no more alias for purple.custom_user_directory
-* purple.custom_user_directory ini setting removed
-* PhurpleClient::setDebug() added instead of the purple.debug_enabled ini setting
-* PhurpleClient::setUiId() added instead of the purple.ui_id ini setting
-* purple.plugin_save_pref ini setting removed 'cause it's useless
-* phurple.custom_plugin_path is the only true ini setting which wasn't deleted
-* PhurpleClient::__clone() is now private final so there can be only one client
-  instance per script
-* fixed the bug where a PurpleConversation instance gets overwritten when creating 
-  multiple conversations
+==Example==
+`<?php
+ 
+ob_implicit_flush(true);
+ 
+use Phurple\Client;
+use Phurple\Account;
+use Phurple\Conversation;
+use Phurple\Connection;
+use Phurple\Buddy;
+use Phurple\BuddyList;
 
-v0.3.0 alpha:
-* PurpleAccount::isConnecting() added
-* PurpleAccount::getUserName() added
-* PurpleAccount::getPassword() added
-* PurpleClient::deleteAccount() added
-* PurpleClient::findAccount() added
-* PurpleClient::addAccount returns now a PurpleAccount instance
-  (but was null)
-* PurpleClient::authorizeRequest() added
+/**
+ * @class MyClient
+ *
+ * The method names are firmly and must be overloaded to work
+ */
+class MyClient extends Client
+{
+ 
+	private $someVar;
+	private $someOtherVar;
+ 
+	private $messageSent;
+ 
+	/**
+	 * Initalize internal class stuff
+	 * 
+	 * @access protected
+	 * @return void
+	 */
+	protected function initInternal()
+	{
+		$this->someVar = "Hello World";
+		$this->someOtherVar = time();
+	}
+ 
+	/**
+	 * @access protected
+	 * @param object $conversation
+	 * @param object|string $buddy object if the user exists in our blist
+	 * @param string $message
+	 * @param int $flags
+	 * @param int $time
+	 * @return void
+	 *
+	 */
+	protected function writeIM($conversation, $buddy, $message, $flags, $time)
+	{
+		printf(	"(%s) %s %s: %s\n",
+			$conversation->getName() ? $conversation->getName() : $buddy->getName(),
+			date("H:i:s", $time),
+			!$buddy || is_string($buddy) ? $buddy : $buddy->getAlias(),
+			$message
+			);
+	}
+ 
+	/**
+	 * This method is called when an account gets signed on
+	 * @access protected
+	 * @param object $conversation
+	 * @return void
+	 */
+	protected function onSignedOn($connection)
+	{
+		$account = $connection->getAccount();
+ 
+		if($account->get("auto-login")) {
+ 
+			$buddy = "example@jabber.org";
+ 
+			$conversation = new Conversation(Client::CONV_TYPE_IM, $account,  $buddy);
+			$conversation->sendIM("Hello World");
+			$this->messageSent = true;
+		}
+	}
+ 
+	public function isMessageSent()
+	{
+		return $this->messageSent;
+	}
+ 
+	/**
+	 * this method is not inherited from the Phurple\Client
+	 *
+	 */
+	public function justForFun($param)
+	{
+		return "just for fun, the param is: $param";
+	}
+ 
+	/**
+	 * Custom heartbeat method which is called in custom main loop
+	 * the glibs main loop is integrated in
+	 */
+	public function myHeartBeat()
+	{
+		print "my own heartbeat\n";
+	}
+ 
+	/**
+	 * Authorize remote users, who was added us to their blist. The method must return true,
+	 * if the remote user must be authorized, false otherwise.
+	 * @access protected
+	 * @param object $account
+	 * @param string $remote_user
+	 * @param string $message
+	 * @param boolean $on_list
+	 * @return boolean 
+	 */
+	protected function authorizeRequest($account, $remote_user, $message, $on_list)
+	{
+		if (!$on_list) {
+			$b = new Buddy($account, $remote_user);
+			$account->addBuddy($b);
+		}
 
-v0.2.0 alpha:
-* fixed zts compatibility
-* implemented the loopHeartBeat method
-* the runLoop method was changed to set the heartbeat interval
-* fixed memory leak on empty alias
-* purple.debug_enabled is now boolean
+		return true;
+	}
+}
+ 
+try {
+ 
+	$user_dir = "/tmp/phurple-test";
+	if(!file_exists($user_dir) || !is_dir($user_dir)) {
+		mkdir($user_dir);
+	}
+	MyClient::setUserDir($user_dir);
+ 
+	MyClient::setDebug(true);
+	MyClient::setUiId("TestUI");
+ 
+	$client = MyClient::getInstance();
+ 
+    $client->addAccount("xmpp://example@gmail.com:some_password@talk.google.com");
+ 
+	$client->connect();
+ 
+	/**
+	 * We can't simply break the loop if the message is sent,
+	 * because it's going into the queue first and gets sent
+	 * a bit later, so lets give the script more $countdown
+	 * iterations so that it has a chance to really finish
+	 * the job
+	 */
+	$countdown = 10;
+ 
+	/**
+	 * This conains how many ms the script should sleep
+	 * until next iteration. Note, that this brought
+	 * really good performance anvantage comparing with
+	 * the while(true){} construct.
+	 */
+	$sleep_time = 300;
+ 
+	while($countdown > 0) {
+		/**
+		 * Do one glib event loop iteration.
+		 */
+		$client->iterate();
+ 
+		/**
+		 * Run a custom heart beat method cause
+		 * no main loop is running. Or run whatever we want.
+		 */
+		$client->myHeartBeat();
+ 
+		/**
+		 * Check if the message is sent to start countdown.
+		 */
+		if($client->isMessageSent()) {
+			$countdown--;
+		}
+ 
+		usleep($sleep_time);
+	}
+ 
+	exit(0);
+ 
+} catch (Exception $e) {
+	echo "[Phurple]: " . $e->getMessage() . "\n";
+	die();
+}
 
-v0.1.0 pre-alpha:
-* initial release - mostly it's possible to send and receive messages
+`
+
+==Documentation==
+
+See extension docs at http://phurple.php.belski.net/
+
+Enjoy :)
