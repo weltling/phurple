@@ -199,11 +199,6 @@ void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 	if(NULL != phurple_globals->phurple_client_obj) {
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
 	}
-
-	/*if (NULL != phurple_globals->custom_plugin_path) {
-		efree(phurple_globals->custom_plugin_path);
-	}*/
-
 }/*}}}*/
 
 /* True global resources - no need for thread safety here */
@@ -517,6 +512,7 @@ PHP_MINFO_FUNCTION(phurple)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "phurple support", "enabled");
 	php_info_print_table_header(2, "phurple version", PHP_PHURPLE_VERSION);
+	php_info_print_table_header(2, "libpurple version", purple_core_get_version());
 	php_info_print_table_end();
 
 	

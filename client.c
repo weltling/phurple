@@ -376,9 +376,9 @@ PHP_METHOD(PhurpleClient, findAccount)
 	Returns the libphurple core version string */
 PHP_METHOD(PhurpleClient, getCoreVersion)
 {	
-	char *version = estrdup(purple_core_get_version());
+	char *version = purple_core_get_version();
 
-	RETURN_STRING(version, 0);
+	RETURN_STRING(version, 1);
 }
 /* }}} */
 
