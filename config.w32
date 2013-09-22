@@ -1,13 +1,19 @@
 // $Id$
 // vim:ft=javascript
 
-// If your extension references something external, use ARG_WITH
-// ARG_WITH("purple", "for purple support", "no");
+ARG_WITH("phurple", "for purple support", "no");
 
-// Otherwise, use ARG_ENABLE
-// ARG_ENABLE("purple", "enable purple support", "no");
+if (PHP_PHURPLE != "no") {
+	if (CHECK_LIB("libpurple.lib;phurple.lib", "phurple", PHP_PHURPLE) &&
+		CHECK_HEADER_ADD_INCLUDE("purple.h", "CFLAGS_PHURPLE", PHP_PHURPLE + ";" + PHP_PHP_BUILD + "\\include\\libpurple") &&
+		CHECK_LIB("glib-2.0.lib", "phurple", PHP_PHURPLE) &&
+		CHECK_HEADER_ADD_INCLUDE("glib.h", "CFLAGS_PHURPLE", PHP_PHURPLE + ";" + PHP_PHP_BUILD + "\\include\\glib-2.0")) {
 
-if (PHP_PURPLE != "no") {
-	EXTENSION("purple", "purple.c");
+
+		EXTENSION("purple", "account.c buddy.c buddygroup.c buddylist.c client.c connection.c conversation.c phurple.c");
+
+	} else {
+		WARNING('phurple not enabled, libraries or headers not found');
+	}
 }
 
