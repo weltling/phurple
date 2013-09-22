@@ -10,7 +10,7 @@ if (PHP_PHURPLE != "no") {
 		CHECK_HEADER_ADD_INCLUDE("glib.h", "CFLAGS_PHURPLE", PHP_PHURPLE + ";" + PHP_PHP_BUILD + "\\include\\glib-2.0")) {
 
 
-		EXTENSION("purple", "account.c buddy.c buddygroup.c buddylist.c client.c connection.c conversation.c phurple.c");
+		EXTENSION("phurple", "account.c buddy.c buddygroup.c buddylist.c client.c connection.c conversation.c phurple.c");
 
 	} else {
 		WARNING('phurple not enabled, libraries or headers not found');
