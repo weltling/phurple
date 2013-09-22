@@ -25,7 +25,11 @@
 #include <php_ini.h>
 #include <ext/standard/info.h>
 
-#include <main/php_config.h>
+#ifdef PHP_WIN32
+# include <main/config.w32.h>
+#else
+# include <main/php_config.h>
+#endif
 #ifdef HAVE_BUNDLED_PCRE
 #include <ext/pcre/pcrelib/pcre.h>
 #elif HAVE_PCRE
@@ -41,9 +45,9 @@
 
 #include <purple.h>
 
-#ifdef HAVE_SIGNAL_H
+#if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 # include <signal.h>
-#include <sys/wait.h>
+# include <sys/wait.h>
 #endif
 
 #define PHURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
@@ -84,7 +88,8 @@ extern zend_object_value
 php_connection_obj_init(zend_class_entry *ce TSRMLS_DC);
 
 /* {{{ libpurple definitions */
-#ifdef HAVE_SIGNAL_H
+/* XXX no signal handler on windows, for now at least */
+#if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 static void sighandler(int sig);
 static void clean_pid();
 
@@ -437,7 +442,7 @@ PHP_MINIT_FUNCTION(phurple)
 
 	/* end initalizing classes */
 	
-#ifdef HAVE_SIGNAL_H
+#if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 	int sig_indx;	/* for setting up signal catching */
 	sigset_t sigset;
 	RETSIGTYPE (*prev_sig_disp)(int);
@@ -776,12 +781,13 @@ phurple_request_authorize(PurpleAccount *account,
 							PurpleAccountRequestAuthorizationCb deny_cb,
 							void *user_data)
 {/* {{{ */
+	zval *client;
+	zend_class_entry *ce;
+	zval *result, *php_account, *php_on_list, *php_remote_user, *php_message;
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
-	
-	zval *result, *php_account, *php_on_list, *php_remote_user, *php_message;
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
 	
 	if(NULL != account) {
 		php_account = php_create_account_obj_zval(account TSRMLS_CC);
@@ -819,7 +825,7 @@ phurple_request_authorize(PurpleAccount *account,
 }
 /* }}} */
 
-#ifdef HAVE_SIGNAL_H
+#if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 static void
 clean_pid()
 {/* {{{ */
@@ -949,14 +955,16 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	PurpleBuddy *pbuddy = NULL;
 	PurpleAccount *paccount = NULL;
 	struct ze_conversation_obj *zco;
+	zval *client;
+	zend_class_entry *ce;
 
 	char *who_san = (!who || '\0' == who) ? "" : (char*)who;
 	char *message_san = (!message || '\0' == message) ? "" : (char*)message;
 
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
 
 	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(conversation TSRMLS_CC);
