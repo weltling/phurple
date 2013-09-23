@@ -62,7 +62,7 @@ static void phurple_write_conv_function(PurpleConversation *conv, const char *wh
 static void phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime);
 static void phurple_signed_off_function(PurpleConnection *gc, gpointer null);
 static void phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
-static void phurple_ui_init();
+static void phurple_ui_init(void);
 static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message,
 									   gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
 
@@ -477,7 +477,7 @@ PHP_MINIT_FUNCTION(phurple)
 		perror(errmsg);
 	}
 #endif
-	
+
 	return SUCCESS;
 }
 /* }}} */
@@ -568,7 +568,7 @@ TSRMLS_FETCH();
 #endif
 
 static void
-phurple_ui_init()
+phurple_ui_init(void)
 {
 	purple_conversations_set_ui_ops(&php_conv_uiops);
 }/* {{{ */
