@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.7.2" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks		-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+	<name>phurple</name>
+	<channel>pecl.php.net</channel>
+	<summary>libpurple PHP bindning</summary>
+	<description>.</description>
+	<lead>
+		<name>Anatol Belski</name>
+		<user>ab</user>
+		<email>ab@php.net</email>
+		<active>yes</active>
+	</lead>
+	<date>2013-10-01</date>
+	<version>
+		<release>0.5.0</release>
+		<api>0.5.0</api>
+	</version>
+	<stability>
+		<release>alpha</release>
+		<api>stable</api>
+	</stability>
+	<license uri="http://www.gnu.org/licenses/gpl.html">GPLv3</license>
+	<notes>
+		* mega refactoring with
+		- PHP 5.2 support dropped
+		- compatibility ensured with PHP 5.3 onwards
+		- get rid of most lunatic coding technics
+	</notes>
+	<contents>
+		<dir name="/">
+			<file role="doc" name="LICENSE"/>
+			<file role="doc" name="CREDITS"/>
+			<file role="doc" name="README"/>
+			<file role="src" name="config.m4"/>
+			<file role="src" name="config.w32"/>
+			<file role="src" name="php_phurple.h"/>
+			<file role="src" name="account.c"/>
+			<file role="src" name="buddy.c"/>
+			<file role="src" name="buddygroup.c"/>
+			<file role="src" name="buddylist.c"/>
+			<file role="src" name="client.c"/>
+			<file role="src" name="connection.c"/>
+			<file role="src" name="conversation.c"/>
+			<file role="src" name="phurple.c"/>
+		</dir>
+	</contents>
+	<dependencies>
+		<required>
+			<php>
+				<min>5.3</min>
+			</php>
+			<pearinstaller>
+				<min>1.4.0</min>
+			</pearinstaller>
+		</required>
+	</dependencies>
+	<providesextension>phurple</providesextension>
+	<extsrcrelease />
+	<changelog>
+		<release>
+			<date>2011-01-09</date>
+			<version>
+				<release>0.4.1</release>
+				<api>0.4.1</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>stable</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				* bugfix release
+				* fixed PHP 5.3 compatibility, on 5.3 namespaces will be used, eq.
+				- php 5.2 : PhurpleClient
+				- php 5.3 : Phurple\Client
+				* fixed several memory leaks
+				* reorganized the source code so then each php class is holded in a separate file
+			</notes>
+		</release>
+	</changelog>
+</package>
+<!--
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */
+-->
