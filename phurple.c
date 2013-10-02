@@ -63,8 +63,8 @@ static void phurple_write_im_function(PurpleConversation *conv, const char *who,
 static void phurple_signed_off_function(PurpleConnection *gc, gpointer null);
 static void phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
 static void phurple_ui_init(void);
-static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message,
-									   gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
+static void phurple_quit(void);
+static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message, gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
 
 extern zend_object_value
 php_buddy_obj_init(zend_class_entry *ce TSRMLS_DC);
@@ -166,7 +166,7 @@ PurpleCoreUiOps php_core_uiops =
 	NULL,
 	NULL,
 	phurple_ui_init,
-	NULL,
+	phurple_quit,
 	NULL,
 	NULL,
 	NULL,
@@ -205,9 +205,6 @@ void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
 	}
 }/*}}}*/
-
-/* True global resources - no need for thread safety here */
-static int le_phurple;
 
 /* {{{ phurple_functions[] */
 zend_function_entry phurple_functions[] = {
@@ -569,10 +566,16 @@ TSRMLS_FETCH();
 
 static void
 phurple_ui_init(void)
-{
+{/* {{{ */
 	purple_conversations_set_ui_ops(&php_conv_uiops);
-}/* {{{ */
+}
 /* }}} */
+
+static void
+phurple_quit(void)
+{
+
+}
 
 /* just took this two functions from the readline extension */
 zval*
@@ -822,6 +825,8 @@ phurple_request_authorize(PurpleAccount *account,
 		}
 		
 	}
+
+	return NULL;
 }
 /* }}} */
 
@@ -950,8 +955,7 @@ static void
 phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime)
 {/* {{{ */
 	const int PARAMS_COUNT = 5;
-	zval ***params, *conversation, *buddy, *datetime, *retval, *tmp1, *tmp2, *tmp3;
-	GList *conversations = purple_get_conversations();
+	zval *conversation, *buddy, *tmp1, *tmp2, *tmp3;
 	PurpleBuddy *pbuddy = NULL;
 	PurpleAccount *paccount = NULL;
 	struct ze_conversation_obj *zco;

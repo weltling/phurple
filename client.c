@@ -231,7 +231,7 @@ PHP_METHOD(PhurpleClient, addAccount)
 
 	if (re == NULL)
 	{
-		zend_throw_exception(NULL, "PCRE compilation failed at offset %d: %s", erroffset, error, 0 TSRMLS_CC);
+		zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "PCRE compilation failed at offset %d: %s", erroffset, error);
 		return;
 	}
 
@@ -246,7 +246,7 @@ PHP_METHOD(PhurpleClient, addAccount)
 			break;
 
 			default:
-				zend_throw_exception(NULL, "The account string must match \"protocol://user:password@host:port pattern\". Matching error %d", rc, 0 TSRMLS_CC);
+				zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "The account string must match \"protocol://user:password@host:port pattern\". Matching error %d", rc);
 			break;
 			}
 		pcre_free(re);
@@ -358,9 +358,7 @@ PHP_METHOD(PhurpleClient, findAccount)
 {
 	char *account_name;
 	int account_name_len;
-	zval *account;
 	PurpleAccount *paccount = NULL;
-	GList *l;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_name, &account_name_len) == FAILURE) {
 		RETURN_NULL();
@@ -385,7 +383,7 @@ PHP_METHOD(PhurpleClient, findAccount)
 	Returns the libphurple core version string */
 PHP_METHOD(PhurpleClient, getCoreVersion)
 {	
-	char *version = purple_core_get_version();
+	const char *version = purple_core_get_version();
 
 	RETURN_STRING(version, 1);
 }
@@ -399,7 +397,6 @@ PHP_METHOD(PhurpleClient, getInstance)
 	if(NULL == PHURPLE_G(phurple_client_obj)) {
 
 		struct ze_client_obj *zco;
-		zend_class_entry **ce = NULL;
 		zval **user_dir = NULL, **debug = NULL, **ui_id = NULL;
 		PurpleSavedStatus *saved_status;
 

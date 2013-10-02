@@ -148,7 +148,7 @@ PHP_METHOD(PhurpleAccount, __construct)
 	zao->paccount = purple_account_new(username, phurple_get_protocol_id_by_name(protocol_name));
 
 	if (NULL == zao->paccount) {
-		zend_throw_exception_ex(PhurpleException_ce, "Failed to create account", 0 TSRMLS_CC);
+		zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Failed to create account");
 		return;
 	}
 

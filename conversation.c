@@ -22,6 +22,7 @@
 #endif
 
 #include <php.h>
+#include "Zend/zend_exceptions.h"
 
 #include "php_phurple.h"
 
@@ -92,13 +93,9 @@ php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC)
 	Creates a new conversation of the specified type */
 PHP_METHOD(PhurpleConversation, __construct)
 {
-	int type, name_len, conv_list_position = -1;
+	int type, name_len;
 	char *name;
-	PurpleConversation *conv = NULL;
-	GList *conversations = NULL, *cnv;
 	zval *account;
-	gchar *name1;
-	const gchar *name2;
 	struct ze_account_obj *zao;
 	struct ze_conversation_obj *zco;
 	
@@ -112,7 +109,7 @@ PHP_METHOD(PhurpleConversation, __construct)
 	zco->pconversation = purple_conversation_new(type, zao->paccount, estrdup(name));
 
 	if (NULL == zco->pconversation) {
-		zend_throw_exception_ex(PhurpleException_ce, "Failed to create conversation", 0 TSRMLS_CC);
+		zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Failed to create conversation");
 		return;
 	}
 }
@@ -197,7 +194,6 @@ PHP_METHOD(PhurpleConversation, getAccount)
 PHP_METHOD(PhurpleConversation, setAccount)
 {
 	zval *account;
-	struct ze_account_obj *zao;
 	struct ze_conversation_obj *zco;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &account, PhurpleAccount_ce) == FAILURE) {

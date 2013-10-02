@@ -22,6 +22,7 @@
 #endif
 
 #include <php.h>
+#include "Zend/zend_exceptions.h"
 
 #include "php_phurple.h"
 
@@ -112,7 +113,7 @@ PHP_METHOD(PhurpleBuddy, __construct)
 	}
 
 	if (NULL == zbo->pbuddy) {
-		zend_throw_exception_ex(PhurpleException_ce, "Failed to create buddy", 0 TSRMLS_CC);
+		zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Failed to create buddy");
 		return;
 	}
 }
@@ -141,7 +142,7 @@ PHP_METHOD(PhurpleBuddy, getName)
 PHP_METHOD(PhurpleBuddy, getAlias)
 {
 	struct ze_buddy_obj *zbo;
-	char *alias;
+	const char *alias;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;

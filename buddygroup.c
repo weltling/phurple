@@ -22,6 +22,7 @@
 #endif
 
 #include <php.h>
+#include "Zend/zend_exceptions.h"
 
 #include "php_phurple.h"
 
@@ -108,7 +109,7 @@ PHP_METHOD(PhurpleBuddyGroup, __construct)
 	}
 
 	if (NULL == zgo->pbuddygroup) {
-		zend_throw_exception_ex(PhurpleException_ce, "Failed to create group", 0 TSRMLS_CC);
+		zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Failed to create group");
 		return;
 	}
 }
@@ -195,7 +196,7 @@ PHP_METHOD(PhurpleBuddyGroup, getOnlineCount)
 PHP_METHOD(PhurpleBuddyGroup, getName)
 {
 	struct ze_buddygroup_obj *zgo;
-	char *name;
+	const char *name;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;

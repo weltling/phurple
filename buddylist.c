@@ -201,7 +201,6 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 PHP_METHOD(PhurpleBuddyList, removeBuddy)
 {
 	zval *buddy;
-	PurpleBuddy *pbuddy = NULL;
 	struct ze_buddy_obj *zbo;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &buddy, PhurpleBuddy_ce) == FAILURE) {
@@ -222,7 +221,6 @@ PHP_METHOD(PhurpleBuddyList, removeBuddy)
 PHP_METHOD(PhurpleBuddyList, removeGroup)
 {
 	zval *group;
-	PurpleGroup *pgroup = NULL;
 	struct ze_buddygroup_obj *zgo;
 	PurpleBlistNode *node;
 	
