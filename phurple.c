@@ -739,7 +739,7 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
 			fcic.function_handler = *fn_proxy;
 		}
 		fcic.calling_scope = obj_ce;
-		fcic.object_ptr = *object_pp;
+		fcic.object_ptr = object_pp ? *object_pp : NULL;
 		/* XXX should probably pass correct ce per additional param */
 		fcic.called_scope = PhurpleClient_ce;
 
