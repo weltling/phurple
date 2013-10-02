@@ -573,9 +573,9 @@ phurple_ui_init(void)
 
 static void
 phurple_quit(void)
-{
+{/*{{{*/
 
-}
+}/*}}}*/
 
 /* just took this two functions from the readline extension */
 zval*
