@@ -23,6 +23,7 @@
 
 #include <php.h>
 #include <php_ini.h>
+#include "Zend/zend_exceptions.h"
 
 #ifdef HAVE_BUNDLED_PCRE
 #include <ext/pcre/pcrelib/pcre.h>
@@ -43,7 +44,9 @@
 extern PurpleEventLoopUiOps glib_eventloops;
 extern PurpleCoreUiOps php_core_uiops;
 extern PurpleAccountUiOps php_account_uiops;
+#if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 extern char *segfault_message;
+#endif
 
 extern char *phurple_get_protocol_id_by_name(const char *name);
 extern zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend_function **fn_proxy, char *function_name, int function_name_len, zval **retval_ptr_ptr, int param_count, ... );
@@ -58,10 +61,12 @@ extern void phurple_dump_zval(zval *var);
 static int
 phurple_heartbeat_callback(gpointer data)
 {/* {{{ */
+	zval *client;
+	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
 
 	call_custom_method(&client,
 					   ce,
@@ -108,10 +113,12 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer null)
 static void
 phurple_g_loop_callback(void)
 {/* {{{ */
+	zval *client;
+	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
-	zval *client = PHURPLE_G(phurple_client_obj);
-	zend_class_entry *ce = Z_OBJCE_P(client);
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
 
 	call_custom_method(&client,
 					   ce,
@@ -186,6 +193,7 @@ PHP_METHOD(PhurpleClient, __construct)
 PHP_METHOD(PhurpleClient, runLoop)
 {
 	long interval = 0;
+	GMainLoop *loop;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &interval) == FAILURE) {
 		RETURN_NULL();
@@ -197,7 +205,7 @@ PHP_METHOD(PhurpleClient, runLoop)
 		g_timeout_add(interval, (GSourceFunc)phurple_heartbeat_callback, NULL);
 	}
 	
-	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+	loop = g_main_loop_new(NULL, FALSE);
 	
 	g_main_loop_run(loop);
 }
@@ -260,6 +268,7 @@ PHP_METHOD(PhurpleClient, addAccount)
 
 	if(NULL != account) {
 		zval *ret;
+		zval **ui_id = NULL;
 
 		purple_account_set_password(account, estrdup(password));
 
@@ -272,9 +281,9 @@ PHP_METHOD(PhurpleClient, addAccount)
 		}
 
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
-		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
 #else
-		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
 #endif
 		purple_account_set_enabled(account, g_strdup(Z_STRVAL_PP(ui_id)), 1);
 
@@ -391,6 +400,8 @@ PHP_METHOD(PhurpleClient, getInstance)
 
 		struct ze_client_obj *zco;
 		zend_class_entry **ce = NULL;
+		zval **user_dir = NULL, **debug = NULL, **ui_id = NULL;
+		PurpleSavedStatus *saved_status;
 
 		ALLOC_ZVAL(PHURPLE_G(phurple_client_obj));
 		object_init_ex(PHURPLE_G(phurple_client_obj), EG(called_scope));
@@ -402,15 +413,15 @@ PHP_METHOD(PhurpleClient, getInstance)
 		 * phurple initialization stuff
 		 */
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
-		zval **user_dir = zend_std_get_static_property(PhurpleClient_ce, "user_dir", sizeof("user_dir")-1, 0 TSRMLS_CC);
+		user_dir = zend_std_get_static_property(PhurpleClient_ce, "user_dir", sizeof("user_dir")-1, 0 TSRMLS_CC);
 #else
-		zval **user_dir = zend_std_get_static_property(PhurpleClient_ce, "user_dir", sizeof("user_dir")-1, 0, NULL TSRMLS_CC);
+		user_dir = zend_std_get_static_property(PhurpleClient_ce, "user_dir", sizeof("user_dir")-1, 0, NULL TSRMLS_CC);
 #endif
 		purple_util_set_user_dir(g_strdup(Z_STRVAL_PP(user_dir)));
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
-		zval **debug = zend_std_get_static_property(PhurpleClient_ce, "debug", sizeof("debug")-1, 0 TSRMLS_CC);
+		debug = zend_std_get_static_property(PhurpleClient_ce, "debug", sizeof("debug")-1, 0 TSRMLS_CC);
 #else
-		zval **debug = zend_std_get_static_property(PhurpleClient_ce, "debug", sizeof("debug")-1, 0, NULL TSRMLS_CC);
+		debug = zend_std_get_static_property(PhurpleClient_ce, "debug", sizeof("debug")-1, 0, NULL TSRMLS_CC);
 #endif
 		purple_debug_set_enabled(Z_LVAL_PP(debug));
 		purple_core_set_ui_ops(&php_core_uiops);
@@ -420,12 +431,12 @@ PHP_METHOD(PhurpleClient, getInstance)
 		purple_plugins_add_search_path(INI_STR("phurple.custom_plugin_path"));
 
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
-		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
 #else
-		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
 #endif
 		if (!purple_core_init(g_strdup(Z_STRVAL_PP(ui_id)))) {
-#ifdef HAVE_SIGNAL_H
+#if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 			g_free(segfault_message);
 #endif
 			zend_throw_exception(NULL, "Couldn't initalize the libphurple core", 0 TSRMLS_CC);
@@ -437,7 +448,7 @@ PHP_METHOD(PhurpleClient, getInstance)
 		
 		purple_prefs_load();
 
-		PurpleSavedStatus *saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
+		saved_status = purple_savedstatus_new(NULL, PURPLE_STATUS_AVAILABLE);
 		purple_savedstatus_activate(saved_status);
 
 		*return_value = *PHURPLE_G(phurple_client_obj);

@@ -224,6 +224,7 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 	zval *group;
 	PurpleGroup *pgroup = NULL;
 	struct ze_buddygroup_obj *zgo;
+	PurpleBlistNode *node;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PhurpleBuddyGroup_ce) == FAILURE) {
 		RETURN_FALSE;
@@ -231,7 +232,7 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 
 	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
 
-	PurpleBlistNode *node = (PurpleBlistNode *) zgo->pbuddygroup;
+	node = (PurpleBlistNode *) zgo->pbuddygroup;
 
 	if(node->child) {
 		/* group isn't empty */

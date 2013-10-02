@@ -3,9 +3,6 @@ dnl config.m4 for extension phurple
 PHP_ARG_WITH(phurple, for phurple support,
 [  --with-purple             Include phurple support])
 
-dnl PHP_ARG_ENABLE(phurple, whether to enable phurple support,
-dnl [  --enable-phurple           Enable phurple support])
-
 if test "$PHP_PHURPLE" != "no"; then
 
 	CFLAGS="$CFLAGS -g3"

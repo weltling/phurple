@@ -1,8 +1,8 @@
-==Description==
+##Description##
 
 This libpurple PHP binding, which defines a set of internal classes, gives a possibility to use AOL and ICQ (OSCAR), Yahoo, Jabber, IRC and much more protocols directly from PHP. Write your own IM chat client in PHP, as simply as PHP enables it.
 
-==Installation==
+##Installation##
 
 - install glib and libpurple development packages
 - download and unpack
@@ -10,12 +10,13 @@ This libpurple PHP binding, which defines a set of internal classes, gives a pos
 - ./configure --with-phurple
 - make && sudo make install
 
-==Documentation==
+##Documentation##
 
 See extension docs at http://phurple.php.belski.net/
 
-==Example==
-`<?php
+##Example##
+
+<?php
  
 ob_implicit_flush(true);
  
@@ -29,7 +30,7 @@ use Phurple\BuddyList;
 /**
  * @class MyClient
  *
- * The method names are firmly and must be overloaded to work
+ * Methods must be overloaded to work
  */
 class MyClient extends Client
 {
@@ -198,6 +199,5 @@ try {
 	die();
 }
 
-`
 
 Enjoy :)

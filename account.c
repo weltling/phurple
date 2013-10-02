@@ -22,6 +22,7 @@
 #endif
 
 #include <php.h>
+#include "Zend/zend_exceptions.h"
 
 #include "php_phurple.h"
 
@@ -181,6 +182,7 @@ PHP_METHOD(PhurpleAccount, setEnabled)
 {
 	zend_bool enabled;
 	struct ze_account_obj *zao;
+	zval **ui_id = NULL;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &enabled) == FAILURE) {
 		RETURN_NULL();
@@ -189,9 +191,9 @@ PHP_METHOD(PhurpleAccount, setEnabled)
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
-		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
+		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
 #else
-		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
+		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
 #endif
 	purple_account_set_enabled(zao->paccount, Z_STRVAL_PP(ui_id), (gboolean) enabled);
 }
