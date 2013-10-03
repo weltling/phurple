@@ -930,8 +930,12 @@ glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction func
 	if (condition & PURPLE_INPUT_WRITE) {
 		cond |= PHURPLE_GLIB_WRITE_COND;
 	}
-	
+
+#ifdef PHP_WIN32
+	channel = g_io_channel_win32_new_socket(fd);
+#else
 	channel = g_io_channel_unix_new(fd);
+#endif
 	closure->result = g_io_add_watch_full(channel, G_PRIORITY_DEFAULT, cond,
 										  phurple_glib_io_invoke, closure, phurple_glib_io_destroy);
 	
