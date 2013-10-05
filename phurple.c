@@ -627,7 +627,7 @@ phurple_tolower(const char *s)
 int
 phurple_hash_index_find(HashTable *ht, void *element)
 {/* {{{ */
-	ulong i;
+	int i;
 
 	for(i=0; i<zend_hash_num_elements(ht); i++) {
 		if(zend_hash_index_find(ht, i, &element) != FAILURE) {
