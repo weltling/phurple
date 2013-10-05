@@ -432,7 +432,7 @@ PHP_METHOD(PhurpleClient, getInstance)
 #else
 		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
 #endif
-		if (!purple_core_init(g_strdup(Z_STRVAL_PP(ui_id)))) {
+		if (!purple_core_init(Z_STRVAL_PP(ui_id))) {
 #if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 			g_free(segfault_message);
 #endif
