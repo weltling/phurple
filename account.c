@@ -312,7 +312,7 @@ PHP_METHOD(PhurpleAccount, set)
 PHP_METHOD(PhurpleAccount, get)
 {
 	PurpleAccountSetting *setting;
-	GHashTable *table;
+	GHashTable *table = NULL;
 	char *name;
 	int name_len;
 	struct ze_account_obj *zao;
