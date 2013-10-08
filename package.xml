@@ -25,6 +25,7 @@
 		- PHP 5.2 support dropped
 		- compatibility ensured with PHP 5.3 onwards
 		- get rid of most lunatic coding technics
+		- windows compatibiity
 	</notes>
 	<contents>
 		<dir name="/">
