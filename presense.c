@@ -42,40 +42,40 @@ extern void phurple_dump_zval(zval *var);
 void
 php_presence_obj_destroy(void *obj TSRMLS_DC)
 {
-	struct ze_presence_obj *zco = (struct ze_presence_obj *)obj;
+	struct ze_presence_obj *zpo = (struct ze_presence_obj *)obj;
 
-	zend_object_std_dtor(&zco->zo TSRMLS_CC);
+	zend_object_std_dtor(&zpo->zo TSRMLS_CC);
 
 	/*if (zco->ppresence) {
 		purple_presence_destroy(zco->ppresence);
 	}*/
 
-	efree(zco);
+	efree(zpo);
 }
 
 zend_object_value
 php_presence_obj_init(zend_class_entry *ce TSRMLS_DC)
 {
 	zend_object_value ret;
-	struct ze_presence_obj *zco;
+	struct ze_presence_obj *zpo;
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
 	zval *tmp;
 #endif
 
-	zco = (struct ze_presence_obj *) emalloc(sizeof(struct ze_presence_obj));
-	memset(&zco->zo, 0, sizeof(zend_object));
+	zpo = (struct ze_presence_obj *) emalloc(sizeof(struct ze_presence_obj));
+	memset(&zpo->zo, 0, sizeof(zend_object));
 
-	zend_object_std_init(&zco->zo, ce TSRMLS_CC);
+	zend_object_std_init(&zpo->zo, ce TSRMLS_CC);
 #if PHP_MAJOR_VERSION== 5 && PHP_MINOR_VERSION < 4
-	zend_hash_copy(zco->zo.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,
+	zend_hash_copy(zpo->zo.properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref,
 					(void *) &tmp, sizeof(zval *));
 #else
-	object_properties_init(&zco->zo, ce);
+	object_properties_init(&zpo->zo, ce);
 #endif
 
-	zco->ppresence = NULL;
+	zpo->ppresence = NULL;
 
-	ret.handle = zend_objects_store_put(zco, NULL,
+	ret.handle = zend_objects_store_put(zpo, NULL,
 								(zend_objects_free_object_storage_t) php_presence_obj_destroy,
 								NULL TSRMLS_CC);
 
@@ -99,6 +99,21 @@ PHP_METHOD(PhurplePresence, __construct)
 }
 /* }}} */
 
+zval *
+php_create_presence_obj_zval(PurplePresence *ppresence TSRMLS_DC)
+{
+	zval *ret;
+	struct ze_presence_obj *zpo;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, PhurplePresence_ce);
+	INIT_PZVAL(ret);
+
+	zpo = (struct ze_presence_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zpo->ppresence = ppresence;
+
+	return ret;
+}
 
 /*
 **

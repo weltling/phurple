@@ -35,6 +35,9 @@
 
 extern char *phurple_get_protocol_id_by_name(const char *name);
 
+extern zval *
+php_create_presence_obj_zval(PurplePresence *ppresence TSRMLS_DC);
+
 /**
  * Took this from the libphurples account.c because of need
  * to get the account settings. If the libphurple will change,
@@ -419,6 +422,35 @@ PHP_METHOD(PhurpleAccount, getPassword)
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	RETURN_STRING(purple_account_get_password(zao->paccount), 1);
+}
+/* }}} */
+
+
+/* {{{ proto Phurple\Presence PhurpleAccount::getPresence(void)
+	Gets the account of this conversation*/
+PHP_METHOD(PhurpleAccount, getPresence)
+{
+	PurplePresence *ppresence = NULL;
+	struct ze_account_obj *zao;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	if(NULL != zao->paccount) {
+		ppresence = purple_account_get_presence(zao->paccount);
+		if(NULL != ppresence) {
+			zval *ret = php_create_presence_obj_zval(ppresence TSRMLS_CC);
+
+			*return_value = *ret;
+
+			return;
+		}
+	}
+
+	RETURN_NULL();
 }
 /* }}} */
 

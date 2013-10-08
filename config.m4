@@ -94,7 +94,7 @@ if test "$PHP_PHURPLE" != "no"; then
 
 	PHP_NEW_EXTENSION(phurple, [ phurple.c client.c conversation.c account.c \
 	                             connection.c buddy.c buddylist.c buddygroup.c \
-				     presense.c
+								presense.c \
 	                           ], $ext_shared)
 
 fi

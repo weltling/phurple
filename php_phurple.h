@@ -71,8 +71,6 @@ PHP_METHOD(PhurpleClient, setDebug);
 PHP_METHOD(PhurpleClient, setUiId);
 PHP_METHOD(PhurpleClient, __clone);
 
-
-
 PHP_METHOD(PhurpleAccount, __construct);
 PHP_METHOD(PhurpleAccount, setPassword);
 PHP_METHOD(PhurpleAccount, setEnabled);
@@ -85,6 +83,7 @@ PHP_METHOD(PhurpleAccount, isConnected);
 PHP_METHOD(PhurpleAccount, isConnecting);
 PHP_METHOD(PhurpleAccount, getUserName);
 PHP_METHOD(PhurpleAccount, getPassword);
+PHP_METHOD(PhurpleAccount, getPresence);
 
 PHP_METHOD(PhurpleConnection, __construct);
 PHP_METHOD(PhurpleConnection, getAccount);
