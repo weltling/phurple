@@ -117,6 +117,8 @@ PHP_METHOD(PhurpleBuddyGroup, getSize);
 PHP_METHOD(PhurpleBuddyGroup, getOnlineCount);
 PHP_METHOD(PhurpleBuddyGroup, getName);
 
+PHP_METHOD(PhurplePresence, __construct);
+
 ZEND_BEGIN_MODULE_GLOBALS(phurple)
 
 	/**
@@ -157,6 +159,7 @@ extern zend_class_entry *PhurpleBuddy_ce;
 extern zend_class_entry *PhurpleBuddyList_ce;
 extern zend_class_entry *PhurpleBuddyGroup_ce;
 extern zend_class_entry *PhurpleException_ce;
+extern zend_class_entry *PhurplePresence_ce;
 
 # define PHURPLE_CLIENT_CLASS_NAME "Phurple\\Client"
 # define PHURPLE_CONVERSATION_CLASS_NAME "Phurple\\Conversation"
@@ -166,6 +169,7 @@ extern zend_class_entry *PhurpleException_ce;
 # define PHURPLE_BUDDYLIST_CLASS_NAME "Phurple\\BuddyList"
 # define PHURPLE_BUDDY_GROUP_CLASS_NAME "Phurple\\BuddyGroup"
 # define PHURPLE_EXCEPTION_CLASS_NAME "Phurple\\Exception"
+# define PHURPLE_PRESENCE_CLASS_NAME "Phurple\\Presence"
 
 struct ze_buddy_obj {
 	zend_object zo;
@@ -196,6 +200,11 @@ struct ze_client_obj {
 	zend_object zo;
 	int connection_handle;
 	zend_class_entry *ce;
+};
+
+struct ze_presence_obj {
+	zend_object zo;
+	PurplePresence *ppresence;
 };
 
 zend_object_handlers default_phurple_obj_handlers;

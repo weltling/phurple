@@ -66,6 +66,7 @@ static void phurple_ui_init(void);
 static void phurple_quit(void);
 static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message, gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
 
+/* {{{ object init functions */
 extern zend_object_value
 php_buddy_obj_init(zend_class_entry *ce TSRMLS_DC);
 
@@ -86,6 +87,10 @@ php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC);
 
 extern zend_object_value
 php_connection_obj_init(zend_class_entry *ce TSRMLS_DC);
+
+extern zend_object_value
+php_presence_obj_init(zend_class_entry *ce TSRMLS_DC);
+/* }}} */
 
 /* {{{ libpurple definitions */
 /* XXX no signal handler on windows, for now at least */
@@ -189,7 +194,7 @@ PurpleAccountUiOps php_account_uiops =
 /* }}} */
 
 /* classes definitions*/
-zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce, *PhurpleException_ce;
+zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce, *PhurpleException_ce, *PhurplePresence_ce;
 
 void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
@@ -324,6 +329,15 @@ zend_function_entry PhurpleBuddyGroup_methods[] = {
 /* }}} */
 
 
+/* {{{ presence class methods[] */
+zend_function_entry PhurplePresence_methods[] = {
+	PHP_ME(PhurplePresence, __construct, NULL, ZEND_ACC_PUBLIC)
+	/*PHP_ME(PhurplePresence, getAccount, NULL, ZEND_ACC_PUBLIC)*/
+	{NULL, NULL, NULL}
+};
+/* }}} */
+
+
 /* {{{ phurple_module_entry */
 zend_module_entry phurple_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
@@ -342,6 +356,7 @@ zend_module_entry phurple_module_entry = {
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
+
 
 #ifdef COMPILE_DL_PHURPLE
 ZEND_GET_MODULE(phurple)
@@ -436,6 +451,10 @@ PHP_MINIT_FUNCTION(phurple)
 	PhurpleException_ce = zend_register_internal_class_ex(
 			&ce, NULL, "exception" TSRMLS_CC
 	);
+
+	INIT_CLASS_ENTRY(ce, PHURPLE_PRESENCE_CLASS_NAME, PhurplePresence_methods);
+	ce.create_object = php_presence_obj_init;
+	PhurplePresence_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	/* end initalizing classes */
 	
