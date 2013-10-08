@@ -43,7 +43,7 @@
 		<para>Due to the nature of libpurple the extension is only safe to use in the non thread safe environments. However it'll work with the thread safe version of PHP when the thread safety isn't utilized. Say the TS version is ok using CLI or FastCGI, but will behave unpredictable with Apache Worker MPM.</para>
 		<para>Phurple\Client derivative is always a singleton instance within the same process. It's really like a desktop IM client used always per one user/process. That's why if it's required to work with different user dirs, always do it one per process.</para>
 		<para>
-			The last development news can be found at <ulink url="http://belski.net/"><citetitle>http://belski.net/</citetitle></ulink> or at <ulink url="http://sourceforge.net/projects/phurple/"><citetitle>http://sourceforge.net/projects/phurple/</citetitle></ulink>. The sources are available under <ulink url="https://github.com/weltling/phurple">https://github.com/weltling/phurple</ulink>
+			The last development news can be found at <ulink url="http://belski.net/"><citetitle>http://belski.net/</citetitle></ulink> or at <ulink url="http://sourceforge.net/projects/phurple/"><citetitle>http://sourceforge.net/projects/phurple/</citetitle></ulink>. The sources are available under <ulink url="https://github.com/weltling/phurple">github</ulink> and <ulink url="http://sourceforge.net/projects/phurple/files/phurple/">sourcefourge</ulink>.
 		</para>
     </preface>
     <chapter id="requirements">
