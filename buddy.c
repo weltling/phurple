@@ -151,7 +151,10 @@ PHP_METHOD(PhurpleBuddy, getAlias)
 	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	alias = purple_buddy_get_alias_only(zbo->pbuddy);
-	RETURN_STRING( alias && *alias ? estrdup(alias) : "", 0);
+
+	if (alias) {
+		RETURN_STRING(alias, 1);
+	}
 }
 /* }}} */
 
