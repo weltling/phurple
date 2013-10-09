@@ -20,7 +20,7 @@
 #ifndef PHP_PHURPLE_H
 #define PHP_PHURPLE_H
 
-#define PHP_PHURPLE_VERSION "0.5.0"
+#define PHP_PHURPLE_VERSION "0.6.0"
 
 extern zend_module_entry phurple_module_entry;
 #define phpext_phurple_ptr &phurple_module_entry
