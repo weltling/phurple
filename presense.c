@@ -115,6 +115,9 @@ php_create_presence_obj_zval(PurplePresence *ppresence TSRMLS_DC)
 	return ret;
 }
 
+		// setting current account status seems to have nothing to do with presence
+		//purple_presence_set_status_active(ppresence, "available", 1);
+		//purple_presence_switch_status(ppresence, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE));
 /*
 **
 **

@@ -276,6 +276,7 @@ zend_function_entry PhurpleAccount_methods[] = {
 	PHP_ME(PhurpleAccount, getPassword, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleAccount, get, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleAccount, getPresence, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleAccount, setStatus, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
