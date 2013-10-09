@@ -760,9 +760,18 @@ call_custom_method(zval **object_pp, zend_class_entry *obj_ce,
 			fcic.function_handler = *fn_proxy;
 		}
 		fcic.calling_scope = obj_ce;
+		if (object_pp) {
+			fcic.called_scope = Z_OBJCE_PP(object_pp);
+		} else if (obj_ce &&
+				   !(EG(called_scope) &&
+					 instanceof_function(EG(called_scope), obj_ce TSRMLS_CC))) {
+			fcic.called_scope = obj_ce;
+		} else {
+			fcic.called_scope = EG(called_scope);
+		}
 		fcic.object_ptr = object_pp ? *object_pp : NULL;
 		/* XXX should probably pass correct ce per additional param */
-		fcic.called_scope = PhurpleClient_ce;
+		/*fcic.called_scope = PhurpleClient_ce;*/
 
 		result = zend_call_function(&fci, &fcic TSRMLS_CC);
 	}
@@ -1016,7 +1025,8 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 			if(who_san) {
 				buddy = phurple_string_zval(who_san);
 			} else {
-				ALLOC_INIT_ZVAL(buddy);
+				MAKE_STD_ZVAL(buddy);
+				ZVAL_NULL(buddy);
 			}
 		}
 	}
