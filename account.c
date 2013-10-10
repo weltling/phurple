@@ -468,7 +468,7 @@ PHP_METHOD(PhurpleAccount, setStatus)
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(NULL != zao->paccount) {
-		char *id = purple_primitive_get_id_from_type((PurpleStatusPrimitive)status);
+		const char *id = purple_primitive_get_id_from_type((PurpleStatusPrimitive)status);
 		if (id) {
 			purple_account_set_status(zao->paccount, id, 1);
 		}
