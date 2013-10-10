@@ -470,7 +470,7 @@ PHP_METHOD(PhurpleAccount, setStatus)
 	if(NULL != zao->paccount) {
 		const char *id = purple_primitive_get_id_from_type((PurpleStatusPrimitive)status);
 		if (id) {
-			purple_account_set_status(zao->paccount, id, 1);
+			purple_account_set_status_list(zao->paccount, id, 0, NULL);
 		}
 	}
 }
