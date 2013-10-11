@@ -25,6 +25,8 @@
 		- Presence class
 		- Account::getPresence()
 		- Account::setStatus()
+		- BuddyList::addChat()
+		* changed
 		- Client::writeConv() signature was changed, be docs aware
 	</notes>
 	<contents>
