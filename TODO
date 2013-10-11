@@ -1,0 +1,16 @@
+If you're reading this, it's the sign! Feel free to pick and implement some of the following :)
+
+* check if a purple object (say account, buddy, conv, etc.) exists with purple find routines before calling *_new()
+* standardize PHP internal object creation routines
+* check stronger for memory leaks as when runing for longer it might exhaust memory (well, or use gc)
+* testing
+ - add tests with the null protocol
+ - add some tests with test account for all protocols?
+* do windows builds
+* BuddyList should get rid of the static methods, require it to be an object again
+* do further code cleanups
+* distributing
+ - build rpm, deb and whatever on https://build.opensuse.org/ or where ever
+ - make a custom build channel?
+
+
