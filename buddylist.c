@@ -244,6 +244,29 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 }
 /* }}} */
 
+PHP_METHOD(PhurpleBuddyList, addChat)
+{
+	char *chat;
+	int chat_len;
+	GHashTable *components;
+	zval *account;
+	struct ze_account_obj *zao;
+	PurpleChat *pchat;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sO", &chat, &chat_len, &account, PhurpleAccount_ce) == FAILURE) {
+		RETURN_NULL();
+	}
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
+
+	components = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+	g_hash_table_replace(components, g_strdup("channel"), g_strdup(chat));
+
+	pchat = purple_chat_new(zao->paccount, NULL, components);
+
+	purple_blist_add_chat(pchat, NULL, NULL);
+}
+
 /*
 **
 **
