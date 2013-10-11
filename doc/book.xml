@@ -575,6 +575,10 @@
             </methodparam>
             <methodparam>
               <type>string</type>
+              <parameter>alias</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
               <parameter>message</parameter>
             </methodparam>
             <methodparam>
@@ -605,6 +609,15 @@
               <varlistentry>
                 <term>
                   <parameter>buddy</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>alias</parameter>
                 </term>
                 <listitem>
                   <para>
@@ -649,7 +662,7 @@
       <refentry xml:id="Phurple--Client-writeim">
         <refnamediv>
           <refname>Phurple\Client::writeIM</refname>
-          <refpurpose>This callback method writes to the conversation, if implemented</refpurpose>
+          <refpurpose>This callback method writes instant message, if implemented</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
@@ -678,7 +691,7 @@
             </methodparam>
           </methodsynopsis>
           <para>
-   This callback method writes to the conversation, if implemented
+   This callback method writes instant message, if implemented
   </para>
         </refsect1>
         <refsect1 role="parameters">
