@@ -148,7 +148,7 @@ PurpleConversationUiOps php_conv_uiops =
 	NULL,					  /* destroy_conversation */
 	NULL,			/* write_chat		   */
 	phurple_write_im_function,			  /* write_im			 */
-	NULL, /*phurple_write_conv_function,*/			/* write_conv		   */
+	phurple_write_conv_function,			/* write_conv		   */
 	NULL,					  /* chat_add_users	   */
 	NULL,					  /* chat_rename_user	 */
 	NULL,					  /* chat_remove_users	*/
@@ -314,6 +314,7 @@ zend_function_entry PhurpleBuddyList_methods[] = {
 	PHP_ME(PhurpleBuddyList, findGroup, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleBuddyList, removeBuddy, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleBuddyList, removeGroup, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PhurpleBuddyList, addChat, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -977,11 +978,77 @@ glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction func
 static void
 phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime)
 {/* {{{ */
-	/**
-	 * Just mirroring phurple_write_im_function despite we
-	 * loose the alias to just not to implement the same twice
-	 */
-	phurple_write_im_function(conv, who, message, flags, mtime);
+	const int PARAMS_COUNT = 6;
+	zval *conversation, *buddy, *tmp1, *tmp2, *tmp3, *tmp4;
+	PurpleBuddy *pbuddy = NULL;
+	PurpleAccount *paccount = NULL;
+	struct ze_conversation_obj *zco;
+	zval *client;
+	zend_class_entry *ce;
+
+	char *who_san = (!who || '\0' == who) ? "" : (char*)who;
+	char *alias_san = (!alias || '\0' == alias) ? "" : (char*)alias;
+	char *message_san = (!message || '\0' == message) ? "" : (char*)message;
+
+	TSRMLS_FETCH();
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(conversation TSRMLS_CC);
+	zco->pconversation = conv;
+	zco->ptype = PURPLE_CONV_TYPE_CHAT;
+
+	paccount = purple_conversation_get_account(conv);
+	if(paccount) {
+		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
+		
+		if(NULL != pbuddy) {
+			struct ze_buddy_obj *zbo;
+
+			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
+
+			zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
+
+			zbo->pbuddy = pbuddy;
+
+		} else {
+			if(who_san) {
+				buddy = phurple_string_zval(who_san);
+			} else {
+				MAKE_STD_ZVAL(buddy);
+				ZVAL_NULL(buddy);
+			}
+		}
+	}
+
+	tmp1 = phurple_string_zval(alias_san);
+	tmp2 = phurple_string_zval(message_san);
+	tmp3 = phurple_long_zval((long)flags);
+	tmp4 = phurple_long_zval((long)mtime);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "writeconv",
+					   sizeof("writeconv")-1,
+					   NULL,
+					   PARAMS_COUNT,
+					   &conversation,
+					   &buddy,
+					   &tmp1,
+					   &tmp2,
+					   &tmp3,
+					   &tmp4
+					   );
+
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+	zval_ptr_dtor(&tmp3);
+	zval_ptr_dtor(&tmp4);
+	zval_ptr_dtor(&conversation);
+
 }
 /* }}} */
 
@@ -1007,6 +1074,7 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(conversation TSRMLS_CC);
 	zco->pconversation = conv;
+	zco->ptype = PURPLE_CONV_TYPE_IM;
 
 	paccount = purple_conversation_get_account(conv);
 	if(paccount) {

@@ -71,6 +71,7 @@ php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC)
 #endif
 
 	zao->pconversation = NULL;
+	zao->ptype = PURPLE_CONV_TYPE_UNKNOWN;
 
 	ret.handle = zend_objects_store_put(zao, NULL,
 								(zend_objects_free_object_storage_t) php_conversation_obj_destroy,
@@ -98,6 +99,7 @@ PHP_METHOD(PhurpleConversation, __construct)
 	zval *account;
 	struct ze_account_obj *zao;
 	struct ze_conversation_obj *zco;
+	PurpleChat *pchat = NULL;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lOs", &type, &account, PhurpleAccount_ce, &name, &name_len) == FAILURE) {
 		RETURN_NULL();
@@ -106,11 +108,34 @@ PHP_METHOD(PhurpleConversation, __construct)
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
 
-	zco->pconversation = purple_conversation_new(type, zao->paccount, estrdup(name));
+	zco->pconversation = purple_conversation_new(type, zao->paccount, name);
+	zco->ptype = type;
 
 	if (NULL == zco->pconversation) {
 		zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Failed to create conversation");
 		return;
+	}
+
+	pchat = purple_blist_find_chat(zao->paccount, name);
+	if (!pchat) {
+		GHashTable *components;
+		PurplePlugin *prpl = purple_find_prpl(purple_account_get_protocol_id(zao->paccount));
+		PurplePluginProtocolInfo *prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
+
+		if (purple_account_get_connection(zao->paccount) != NULL &&
+			PURPLE_PROTOCOL_PLUGIN_HAS_FUNC(prpl_info, chat_info_defaults)) {
+				components = prpl_info->chat_info_defaults(purple_account_get_connection(zao->paccount),
+				purple_conversation_get_name(zco->pconversation)
+			);
+		} else {
+			components = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+			g_hash_table_replace(components, g_strdup("channel"), g_strdup(name));
+		}
+
+		pchat = purple_chat_new(zao->paccount, NULL, components);
+		//purple_blist_node_set_flags((PurpleBlistNode *)pchat, PURPLE_BLIST_NODE_FLAG_NO_SAVE);
+		//
+		serv_join_chat(purple_account_get_connection(zao->paccount), components);
 	}
 }
 /* }}} */
@@ -155,7 +180,15 @@ PHP_METHOD(PhurpleConversation, sendIM)
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(message_len && NULL != zco->pconversation) {
-		purple_conv_im_send(PURPLE_CONV_IM(zco->pconversation), estrdup(message));
+		switch (zco->ptype) {
+			case PURPLE_CONV_TYPE_IM:
+				purple_conv_im_send(PURPLE_CONV_IM(zco->pconversation), message);
+				break;
+
+			case PURPLE_CONV_TYPE_CHAT:
+				purple_conv_chat_send(PURPLE_CONV_CHAT(zco->pconversation), message);
+				break;
+		}
 	}
 }
 /* }}} */
