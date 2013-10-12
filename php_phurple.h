@@ -211,6 +211,23 @@ struct ze_presence_obj {
 
 zend_object_handlers default_phurple_obj_handlers;
 
+struct phurple_glib_cb_data {
+#ifdef ZTS
+	TSRMLS_D;
+#else
+	/* as long as there are no other members, use the dummy for NTS */
+	char dummy;
+#endif
+};
+
+#ifdef ZTS
+#define PHURPLE_TSRMLS_DD(pcd_ptr) TSRMLS_D = ((struct phurple_glib_cb_data *)pcd_ptr)->TSRMLS_C;
+#define PHURPLE_PCD_INIT_TSRMLS(pcd) pcd.TSRMLS_C = TSRMLS_C;
+#else
+#define PHURPLE_TSRMLS_DD(pcd_ptr)
+#define PHURPLE_PCD_INIT_TSRMLS(pcd)
+#endif
+
 #endif	/* PHP_PHURPLE_H */
 
 
