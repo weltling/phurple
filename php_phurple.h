@@ -112,11 +112,11 @@ PHP_METHOD(PhurpleBuddyList, removeBuddy);
 PHP_METHOD(PhurpleBuddyList, removeGroup);
 PHP_METHOD(PhurpleBuddyList, addChat);
 
-PHP_METHOD(PhurpleBuddyGroup, __construct);
-PHP_METHOD(PhurpleBuddyGroup, getAccounts);
-PHP_METHOD(PhurpleBuddyGroup, getSize);
-PHP_METHOD(PhurpleBuddyGroup, getOnlineCount);
-PHP_METHOD(PhurpleBuddyGroup, getName);
+PHP_METHOD(PhurpleGroup, __construct);
+PHP_METHOD(PhurpleGroup, getAccounts);
+PHP_METHOD(PhurpleGroup, getSize);
+PHP_METHOD(PhurpleGroup, getOnlineCount);
+PHP_METHOD(PhurpleGroup, getName);
 
 PHP_METHOD(PhurplePresence, __construct);
 
@@ -156,7 +156,7 @@ extern zend_class_entry *PhurpleAccount_ce;
 extern zend_class_entry *PhurpleConnection_ce;
 extern zend_class_entry *PhurpleBuddy_ce;
 extern zend_class_entry *PhurpleBuddyList_ce;
-extern zend_class_entry *PhurpleBuddyGroup_ce;
+extern zend_class_entry *PhurpleGroup_ce;
 extern zend_class_entry *PhurpleException_ce;
 extern zend_class_entry *PhurplePresence_ce;
 
@@ -175,9 +175,9 @@ struct ze_buddy_obj {
 	PurpleBuddy *pbuddy;
 };
 
-struct ze_buddygroup_obj {
+struct ze_group_obj {
 	zend_object zo;
-	PurpleGroup *pbuddygroup;
+	PurpleGroup *pgroup;
 };
 
 struct ze_account_obj {

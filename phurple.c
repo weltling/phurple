@@ -86,7 +86,7 @@ extern zval *
 php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC);
 
 extern zend_object_value
-php_buddygroup_obj_init(zend_class_entry *ce TSRMLS_DC);
+php_group_obj_init(zend_class_entry *ce TSRMLS_DC);
 
 extern zend_object_value
 php_client_obj_init(zend_class_entry *ce TSRMLS_DC);
@@ -203,7 +203,7 @@ PurpleAccountUiOps php_account_uiops =
 /* }}} */
 
 /* classes definitions*/
-zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleBuddyGroup_ce, *PhurpleException_ce, *PhurplePresence_ce;
+zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleGroup_ce, *PhurpleException_ce, *PhurplePresence_ce;
 
 void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
@@ -330,12 +330,12 @@ zend_function_entry PhurpleBuddyList_methods[] = {
 
 
 /* {{{ buddy group class methods[] */
-zend_function_entry PhurpleBuddyGroup_methods[] = {
-	PHP_ME(PhurpleBuddyGroup, __construct, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleBuddyGroup, getAccounts, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleBuddyGroup, getSize, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleBuddyGroup, getOnlineCount, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleBuddyGroup, getName, NULL, ZEND_ACC_PUBLIC)
+zend_function_entry PhurpleGroup_methods[] = {
+	PHP_ME(PhurpleGroup, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleGroup, getAccounts, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleGroup, getSize, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleGroup, getOnlineCount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleGroup, getName, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -455,11 +455,11 @@ PHP_MINIT_FUNCTION(phurple)
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDYLIST_CLASS_NAME, PhurpleBuddyList_methods);
 	PhurpleBuddyList_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_GROUP_CLASS_NAME, PhurpleBuddyGroup_methods);
-	ce.create_object = php_buddygroup_obj_init;
-	PhurpleBuddyGroup_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_GROUP_CLASS_NAME, PhurpleGroup_methods);
+	ce.create_object = php_group_obj_init;
+	PhurpleGroup_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	INIT_CLASS_ENTRY(ce, PHURPLE_EXCEPTION_CLASS_NAME, PhurpleBuddyGroup_methods);
+	INIT_CLASS_ENTRY(ce, PHURPLE_EXCEPTION_CLASS_NAME, PhurpleGroup_methods);
 	PhurpleException_ce = zend_register_internal_class_ex(
 			&ce, NULL, "exception" TSRMLS_CC
 	);

@@ -34,7 +34,7 @@
 #include <purple.h>
 
 extern zval *
-php_create_buddygroup_obj_zval(PurpleGroup *pgroup TSRMLS_DC);
+php_create_group_obj_zval(PurpleGroup *pgroup TSRMLS_DC);
 
 extern zval *
 php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
@@ -197,7 +197,7 @@ PHP_METHOD(PhurpleBuddy, getGroup)
 
 	pgroup = purple_buddy_get_group(zbo->pbuddy);
 	if(pgroup) {
-		zval *tmp = php_create_buddygroup_obj_zval(pgroup TSRMLS_CC);
+		zval *tmp = php_create_group_obj_zval(pgroup TSRMLS_CC);
 
 		*return_value = *tmp;
 

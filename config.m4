@@ -93,7 +93,7 @@ if test "$PHP_PHURPLE" != "no"; then
 	dnl end check for pcre
 
 	PHP_NEW_EXTENSION(phurple, [ phurple.c client.c conversation.c account.c \
-	                             connection.c buddy.c buddylist.c buddygroup.c \
+	                             connection.c buddy.c buddylist.c group.c \
 								presense.c \
 	                           ], $ext_shared)
 

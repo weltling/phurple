@@ -77,16 +77,16 @@ PHP_METHOD(PhurpleBuddyList, addBuddy)
 {
 	zval *buddy, *group;
 	struct ze_buddy_obj *zbo;
-	struct ze_buddygroup_obj *zgo;
+	struct ze_group_obj *zgo;
 	
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O|O", &buddy, PhurpleBuddy_ce, &group, PhurpleBuddyGroup_ce) == FAILURE) {
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O|O", &buddy, PhurpleBuddy_ce, &group, PhurpleGroup_ce) == FAILURE) {
 		return;
 	}
 
 	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
-	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
+	zgo = (struct ze_group_obj *) zend_object_store_get_object(group TSRMLS_CC);
 
-	purple_blist_add_buddy(zbo->pbuddy, NULL, zgo->pbuddygroup, NULL);
+	purple_blist_add_buddy(zbo->pbuddy, NULL, zgo->pgroup, NULL);
 
 	RETURN_TRUE;
 }
@@ -98,15 +98,15 @@ PHP_METHOD(PhurpleBuddyList, addBuddy)
 PHP_METHOD(PhurpleBuddyList, addGroup)
 {
 	zval *group;
-	struct ze_buddygroup_obj *zgo;
+	struct ze_group_obj *zgo;
 
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PhurpleBuddyGroup_ce) == FAILURE) {
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PhurpleGroup_ce) == FAILURE) {
 		RETURN_NULL();
 	}
 
-	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
+	zgo = (struct ze_group_obj *) zend_object_store_get_object(group TSRMLS_CC);
 	
-	purple_blist_add_group(zgo->pbuddygroup, NULL);
+	purple_blist_add_group(zgo->pgroup, NULL);
 
 	RETURN_TRUE;
 }
@@ -176,7 +176,7 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		params = safe_emalloc(sizeof(zval **), 1, 0);
 		params[0] = &name;
 		
-		object_init_ex(return_value, PhurpleBuddyGroup_ce);
+		object_init_ex(return_value, PhurpleGroup_ce);
 		
 		fci.size = sizeof(fci);
 		fci.function_table = EG(function_table);
@@ -188,14 +188,14 @@ PHP_METHOD(PhurpleBuddyList, findGroup)
 		fci.no_separation = 1;
 
 		fcc.initialized = 1;
-		fcc.function_handler = PhurpleBuddyGroup_ce->constructor;
+		fcc.function_handler = PhurpleGroup_ce->constructor;
 		fcc.calling_scope = EG(scope);
 		fcc.object_ptr = return_value;
 
 		if (zend_call_function(&fci, &fcc TSRMLS_CC) == FAILURE) {
 			efree(params);
 			zval_ptr_dtor(&retval_ptr);
-			zend_error(E_WARNING, "Invocation of %s's constructor failed", PhurpleBuddyGroup_ce->name);
+			zend_error(E_WARNING, "Invocation of %s's constructor failed", PhurpleGroup_ce->name);
 			RETURN_NULL();
 		}
 		if (retval_ptr) {
@@ -231,28 +231,28 @@ PHP_METHOD(PhurpleBuddyList, removeBuddy)
 /* }}} */
 
 
-/* {{{ proto boolean PhurpleBuddyList::removeGroup(PhurpleBuddyGroup group)
+/* {{{ proto boolean PhurpleBuddyList::removeGroup(PhurpleGroup group)
 	Removes an empty group from the buddy list */
 PHP_METHOD(PhurpleBuddyList, removeGroup)
 {
 	zval *group;
-	struct ze_buddygroup_obj *zgo;
+	struct ze_group_obj *zgo;
 	PurpleBlistNode *node;
 	
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PhurpleBuddyGroup_ce) == FAILURE) {
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &group, PhurpleGroup_ce) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(group TSRMLS_CC);
+	zgo = (struct ze_group_obj *) zend_object_store_get_object(group TSRMLS_CC);
 
-	node = (PurpleBlistNode *) zgo->pbuddygroup;
+	node = (PurpleBlistNode *) zgo->pgroup;
 
 	if(node->child) {
 		/* group isn't empty */
 		RETURN_FALSE;
 	}
 	
-	purple_blist_remove_group(zgo->pbuddygroup);
+	purple_blist_remove_group(zgo->pgroup);
 
 	RETURN_TRUE;
 }
