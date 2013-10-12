@@ -620,14 +620,14 @@ PHP_METHOD(PhurpleClient, connect)
 	PHURPLE_PCD_INIT(pcd)
 
 	purple_signal_connect(purple_connections_get_handle(),
-						  SIGNAL_SIGNED_ON,
+						  "signed-on",
 						  &zco->connection_handle,
 						  PURPLE_CALLBACK(phurple_signed_on_function),
 						  &pcd
 	);
 
 	purple_signal_connect(purple_connections_get_handle(),
-						  SIGNAL_SIGNED_OFF,
+						  "signed-off",
 						  &zco->connection_handle,
 						  PURPLE_CALLBACK(phurple_signed_off_function),
 						  &pcd

@@ -134,12 +134,6 @@ ZEND_BEGIN_MODULE_GLOBALS(phurple)
 
 ZEND_END_MODULE_GLOBALS(phurple)
 
-/**
- * Signal names
- */
-#define SIGNAL_SIGNED_ON "signed-on"
-#define SIGNAL_SIGNED_OFF "signed-off"
-
 #ifdef ZTS
 #define PHURPLE_G(v) TSRMG(phurple_globals_id, zend_phurple_globals *, v)
 #else
