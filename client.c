@@ -110,7 +110,7 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer data)
 /* }}} */
 
 static void
-phurple_signed_off_function(PurpleConnection *conn, gpointer null)
+phurple_signed_off_function(PurpleConnection *conn, gpointer data)
 {/* {{{ */
 	zval *connection;
 	zval *client;
