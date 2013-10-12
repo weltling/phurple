@@ -786,6 +786,42 @@
   </para>
  </refsect1>
 </refentry>
+<refentry xml:id="Phurple--Client-onsignedoff">
+ <refnamediv>
+  <refname>Phurple\Client::onSignedOff</refname>
+  <refpurpose>This callback is called at the moment, after the client was singed off, if implemented</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+	<modifier>protected</modifier>
+   <type>void</type><methodname>Phurple\Client::onSignedOn</methodname>
+   <methodparam><type>Phurple\Connection</type><parameter>connection</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   This callback is called at the moment, after the client was singed off, if implemented
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
 <refentry xml:id="Phurple--Client-deleteaccount">
  <refnamediv>
   <refname>Phurple\Client::deleteAccount</refname>

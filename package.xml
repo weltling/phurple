@@ -26,6 +26,7 @@
 		- Account::getPresence()
 		- Account::setStatus()
 		- BuddyList::addChat()
+		- Client::onSignedOff()
 		* changed
 		- Client::writeConv() signature was changed, be docs aware
 	</notes>
