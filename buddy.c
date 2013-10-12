@@ -36,7 +36,7 @@
 extern zval *
 php_create_buddygroup_obj_zval(PurpleGroup *pgroup TSRMLS_DC);
 
-zval *
+extern zval *
 php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 
 #if PHURPLE_INTERNAL_DEBUG
