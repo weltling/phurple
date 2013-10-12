@@ -10,6 +10,10 @@ This libpurple PHP binding, which defines a set of internal classes, gives a pos
 - ./configure --with-phurple
 - make && sudo make install
 
+# TODO #
+
+See TODO in the source.
+
 # Resources #
 
 - [http://phurple.php.belski.net/](http://phurple.php.belski.net/)
@@ -17,7 +21,7 @@ This libpurple PHP binding, which defines a set of internal classes, gives a pos
 
 # Example #
 
-	<?php
+	`<?php
 	 
 	ob_implicit_flush(true);
 	 
@@ -198,7 +202,7 @@ This libpurple PHP binding, which defines a set of internal classes, gives a pos
 	} catch (Exception $e) {
 		echo "[Phurple]: " . $e->getMessage() . "\n";
 		die();
-	}
+	}`
 
 
 
