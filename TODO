@@ -1,6 +1,5 @@
 If you're reading this, it's the sign! Feel free to pick and implement some of the following :)
 
-* check if a purple object (say account, buddy, conv, etc.) exists with purple find routines before calling *_new()
 * complete useful methods implementations for PHP objects, let them be more
 * BuddyList should get rid of the static methods, require it to be an object again
 * check stronger for memory leaks as when runing for longer it might exhaust memory (well, gc might help)
