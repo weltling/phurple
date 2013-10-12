@@ -2106,7 +2106,7 @@
 			<modifier>final public static</modifier>
 			<type>boolean</type>
 			<methodname>Phurple\BuddyList::removeGroup</methodname>
-			<methodparam><type>Phurple\BuddyGroup</type><parameter>group</parameter></methodparam>
+			<methodparam><type>Phurple\Group</type><parameter>group</parameter></methodparam>
 		</methodsynopsis>
 		<para>
 			Removes an empty group from the buddy list
@@ -2133,17 +2133,17 @@
 	</refsect1></refentry>
     </reference>
     <reference id="buddygroup">
-      <title>Phurple\BuddyGroup</title>
+      <title>Phurple\Group</title>
       <refentry xml:id="Phurple--Buddygroup-construct">
         <refnamediv>
-          <refname>Phurple\BuddyGroup::__construct</refname>
+          <refname>Phurple\Group::__construct</refname>
           <refpurpose>constructor</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>object</type>
-            <methodname>Phurple\BuddyGroup::__construct</methodname>
+            <methodname>Phurple\Group::__construct</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -2161,14 +2161,14 @@
       </refentry>
       <refentry xml:id="Phurple--Buddygroup-getaccounts">
         <refnamediv>
-          <refname>Phurple\BuddyGroup::getAccounts</refname>
+          <refname>Phurple\Group::getAccounts</refname>
           <refpurpose>gets all the accounts related to the group</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>array</type>
-            <methodname>Phurple\BuddyGroup::getAccounts</methodname>
+            <methodname>Phurple\Group::getAccounts</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -2186,14 +2186,14 @@
       </refentry>
       <refentry xml:id="Phurple--Buddygroup-getname">
         <refnamediv>
-          <refname>Phurple\BuddyGroup::getName</refname>
+          <refname>Phurple\Group::getName</refname>
           <refpurpose>gets the name of the group</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>Phurple\BuddyGroup::getName</methodname>
+            <methodname>Phurple\Group::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -2211,7 +2211,7 @@
       </refentry>
 <refentry xml:id="Phurple--Buddygroup-getonlinecount">
  <refnamediv>
-  <refname>Phurple\BuddyGroup::getOnlineCount</refname>
+  <refname>Phurple\Group::getOnlineCount</refname>
   <refpurpose>gets the count of the buddies in the group with the status online</refpurpose>
  </refnamediv>
 
@@ -2219,7 +2219,7 @@
   <methodsynopsis>
 	  <modifier>public</modifier>
    <type>int</type>
-   <methodname>Phurple\BuddyGroup::getOnlineCount</methodname>
+   <methodname>Phurple\Group::getOnlineCount</methodname>
    <void/>
   </methodsynopsis>
   <para>
@@ -2238,14 +2238,14 @@
 </refentry>
 <refentry xml:id="Phurple--Buddygroup-getsize">
  <refnamediv>
-  <refname>Phurple\BuddyGroup::getSize</refname>
+  <refname>Phurple\Group::getSize</refname>
   <refpurpose>gets the count of the buddies in the group</refpurpose>
  </refnamediv>
  <refsect1 role="description">
   <methodsynopsis>
 	  <modifier>public</modifier>
    <type>int</type>
-   <methodname>Phurple\BuddyGroup::getSize</methodname>
+   <methodname>Phurple\Group::getSize</methodname>
    <void/>
   </methodsynopsis>
   <para>
