@@ -60,7 +60,6 @@ static gboolean phurple_glib_io_invoke(GIOChannel *source, GIOCondition conditio
 static guint glib_input_add(gint fd, PurpleInputCondition condition, PurpleInputFunction function, gpointer data);
 static void phurple_write_conv_function(PurpleConversation *conv, const char *who, const char *alias, const char *message, PurpleMessageFlags flags, time_t mtime);
 static void phurple_write_im_function(PurpleConversation *conv, const char *who, const char *message, PurpleMessageFlags flags, time_t mtime);
-static void phurple_signed_off_function(PurpleConnection *gc, gpointer null);
 static void phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
 static void phurple_ui_init(void);
 static void phurple_quit(void);
@@ -235,7 +234,7 @@ zend_function_entry PhurpleClient_methods[] = {
 	PHP_ME(PhurpleClient, writeConv, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, writeIM, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, onSignedOn, NULL, ZEND_ACC_PROTECTED)
-	/*PHP_ME(PhurpleClient, onSignedOff, NULL, ZEND_ACC_PROTECTED)*/
+	PHP_ME(PhurpleClient, onSignedOff, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, runLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, addAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
@@ -1119,33 +1118,6 @@ phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const g
 	/**
 	 * @todo put here some php callback
 	 */
-}
-/* }}} */
-
-static void
-phurple_signed_off_function(PurpleConnection *conn, gpointer null)
-{/* {{{ */
-	zval *connection;
-	zval *client;
-	zend_class_entry *ce;
-
-	TSRMLS_FETCH();
-
-	client = PHURPLE_G(phurple_client_obj);
-	ce = Z_OBJCE_P(client);
-	
-	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
-
-	call_custom_method(&client,
-					   ce,
-					   NULL,
-					   "onsignedoff",
-					   sizeof("onsignedoff")-1,
-					   NULL,
-					   1,
-					   &connection);
-	
-	zval_ptr_dtor(&connection);
 }
 /* }}} */
 

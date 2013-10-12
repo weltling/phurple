@@ -110,6 +110,32 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer data)
 /* }}} */
 
 static void
+phurple_signed_off_function(PurpleConnection *conn, gpointer null)
+{/* {{{ */
+	zval *connection;
+	zval *client;
+	zend_class_entry *ce;
+	PHURPLE_PCD_TSRMLS_DD(data)
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+	
+	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "onsignedoff",
+					   sizeof("onsignedoff")-1,
+					   NULL,
+					   1,
+					   &connection);
+	
+	zval_ptr_dtor(&connection);
+}
+/* }}} */
+
+static void
 phurple_g_loop_callback(gpointer data)
 {/* {{{ */
 	zval *client;
@@ -598,7 +624,14 @@ PHP_METHOD(PhurpleClient, connect)
 						  &zco->connection_handle,
 						  PURPLE_CALLBACK(phurple_signed_on_function),
 						  &pcd
-						  );
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  SIGNAL_SIGNED_OFF,
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_signed_off_function),
+						  &pcd
+	);
 }
 /* }}} */
 
@@ -704,11 +737,11 @@ PHP_METHOD(PhurpleClient, authorizeRequest)
 /* }}} */
 
 
-/* {{{ */
-/*PHP_METHOD(PhurpleClient, onSignedOff)
+/* {{{ void Phurple\Client::onSignedOff($connection) signed off callback */
+PHP_METHOD(PhurpleClient, onSignedOff)
 {
 
-}*/
+}
 /* }}} */
 
 

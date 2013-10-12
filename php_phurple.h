@@ -52,7 +52,7 @@ PHP_METHOD(PhurpleClient, getCoreVersion);
 PHP_METHOD(PhurpleClient, writeConv);
 PHP_METHOD(PhurpleClient, writeIM);
 PHP_METHOD(PhurpleClient, onSignedOn);
-/*PHP_METHOD(PhurpleClient, onSignedOff);*/
+PHP_METHOD(PhurpleClient, onSignedOff);
 PHP_METHOD(PhurpleClient, runLoop);
 PHP_METHOD(PhurpleClient, addAccount);
 PHP_METHOD(PhurpleClient, getProtocols);
