@@ -33,13 +33,19 @@
 
 #include <purple.h>
 
+extern zval *
+php_create_buddygroup_obj_zval(PurpleGroup *pgroup TSRMLS_DC);
+
+zval *
+php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
 
 void
 php_buddy_obj_destroy(void *obj TSRMLS_DC)
-{
+{/*{{{*/
 	struct ze_buddy_obj *zbo = (struct ze_buddy_obj *)obj;
 
 	zend_object_std_dtor(&zbo->zo TSRMLS_CC);
@@ -49,11 +55,11 @@ php_buddy_obj_destroy(void *obj TSRMLS_DC)
 	}*/
 
 	efree(zbo);
-}
+}/*}}}*/
 
 zend_object_value
 php_buddy_obj_init(zend_class_entry *ce TSRMLS_DC)
-{
+{/*{{{*/
 	zend_object_value ret;
 	struct ze_buddy_obj *zbo;
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
@@ -80,7 +86,23 @@ php_buddy_obj_init(zend_class_entry *ce TSRMLS_DC)
 	ret.handlers = &default_phurple_obj_handlers;
 
 	return ret;
-}
+}/*}}}*/
+
+zval *
+php_create_buddy_obj_zval(PurpleBuddy *pbuddy TSRMLS_DC)
+{/*{{{*/
+	zval *ret;
+	struct ze_buddy_obj *zao;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, PhurpleBuddy_ce);
+	INIT_PZVAL(ret);
+
+	zao = (struct ze_buddy_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zao->pbuddy = pbuddy;
+
+	return ret;
+}/*}}}*/
 
 /*
 **
@@ -175,14 +197,7 @@ PHP_METHOD(PhurpleBuddy, getGroup)
 
 	pgroup = purple_buddy_get_group(zbo->pbuddy);
 	if(pgroup) {
-		zval *tmp;
-		struct ze_buddygroup_obj *zgo;
-
-		PHURPLE_MK_OBJ(tmp, PhurpleBuddyGroup_ce);
-
-		zgo = (struct ze_buddygroup_obj *) zend_object_store_get_object(tmp TSRMLS_CC);
-
-		zgo->pbuddygroup = pgroup;
+		zval *tmp = php_create_buddygroup_obj_zval(pgroup TSRMLS_CC);
 
 		*return_value = *tmp;
 
@@ -210,13 +225,9 @@ PHP_METHOD(PhurpleBuddy, getAccount)
 			
 	paccount = purple_buddy_get_account(zbo->pbuddy);
 	if(paccount) {
-		struct ze_account_obj *zao;
+		zval *tmp = php_create_account_obj_zval(paccount TSRMLS_CC);
 
-		PHURPLE_MK_OBJ(return_value, PhurpleAccount_ce);
-
-		zao = (struct ze_account_obj *) zend_object_store_get_object(return_value TSRMLS_CC);
-
-		zao->paccount = paccount;
+		*return_value = *tmp;
 
 		return;
 	}

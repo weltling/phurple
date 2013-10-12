@@ -84,6 +84,25 @@ php_presence_obj_init(zend_class_entry *ce TSRMLS_DC)
 	return ret;
 }
 
+zval *
+php_create_presence_obj_zval(PurplePresence *ppresence TSRMLS_DC)
+{/*{{{*/
+	zval *ret;
+	struct ze_presence_obj *zpo;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, PhurplePresence_ce);
+	INIT_PZVAL(ret);
+
+	zpo = (struct ze_presence_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zpo->ppresence = ppresence;
+
+	return ret;
+}/*}}}*/
+
+		// setting current account status seems to have nothing to do with presence
+		//purple_presence_set_status_active(ppresence, "available", 1);
+		//purple_presence_switch_status(ppresence, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE));
 /*
 **
 **
@@ -99,25 +118,6 @@ PHP_METHOD(PhurplePresence, __construct)
 }
 /* }}} */
 
-zval *
-php_create_presence_obj_zval(PurplePresence *ppresence TSRMLS_DC)
-{
-	zval *ret;
-	struct ze_presence_obj *zpo;
-
-	ALLOC_ZVAL(ret);
-	object_init_ex(ret, PhurplePresence_ce);
-	INIT_PZVAL(ret);
-
-	zpo = (struct ze_presence_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-	zpo->ppresence = ppresence;
-
-	return ret;
-}
-
-		// setting current account status seems to have nothing to do with presence
-		//purple_presence_set_status_active(ppresence, "available", 1);
-		//purple_presence_switch_status(ppresence, purple_primitive_get_id_from_type(PURPLE_STATUS_AVAILABLE));
 /*
 **
 **

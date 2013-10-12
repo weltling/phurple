@@ -65,7 +65,7 @@ extern void phurple_dump_zval(zval *var);
 
 void
 php_account_obj_destroy(void *obj TSRMLS_DC)
-{
+{/*{{{*/
 	struct ze_account_obj *zao = (struct ze_account_obj *)obj;
 
 	zend_object_std_dtor(&zao->zo TSRMLS_CC);
@@ -78,11 +78,11 @@ php_account_obj_destroy(void *obj TSRMLS_DC)
 	}*/
 
 	efree(zao);
-}
+}/*}}}*/
 
 zend_object_value
 php_account_obj_init(zend_class_entry *ce TSRMLS_DC)
-{
+{/*{{{*/
 	zend_object_value ret;
 	struct ze_account_obj *zao;
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
@@ -109,11 +109,11 @@ php_account_obj_init(zend_class_entry *ce TSRMLS_DC)
 	ret.handlers = &default_phurple_obj_handlers;
 
 	return ret;
-}
+}/*}}}*/
 
 zval *
 php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC)
-{
+{/*{{{*/
 	zval *ret;
 	struct ze_account_obj *zao;
 
@@ -125,7 +125,7 @@ php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC)
 	zao->paccount = paccount;
 
 	return ret;
-}
+}/*}}}*/
 
 /*
 **

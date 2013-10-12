@@ -33,6 +33,9 @@
 
 #include <purple.h>
 
+extern zval *
+php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
@@ -81,6 +84,22 @@ php_buddygroup_obj_init(zend_class_entry *ce TSRMLS_DC)
 
 	return ret;
 }
+
+zval *
+php_create_buddygroup_obj_zval(PurpleGroup *pgroup TSRMLS_DC)
+{/*{{{*/
+	zval *ret;
+	struct ze_buddygroup_obj *zao;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, PhurpleBuddyGroup_ce);
+	INIT_PZVAL(ret);
+
+	zao = (struct ze_buddygroup_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zao->pbuddygroup = pgroup;
+
+	return ret;
+}/*}}}*/
 
 /*
 **
@@ -138,12 +157,7 @@ PHP_METHOD(PhurpleBuddyGroup, getAccounts)
 			PurpleAccount *paccount = iter->data;
 			
 			if (paccount) {
-				zval *account;
-				struct ze_account_obj *zao;
-
-				PHURPLE_MK_OBJ(account, PhurpleAccount_ce);
-				zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
-				zao->paccount = paccount;
+				zval *account = php_create_account_obj_zval(paccount TSRMLS_CC);
 
 				add_next_index_zval(return_value, account);
 			}

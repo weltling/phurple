@@ -76,6 +76,15 @@ php_account_obj_init(zend_class_entry *ce TSRMLS_DC);
 extern zval *
 php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 
+extern zval *
+php_create_conversation_obj_zval(PurpleConversation *pconv, PurpleConversationType ptype TSRMLS_DC);
+
+extern zval *
+php_create_buddy_obj_zval(PurpleBuddy *pbuddy TSRMLS_DC);
+
+extern zval *
+php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC);
+
 extern zend_object_value
 php_buddygroup_obj_init(zend_class_entry *ce TSRMLS_DC);
 
@@ -982,7 +991,6 @@ phurple_write_conv_function(PurpleConversation *conv, const char *who, const cha
 	zval *conversation, *buddy, *tmp1, *tmp2, *tmp3, *tmp4;
 	PurpleBuddy *pbuddy = NULL;
 	PurpleAccount *paccount = NULL;
-	struct ze_conversation_obj *zco;
 	zval *client;
 	zend_class_entry *ce;
 
@@ -995,24 +1003,14 @@ phurple_write_conv_function(PurpleConversation *conv, const char *who, const cha
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
 
-	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
-	zco = (struct ze_conversation_obj *) zend_object_store_get_object(conversation TSRMLS_CC);
-	zco->pconversation = conv;
-	zco->ptype = PURPLE_CONV_TYPE_CHAT;
+	conversation = php_create_conversation_obj_zval(conv, PURPLE_CONV_TYPE_CHAT TSRMLS_CC);
 
 	paccount = purple_conversation_get_account(conv);
 	if(paccount) {
 		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
 		
 		if(NULL != pbuddy) {
-			struct ze_buddy_obj *zbo;
-
-			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
-
-			zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
-
-			zbo->pbuddy = pbuddy;
-
+			buddy = php_create_buddy_obj_zval(pbuddy TSRMLS_CC);
 		} else {
 			if(who_san) {
 				buddy = phurple_string_zval(who_san);
@@ -1048,7 +1046,7 @@ phurple_write_conv_function(PurpleConversation *conv, const char *who, const cha
 	zval_ptr_dtor(&tmp3);
 	zval_ptr_dtor(&tmp4);
 	zval_ptr_dtor(&conversation);
-
+	zval_ptr_dtor(&buddy);
 }
 /* }}} */
 
@@ -1059,7 +1057,6 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	zval *conversation, *buddy, *tmp1, *tmp2, *tmp3;
 	PurpleBuddy *pbuddy = NULL;
 	PurpleAccount *paccount = NULL;
-	struct ze_conversation_obj *zco;
 	zval *client;
 	zend_class_entry *ce;
 
@@ -1071,24 +1068,14 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
 
-	PHURPLE_MK_OBJ(conversation, PhurpleConversation_ce);
-	zco = (struct ze_conversation_obj *) zend_object_store_get_object(conversation TSRMLS_CC);
-	zco->pconversation = conv;
-	zco->ptype = PURPLE_CONV_TYPE_IM;
+	conversation = php_create_conversation_obj_zval(conv, PURPLE_CONV_TYPE_IM TSRMLS_CC);
 
 	paccount = purple_conversation_get_account(conv);
 	if(paccount) {
 		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
 		
 		if(NULL != pbuddy) {
-			struct ze_buddy_obj *zbo;
-
-			PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
-
-			zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
-
-			zbo->pbuddy = pbuddy;
-
+			buddy = php_create_buddy_obj_zval(pbuddy TSRMLS_CC);
 		} else {
 			if(who_san) {
 				buddy = phurple_string_zval(who_san);
@@ -1121,6 +1108,7 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	zval_ptr_dtor(&tmp2);
 	zval_ptr_dtor(&tmp3);
 	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&buddy);
 
 }
 /* }}} */
@@ -1138,7 +1126,6 @@ static void
 phurple_signed_off_function(PurpleConnection *conn, gpointer null)
 {/* {{{ */
 	zval *connection;
-	struct ze_connection_obj *zco;
 	zval *client;
 	zend_class_entry *ce;
 
@@ -1147,9 +1134,7 @@ phurple_signed_off_function(PurpleConnection *conn, gpointer null)
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
 	
-	PHURPLE_MK_OBJ(connection, PhurpleConnection_ce);
-	zco = (struct ze_connection_obj *) emalloc(sizeof(struct ze_connection_obj));
-	zco->pconnection = conn;
+	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
 
 	call_custom_method(&client,
 					   ce,

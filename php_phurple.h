@@ -148,8 +148,6 @@ ZEND_END_MODULE_GLOBALS(phurple)
 
 ZEND_EXTERN_MODULE_GLOBALS(phurple)
 
-#define PHURPLE_MK_OBJ(o, c) MAKE_STD_ZVAL(o); object_init_ex(o, c);
-
 #define PHURPLE_INTERNAL_DEBUG 0
 
 extern zend_class_entry *PhurpleClient_ce;

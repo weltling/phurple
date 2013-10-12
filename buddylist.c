@@ -33,9 +33,28 @@
 
 #include <purple.h>
 
+extern zval *
+php_create_buddy_obj_zval(PurpleBuddy *pbuddy TSRMLS_DC);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
+
+/*zval *
+php_create_buddylist_obj_zval(PurpleBuddyList *pbuddylist TSRMLS_DC)
+{
+	zval *ret;
+	struct ze_buddylist_obj *zao;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, Phurplebuddylist_ce);
+	INIT_PZVAL(ret);
+
+	zao = (struct ze_buddylist_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zao->pbuddylist = pbuddylist;
+
+	return ret;
+}*/
 
 /*
 **
@@ -113,12 +132,7 @@ PHP_METHOD(PhurpleBuddyList, findBuddy)
 	pbuddy = purple_find_buddy(zao->paccount, name);
 
 	if(pbuddy) {
-		zval *buddy;
-		struct ze_buddy_obj *zbo;
-		PHURPLE_MK_OBJ(buddy, PhurpleBuddy_ce);
-		
-		zbo = (struct ze_buddy_obj *) zend_object_store_get_object(buddy TSRMLS_CC);
-		zbo->pbuddy = pbuddy;
+		zval *buddy = php_create_buddy_obj_zval(pbuddy TSRMLS_CC);
 
 		*return_value = *buddy;
 

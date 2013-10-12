@@ -41,7 +41,7 @@ extern void phurple_dump_zval(zval *var);
 
 void
 php_connection_obj_destroy(void *obj TSRMLS_DC)
-{
+{/*{{{*/
 	struct ze_connection_obj *zco = (struct ze_connection_obj *)obj;
 
 	zend_object_std_dtor(&zco->zo TSRMLS_CC);
@@ -51,11 +51,11 @@ php_connection_obj_destroy(void *obj TSRMLS_DC)
 	}*/
 
 	efree(zco);
-}
+}/*}}}*/
 
 zend_object_value
 php_connection_obj_init(zend_class_entry *ce TSRMLS_DC)
-{
+{/*{{{*/
 	zend_object_value ret;
 	struct ze_connection_obj *zco;
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
@@ -82,7 +82,23 @@ php_connection_obj_init(zend_class_entry *ce TSRMLS_DC)
 	ret.handlers = &default_phurple_obj_handlers;
 
 	return ret;
-}
+}/*}}}*/
+
+zval *
+php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC)
+{/*{{{*/
+	zval *ret;
+	struct ze_connection_obj *zao;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, PhurpleConnection_ce);
+	INIT_PZVAL(ret);
+
+	zao = (struct ze_connection_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zao->pconnection = pconnection;
+
+	return ret;
+}/*}}}*/
 
 /*
 **

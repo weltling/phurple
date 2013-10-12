@@ -82,6 +82,23 @@ php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC)
 	return ret;
 }
 
+zval *
+php_create_conversation_obj_zval(PurpleConversation *pconv, PurpleConversationType ptype TSRMLS_DC)
+{/*{{{*/
+	zval *ret;
+	struct ze_conversation_obj *zco;
+
+	ALLOC_ZVAL(ret);
+	object_init_ex(ret, PhurpleConversation_ce);
+	INIT_PZVAL(ret);
+
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+	zco->pconversation = pconv;
+	zco->ptype = ptype;
+
+
+	return ret;
+}/*}}}*/
 
 /*
 **

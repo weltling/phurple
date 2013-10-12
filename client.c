@@ -54,6 +54,9 @@ extern zval* call_custom_method(zval **object_pp, zend_class_entry *obj_ce, zend
 extern zval *
 php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 
+extern zval *
+php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
@@ -84,14 +87,11 @@ static void
 phurple_signed_on_function(PurpleConnection *conn, gpointer data)
 {/* {{{ */
 	zval *connection;
-	struct ze_connection_obj *zco;
 	zval *client;
 	zend_class_entry *ce;
 	PHURPLE_PCD_TSRMLS_DD(data)
 
-	PHURPLE_MK_OBJ(connection, PhurpleConnection_ce);
-	zco = (struct ze_connection_obj *) zend_object_store_get_object(connection TSRMLS_CC);
-	zco->pconnection = conn;
+	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
