@@ -42,17 +42,17 @@ extern void phurple_dump_zval(zval *var);
 
 void
 php_conversation_obj_destroy(void *obj TSRMLS_DC)
-{
+{/*{{{*/
 	struct ze_conversation_obj *zao = (struct ze_conversation_obj *)obj;
 
 	zend_object_std_dtor(&zao->zo TSRMLS_CC);
 
 	efree(zao);
-}
+}/*}}}*/
 
 zend_object_value
 php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC)
-{
+{/*{{{*/
 	zend_object_value ret;
 	struct ze_conversation_obj *zao;
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
@@ -80,7 +80,7 @@ php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC)
 	ret.handlers = &default_phurple_obj_handlers;
 
 	return ret;
-}
+}/*}}}*/
 
 zval *
 php_create_conversation_obj_zval(PurpleConversation *pconv, PurpleConversationType ptype TSRMLS_DC)
