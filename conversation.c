@@ -128,7 +128,10 @@ PHP_METHOD(PhurpleConversation, __construct)
 	switch (type) {
 		case PURPLE_CONV_TYPE_IM:
 		case PURPLE_CONV_TYPE_CHAT:
-			zco->pconversation = purple_conversation_new(type, zao->paccount, name);
+			zco->pconversation = purple_find_conversation_with_account(type, name, zao->paccount);
+			if (!zco->pconversation) {
+				zco->pconversation = purple_conversation_new(type, zao->paccount, name);
+			}
 			zco->ptype = type;
 			break;
 
