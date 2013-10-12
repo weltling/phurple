@@ -125,8 +125,23 @@ PHP_METHOD(PhurpleConversation, __construct)
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
 
-	zco->pconversation = purple_conversation_new(type, zao->paccount, name);
-	zco->ptype = type;
+	switch (type) {
+		case PURPLE_CONV_TYPE_IM:
+		case PURPLE_CONV_TYPE_CHAT:
+			zco->pconversation = purple_conversation_new(type, zao->paccount, name);
+			zco->ptype = type;
+			break;
+
+		case PURPLE_CONV_TYPE_UNKNOWN:
+			zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unknown conversation type");
+			return;
+
+		case PURPLE_CONV_TYPE_MISC:
+		case PURPLE_CONV_TYPE_ANY:
+		default:
+			zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unimplemented conversation type");
+			return;
+	}
 
 	if (NULL == zco->pconversation) {
 		zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Failed to create conversation");
@@ -208,6 +223,16 @@ PHP_METHOD(PhurpleConversation, sendIM)
 			case PURPLE_CONV_TYPE_CHAT:
 				purple_conv_chat_send(PURPLE_CONV_CHAT(zco->pconversation), message);
 				break;
+
+			case PURPLE_CONV_TYPE_UNKNOWN:
+				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unknown conversation type");
+				return;
+
+			case PURPLE_CONV_TYPE_MISC:
+			case PURPLE_CONV_TYPE_ANY:
+			default:
+				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unimplemented conversation type");
+				return;
 		}
 	}
 }
