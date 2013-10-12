@@ -221,11 +221,14 @@ struct phurple_glib_cb_data {
 };
 
 #ifdef ZTS
-#define PHURPLE_TSRMLS_DD(pcd_ptr) TSRMLS_D = ((struct phurple_glib_cb_data *)pcd_ptr)->TSRMLS_C;
+#define PHURPLE_PCD_TSRMLS_DD(pcd_ptr) TSRMLS_D = ((struct phurple_glib_cb_data *)pcd_ptr)->TSRMLS_C;
 #define PHURPLE_PCD_INIT_TSRMLS(pcd) pcd.TSRMLS_C = TSRMLS_C;
+#define PHURPLE_PCD_INIT(pcd) \
+	PHURPLE_PCD_INIT_TSRMLS(pcd)
 #else
-#define PHURPLE_TSRMLS_DD(pcd_ptr)
+#define PHURPLE_PCD_TSRMLS_DD(pcd_ptr)
 #define PHURPLE_PCD_INIT_TSRMLS(pcd)
+#define PHURPLE_PCD_INIT(pcd)
 #endif
 
 #endif	/* PHP_PHURPLE_H */

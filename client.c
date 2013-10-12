@@ -63,7 +63,7 @@ phurple_heartbeat_callback(gpointer data)
 {/* {{{ */
 	zval *client;
 	zend_class_entry *ce;
-	PHURPLE_TSRMLS_DD(data)
+	PHURPLE_PCD_TSRMLS_DD(data)
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -87,7 +87,7 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer data)
 	struct ze_connection_obj *zco;
 	zval *client;
 	zend_class_entry *ce;
-	PHURPLE_TSRMLS_DD(data)
+	PHURPLE_PCD_TSRMLS_DD(data)
 
 	PHURPLE_MK_OBJ(connection, PhurpleConnection_ce);
 	zco = (struct ze_connection_obj *) zend_object_store_get_object(connection TSRMLS_CC);
@@ -114,7 +114,7 @@ phurple_g_loop_callback(gpointer data)
 {/* {{{ */
 	zval *client;
 	zend_class_entry *ce;
-	PHURPLE_TSRMLS_DD(data)
+	PHURPLE_PCD_TSRMLS_DD(data)
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -199,7 +199,7 @@ PHP_METHOD(PhurpleClient, runLoop)
 		RETURN_NULL();
 	}
 	
-	PHURPLE_PCD_INIT_TSRMLS(pcd)
+	PHURPLE_PCD_INIT(pcd)
 
 	phurple_g_loop_callback(&pcd);
 
@@ -591,7 +591,7 @@ PHP_METHOD(PhurpleClient, connect)
 
 	zco = (struct ze_client_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	PHURPLE_PCD_INIT_TSRMLS(pcd)
+	PHURPLE_PCD_INIT(pcd)
 
 	purple_signal_connect(purple_connections_get_handle(),
 						  SIGNAL_SIGNED_ON,
