@@ -10,6 +10,7 @@ If you're reading this, it's the sign! Feel free to pick and implement some of t
  - add some tests with test account for all protocols?
 * do further code cleanups
 * remove or comment out yet unused stuff
+* support file uploads
 * distributing
  - build rpm, deb and whatever on https://build.opensuse.org/ or where ever
  - make a custom PECL channel?
