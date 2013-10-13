@@ -786,6 +786,42 @@
   </para>
  </refsect1>
 </refentry>
+<refentry xml:id="Phurple--Client-onsigningon">
+ <refnamediv>
+  <refname>Phurple\Client::onSigningOn</refname>
+  <refpurpose>This callback is called when the client is about to singn on, if implemented</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+	<modifier>protected</modifier>
+   <type>void</type><methodname>Phurple\Client::onSigningOn</methodname>
+   <methodparam><type>Phurple\Connection</type><parameter>connection</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   This callback is called when the client is about to singn on, if implemented
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
 <refentry xml:id="Phurple--Client-onsignedoff">
  <refnamediv>
   <refname>Phurple\Client::onSignedOff</refname>
@@ -808,6 +844,131 @@
    <variablelist>
     <varlistentry>
      <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-onsigningoff">
+ <refnamediv>
+  <refname>Phurple\Client::onSigningOff</refname>
+  <refpurpose>This callback is called when the client is about to sign off, if implemented</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+	<modifier>protected</modifier>
+   <type>void</type><methodname>Phurple\Client::onSigningOff</methodname>
+   <methodparam><type>Phurple\Connection</type><parameter>connection</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   This callback is called wenn the account is about to sign off, if implemented
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-onautojoin">
+ <refnamediv>
+  <refname>Phurple\Client::onAutojoin</refname>
+  <refpurpose>This callback is called when the connection has signed on, if implemented</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+	<modifier>protected</modifier>
+   <type>boolean</type><methodname>Phurple\Client::onAutojoin</methodname>
+   <methodparam><type>Phurple\Connection</type><parameter>connection</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   This callback is called when the connection has singed on, if implemented
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+	  Should return true to block auto joining, false otherwise.
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-onconnectionerror">
+ <refnamediv>
+  <refname>Phurple\Client::onConnectionError</refname>
+  <refpurpose>This callback is called when a connection error occurs, if implemented</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+	<modifier>protected</modifier>
+   <type>void</type><methodname>Phurple\Client::onConnectionError</methodname>
+   <methodparam><type>Phurple\Connection</type><parameter>connection</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>code</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   This callback is called when a connection error occurs, if implemented
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>code</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
      <listitem>
       <para>
       </para>
