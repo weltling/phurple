@@ -566,7 +566,7 @@
             <type>void</type>
             <methodname>Phurple\Client::writeConv</methodname>
             <methodparam>
-              <type>PhurpleConversation</type>
+              <type>Phurple\Conversation</type>
               <parameter>conversation</parameter>
             </methodparam>
             <methodparam>
@@ -670,7 +670,7 @@
             <type>void</type>
             <methodname>Phurple\Client::writeIM</methodname>
             <methodparam>
-              <type>PhurpleConversation</type>
+              <type>Phurple\Conversation</type>
               <parameter>conversation</parameter>
             </methodparam>
             <methodparam>
@@ -1637,17 +1637,17 @@
       </refentry>
     </reference>
     <reference id="conversation">
-      <title>PhurpleConversation</title>
+      <title>Phurple\Conversation</title>
       <refentry xml:id="phurpleconversation-construct">
         <refnamediv>
-          <refname>PhurpleConversation::__construct</refname>
+          <refname>Phurple\Conversation::__construct</refname>
           <refpurpose>Creates a new conversation of the specified type</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>int</type>
-            <methodname>PhurpleConversation::__construct</methodname>
+            <methodname>Phurple\Conversation::__construct</methodname>
             <methodparam>
               <type>int</type>
               <parameter>type</parameter>
@@ -1705,14 +1705,14 @@
       </refentry>
       <refentry xml:id="phurpleconversation-getname">
         <refnamediv>
-          <refname>PhurpleConversation::getName</refname>
+          <refname>Phurple\Conversation::getName</refname>
           <refpurpose>Returns the specified conversation's name</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>string</type>
-            <methodname>PhurpleConversation::getName</methodname>
+            <methodname>Phurple\Conversation::getName</methodname>
             <void/>
           </methodsynopsis>
           <para>
@@ -1730,14 +1730,14 @@
       </refentry>
       <refentry xml:id="phurpleconversation-sendim">
         <refnamediv>
-          <refname>PhurpleConversation::sendIM</refname>
+          <refname>Phurple\Conversation::sendIM</refname>
           <refpurpose>Sends a message to this IM conversation</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>PhurpleConversation::sendIM</methodname>
+            <methodname>Phurple\Conversation::sendIM</methodname>
             <methodparam>
               <type>string</type>
               <parameter>message</parameter>
@@ -1769,14 +1769,14 @@
       </refentry>
       <refentry xml:id="phurpleconversation-setaccount">
         <refnamediv>
-          <refname> PhurpleConversation::setAccount</refname>
+          <refname> Phurple\Conversation::setAccount</refname>
           <refpurpose>Sets the specified conversation's phurple_account</refpurpose>
         </refnamediv>
         <refsect1 role="description">
           <methodsynopsis>
 		  <modifier>public</modifier>
             <type>void</type>
-            <methodname>PhurpleConversation::setAccount</methodname>
+            <methodname>Phurple\Conversation::setAccount</methodname>
             <methodparam>
               <type>Phurple\Account</type>
               <parameter>account</parameter>
@@ -1808,7 +1808,7 @@
       </refentry>
       <refentry xml:id="phurpleconversation-getaccount">
 	      <refnamediv>
-		      <refname>PhurpleConversation::getAccount</refname>
+		      <refname>Phurple\Conversation::getAccount</refname>
 		      <refpurpose>Gets the account of this conversation</refpurpose>
 	      </refnamediv>
 	      
@@ -1816,7 +1816,7 @@
 		      <methodsynopsis>
 			      <modifier>public</modifier>
 			      <type>Phurple\Account</type>
-			      <methodname>PhurpleConversation::getAccount</methodname>
+			      <methodname>Phurple\Conversation::getAccount</methodname>
 			      <void/>
 		      </methodsynopsis>
 		      <para>
