@@ -66,7 +66,7 @@ phurple_heartbeat_callback(gpointer data)
 {/* {{{ */
 	zval *client;
 	zend_class_entry *ce;
-	PHURPLE_PCD_TSRMLS_DD(data)
+	TSRMLS_FETCH();
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -89,7 +89,7 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer data)
 	zval *connection;
 	zval *client;
 	zend_class_entry *ce;
-	PHURPLE_PCD_TSRMLS_DD(data)
+	TSRMLS_FETCH();
 
 	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
 
@@ -115,7 +115,7 @@ phurple_signed_off_function(PurpleConnection *conn, gpointer data)
 	zval *connection;
 	zval *client;
 	zend_class_entry *ce;
-	PHURPLE_PCD_TSRMLS_DD(data)
+	TSRMLS_FETCH();
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -140,7 +140,7 @@ phurple_g_loop_callback(gpointer data)
 {/* {{{ */
 	zval *client;
 	zend_class_entry *ce;
-	PHURPLE_PCD_TSRMLS_DD(data)
+	TSRMLS_FETCH();
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -219,18 +219,15 @@ PHP_METHOD(PhurpleClient, runLoop)
 {
 	long interval = 0;
 	GMainLoop *loop;
-	struct phurple_glib_cb_data pcd;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &interval) == FAILURE) {
 		RETURN_NULL();
 	}
 	
-	PHURPLE_PCD_INIT(pcd)
-
-	phurple_g_loop_callback(&pcd);
+	phurple_g_loop_callback(NULL);
 
 	if(interval > 0) {
-		g_timeout_add(interval, (GSourceFunc)phurple_heartbeat_callback, &pcd);
+		g_timeout_add(interval, (GSourceFunc)phurple_heartbeat_callback, NULL);
 	}
 	
 	loop = g_main_loop_new(NULL, FALSE);
@@ -613,24 +610,21 @@ PHP_METHOD(PhurpleClient, iterate)
 PHP_METHOD(PhurpleClient, connect)
 {
 	struct ze_client_obj *zco;
-	struct phurple_glib_cb_data pcd;
 
 	zco = (struct ze_client_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
-
-	PHURPLE_PCD_INIT(pcd)
 
 	purple_signal_connect(purple_connections_get_handle(),
 						  "signed-on",
 						  &zco->connection_handle,
 						  PURPLE_CALLBACK(phurple_signed_on_function),
-						  &pcd
+						  NULL
 	);
 
 	purple_signal_connect(purple_connections_get_handle(),
 						  "signed-off",
 						  &zco->connection_handle,
 						  PURPLE_CALLBACK(phurple_signed_off_function),
-						  &pcd
+						  NULL
 	);
 }
 /* }}} */
