@@ -1305,10 +1305,6 @@
             <type>void</type>
             <methodname>Phurple\Account::setPassword</methodname>
             <methodparam>
-              <type>int</type>
-              <parameter>account</parameter>
-            </methodparam>
-            <methodparam>
               <type>string</type>
               <parameter>password</parameter>
             </methodparam>
@@ -1322,16 +1318,46 @@
             <variablelist>
               <varlistentry>
                 <term>
-                  <parameter>account</parameter>
+                  <parameter>password</parameter>
                 </term>
                 <listitem>
                   <para>
       </para>
                 </listitem>
               </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="Phurple--Account-setstatus">
+        <refnamediv>
+          <refname>Phurple\Account::setStatus</refname>
+          <refpurpose>Sets the account's status</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>void</type>
+            <methodname>Phurple\Account::setStatus</methodname>
+            <methodparam>
+              <type>integer</type>
+              <parameter>status</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Sets the account's status
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
               <varlistentry>
                 <term>
-                  <parameter>password</parameter>
+                  <parameter>status</parameter>
                 </term>
                 <listitem>
                   <para>
@@ -1491,7 +1517,10 @@
 	<refsect1 role="description">
 		<methodsynopsis>
 			<type>mixed</type><methodname>Phurple\Account::get</methodname>
-			<void/>
+            <methodparam>
+              <type>string</type>
+              <parameter>name</parameter>
+            </methodparam>
 		</methodsynopsis>
 		<para>
 			Gets a protocol-specific setting for an account. Possible return datatypes are int|boolean|string or null if the setting isn't set or not found
@@ -1499,10 +1528,25 @@
 	</refsect1>
 	
 	<refsect1 role="parameters">
-		<para>
-		</para>
-		
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>name</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
 	</refsect1>
+
 	<refsect1 role="returnvalues">
 		<para>
 		</para>
@@ -1521,6 +1565,32 @@
   </methodsynopsis>
   <para>
    Returns whether or not the account is connecting
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Account-getpresence">
+ <refnamediv>
+  <refname>Phurple\Account::getPresence</refname>
+  <refpurpose>Returns account's presence</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>Phurple\Presence</type><methodname>Phurple\Account::getPresence</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   Returns account's presence
   </para>
  </refsect1>
 
@@ -2123,6 +2193,58 @@
               <varlistentry>
                 <term>
                   <parameter>group</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="Phurple--Buddylist-addchat">
+        <refnamediv>
+          <refname>Phurple\BuddyList::addChat</refname>
+          <refpurpose>saves the chat into the blist</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>final public static</modifier>
+            <type>bool</type>
+            <methodname>Phurple\BuddyList::addChat</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>name</parameter>
+            </methodparam>
+            <methodparam>
+              <type>Phurple\Account</type>
+              <parameter>account</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+	saves the chat into the blist
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>name</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>account</parameter>
                 </term>
                 <listitem>
                   <para>
