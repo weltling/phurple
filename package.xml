@@ -47,6 +47,7 @@
 			<file role="src" name="connection.c"/>
 			<file role="src" name="conversation.c"/>
 			<file role="src" name="phurple.c"/>
+			<file role="src" name="presence.c"/>
 		</dir>
 	</contents>
 	<dependencies>
