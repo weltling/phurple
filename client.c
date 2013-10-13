@@ -57,6 +57,12 @@ php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 extern zval *
 php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC);
 
+extern zval*
+phurple_long_zval(long l);
+
+extern zval*
+phurple_string_zval(const char *s);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
@@ -84,14 +90,19 @@ phurple_heartbeat_callback(gpointer data)
 /* }}} */
 
 static void
-phurple_signed_on_function(PurpleConnection *conn, gpointer data)
-{/* {{{ */
+phurple_signed_all_cb(char *php_method, PurpleConnection *conn, gpointer data)
+{/*{{{*/
 	zval *connection;
 	zval *client;
 	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
-	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
+	if (!conn) {
+		ALLOC_INIT_ZVAL(connection);
+		ZVAL_NULL(connection);
+	} else {
+		connection = php_create_connection_obj_zval(conn TSRMLS_CC);
+	}
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -99,39 +110,112 @@ phurple_signed_on_function(PurpleConnection *conn, gpointer data)
 	call_custom_method(&client,
 					   ce,
 					   NULL,
-					   "onsignedon",
-					   sizeof("onsignedon")-1,
+					   php_method,
+					   strlen(php_method),
 					   NULL,
 					   1,
 					   &connection);
 	
 	zval_ptr_dtor(&connection);
-}
-/* }}} */
+}/*}}}*/
+
+static void
+phurple_signed_on_function(PurpleConnection *conn, gpointer data)
+{/* {{{ */
+	phurple_signed_all_cb("onsignedon", conn, data);
+}/* }}} */
+
+static void
+phurple_signing_on_function(PurpleConnection *conn, gpointer data)
+{/* {{{ */
+	phurple_signed_all_cb("onsigningon", conn, data);
+}/* }}} */
 
 static void
 phurple_signed_off_function(PurpleConnection *conn, gpointer data)
 {/* {{{ */
+	phurple_signed_all_cb("onsignedoff", conn, data);
+}/* }}} */
+
+static void
+phurple_signing_off_function(PurpleConnection *conn, gpointer data)
+{/* {{{ */
+	phurple_signed_all_cb("onsigningoff", conn, data);
+}/* }}} */
+
+static void
+phurple_connection_error_function(PurpleConnection *conn, PurpleConnectionError err, const gchar *desc, gpointer data)
+{/* {{{ */
 	zval *connection;
 	zval *client;
+	zval *tmp1, *tmp2;
 	zend_class_entry *ce;
 	TSRMLS_FETCH();
+
+	if (!conn) {
+		ALLOC_INIT_ZVAL(connection);
+		ZVAL_NULL(connection);
+	} else {
+		connection = php_create_connection_obj_zval(conn TSRMLS_CC);
+	}
+	tmp1 = phurple_long_zval((long)err);
+	tmp2 = phurple_string_zval(desc);
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
 	
-	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
-
 	call_custom_method(&client,
 					   ce,
 					   NULL,
-					   "onsignedoff",
-					   sizeof("onsignedoff")-1,
+					   "onconnectionerror",
+					   sizeof("onconnectionerror")-1,
 					   NULL,
-					   1,
-					   &connection);
+					   3,
+					   &connection,
+					   &tmp1,
+					   &tmp2
+	);
 	
 	zval_ptr_dtor(&connection);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+}
+/* }}} */
+
+static gboolean
+phurple_autojoin_function(PurpleConnection *conn, gpointer data)
+{/* {{{ */
+	zval *connection;
+	zval *client;
+	zval *method_ret;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	if (!conn) {
+		ALLOC_INIT_ZVAL(connection);
+		ZVAL_NULL(connection);
+	} else {
+		connection = php_create_connection_obj_zval(conn TSRMLS_CC);
+	}
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+	
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "onautojoin",
+					   sizeof("onautojoin")-1,
+					   &method_ret,
+					   1,
+					   &connection
+	);
+	
+	zval_ptr_dtor(&connection);
+
+	convert_to_boolean(method_ret);
+
+	return Z_BVAL_P(method_ret);
 }
 /* }}} */
 
@@ -621,9 +705,37 @@ PHP_METHOD(PhurpleClient, connect)
 	);
 
 	purple_signal_connect(purple_connections_get_handle(),
+						  "signing-on",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_signing_on_function),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
 						  "signed-off",
 						  &zco->connection_handle,
 						  PURPLE_CALLBACK(phurple_signed_off_function),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "signing-off",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_signing_off_function),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "connection-error",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_connection_error_function),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "autojoin",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_autojoin_function),
 						  NULL
 	);
 }
@@ -697,6 +809,36 @@ PHP_METHOD(PhurpleClient, onSignedOn)
 }
 /* }}} */
 
+/* {{{ proto void Phurple\Client::onConnectionError(Phurple\Connection connection)
+	This callback is called when connection error occurs, if implemented */
+PHP_METHOD(PhurpleClient, onConnectionError)
+{
+}
+/* }}} */
+
+/* {{{ proto void Phurple\Client::onSigningOn(Phurple\Connection connection)
+	This callback is called when the client is about to sign on, if implemented */
+PHP_METHOD(PhurpleClient, onSigningdOn)
+{
+
+}
+/* }}} */
+
+/* {{{ proto void Phurple\Client::onSigningOff(Phurple\Connection connection)
+	This callback is called when the client is about to sign off, if implemented */
+PHP_METHOD(PhurpleClient, onSigningOff)
+{
+
+}
+/* }}} */
+
+/* {{{ proto boolean Phurple\Client::onAutojoin(Phurple\Connection connection)
+	This callback is called when the connection has signed on, if implemented */
+PHP_METHOD(PhurpleClient, onAutojoin)
+{
+	RETURN_FALSE;
+}
+/* }}} */
 
 /* {{{ proto void PhurpleClient::initInternal(void)
 	This callback method is called within the PhurpleClient::getInstance, so if implemented, can initalize some internal stuff*/

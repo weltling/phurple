@@ -235,6 +235,10 @@ zend_function_entry PhurpleClient_methods[] = {
 	PHP_ME(PhurpleClient, writeIM, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, onSignedOn, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, onSignedOff, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, onConnectionError, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, onSigningdOn, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, onSigningOff, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, onAutojoin, NULL, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, runLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, addAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
@@ -446,6 +450,24 @@ PHP_MINIT_FUNCTION(phurple)
 	INIT_CLASS_ENTRY(ce, PHURPLE_CONNECION_CLASS_NAME, PhurpleConnection_methods);
 	ce.create_object = php_connection_obj_init;
 	PhurpleConnection_ce = zend_register_internal_class(&ce TSRMLS_CC);
+
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_NETWORK_ERROR", sizeof("ERROR_NETWORK_ERROR")-1, PURPLE_CONNECTION_ERROR_NETWORK_ERROR TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_INVALID_USERNAME", sizeof("ERROR_INVALID_USERNAME")-1, PURPLE_CONNECTION_ERROR_INVALID_USERNAME TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_AUTHENTICATION_FAILED", sizeof("ERROR_AUTHENTICATION_FAILED")-1, PURPLE_CONNECTION_ERROR_AUTHENTICATION_FAILED TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_AUTHENTICATION_IMPOSSIBLE", sizeof("ERROR_AUTHENTICATION_IMPOSSIBLE")-1, PURPLE_CONNECTION_ERROR_AUTHENTICATION_IMPOSSIBLE TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_NO_SSL_SUPPORT", sizeof("ERROR_NO_SSL_SUPPORT")-1, PURPLE_CONNECTION_ERROR_NO_SSL_SUPPORT TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_ENCRYPTION_ERROR", sizeof("ERROR_ENCRYPTION_ERROR")-1, PURPLE_CONNECTION_ERROR_ENCRYPTION_ERROR TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_NAME_IN_USE", sizeof("ERROR_NAME_IN_USE")-1, PURPLE_CONNECTION_ERROR_NAME_IN_USE TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_INVALID_SETTINGS", sizeof("ERROR_INVALID_SETTINGS")-1, PURPLE_CONNECTION_ERROR_INVALID_SETTINGS TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_NOT_PROVIDED", sizeof("ERROR_CERT_NOT_PROVIDED")-1, PURPLE_CONNECTION_ERROR_CERT_NOT_PROVIDED TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_UNTRUSTED", sizeof("ERROR_CERT_UNTRUSTED")-1, PURPLE_CONNECTION_ERROR_CERT_UNTRUSTED TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_EXPIRED", sizeof("ERROR_CERT_EXPIRED")-1, PURPLE_CONNECTION_ERROR_CERT_EXPIRED TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_NOT_ACTIVATED", sizeof("ERROR_CERT_NOT_ACTIVATED")-1, PURPLE_CONNECTION_ERROR_CERT_NOT_ACTIVATED TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_HOSTNAME_MISMATCH", sizeof("ERROR_CERT_HOSTNAME_MISMATCH")-1, PURPLE_CONNECTION_ERROR_CERT_HOSTNAME_MISMATCH TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_FINGERPRINT_MISMATCH", sizeof("ERROR_CERT_FINGERPRINT_MISMATCH")-1, PURPLE_CONNECTION_ERROR_CERT_FINGERPRINT_MISMATCH TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_SELF_SIGNED ", sizeof("ERROR_CERT_SELF_SIGNED ")-1, PURPLE_CONNECTION_ERROR_CERT_SELF_SIGNED  TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_OTHER_ERROR", sizeof("ERROR_CERT_OTHER_ERROR")-1, PURPLE_CONNECTION_ERROR_CERT_OTHER_ERROR TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_OTHER_ERROR", sizeof("ERROR_OTHER_ERROR")-1, PURPLE_CONNECTION_ERROR_OTHER_ERROR TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_CLASS_NAME, PhurpleBuddy_methods);
 	ce.create_object = php_buddy_obj_init;
