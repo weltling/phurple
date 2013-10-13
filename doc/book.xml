@@ -570,7 +570,7 @@
               <parameter>conversation</parameter>
             </methodparam>
             <methodparam>
-              <type>PhurplePuddy</type>
+              <type>Phurple\Buddy</type>
               <parameter>buddy</parameter>
             </methodparam>
             <methodparam>
@@ -674,7 +674,7 @@
               <parameter>conversation</parameter>
             </methodparam>
             <methodparam>
-              <type>PhurplePuddy</type>
+              <type>Phurple\Buddy</type>
               <parameter>buddy</parameter>
             </methodparam>
             <methodparam>
@@ -1985,7 +1985,7 @@
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>public</modifier>
-			      <type>PhurpleGroup</type>
+			      <type>Phurple\Group</type>
 			      <methodname>Phurple\Buddy::getGroup</methodname>
 			      <void/>
 		      </methodsynopsis>
@@ -2100,7 +2100,7 @@
               <parameter>buddy</parameter>
             </methodparam>
             <methodparam choice="opt">
-              <type>PhurpleGroup</type>
+              <type>Phurple\Group</type>
               <parameter>group</parameter>
             </methodparam>
           </methodsynopsis>
@@ -2227,7 +2227,7 @@
 	      <refsect1 role="description">
 		      <methodsynopsis>
 			      <modifier>final public static</modifier>
-			      <type>PhurpleGroup</type>
+			      <type>Phurple\Group</type>
 			      <methodname>Phurple\BuddyList::findGroup</methodname>
 			      <methodparam><type>string</type><parameter>group</parameter></methodparam>
 		      </methodsynopsis>
