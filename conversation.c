@@ -135,14 +135,8 @@ PHP_METHOD(PhurpleConversation, __construct)
 			zco->ptype = type;
 			break;
 
-		case PURPLE_CONV_TYPE_UNKNOWN:
-			zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unknown conversation type");
-			return;
-
-		case PURPLE_CONV_TYPE_MISC:
-		case PURPLE_CONV_TYPE_ANY:
 		default:
-			zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unimplemented conversation type");
+			zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unknown conversation type");
 			return;
 	}
 
@@ -167,10 +161,10 @@ PHP_METHOD(PhurpleConversation, __construct)
 			g_hash_table_replace(components, g_strdup("channel"), g_strdup(name));
 		}
 
-		pchat = purple_blist_find_chat(zao->paccount, name);
-		if (!pchat) {
+		/*pchat = purple_blist_find_chat(zao->paccount, name);
+		if (!pchat) {*/
 			pchat = purple_chat_new(zao->paccount, name, components);
-		}
+		//}
 		//purple_blist_node_set_flags((PurpleBlistNode *)pchat, PURPLE_BLIST_NODE_FLAG_NO_SAVE);
 		//
 		serv_join_chat(purple_account_get_connection(zao->paccount), components);
@@ -227,14 +221,8 @@ PHP_METHOD(PhurpleConversation, sendIM)
 				purple_conv_chat_send(PURPLE_CONV_CHAT(zco->pconversation), message);
 				break;
 
-			case PURPLE_CONV_TYPE_UNKNOWN:
-				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unknown conversation type");
-				return;
-
-			case PURPLE_CONV_TYPE_MISC:
-			case PURPLE_CONV_TYPE_ANY:
 			default:
-				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unimplemented conversation type");
+				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Unknown conversation type");
 				return;
 		}
 	}
