@@ -42,7 +42,7 @@
 			<file role="src" name="php_phurple.h"/>
 			<file role="src" name="account.c"/>
 			<file role="src" name="buddy.c"/>
-			<file role="src" name="buddygroup.c"/>
+			<file role="src" name="group.c"/>
 			<file role="src" name="buddylist.c"/>
 			<file role="src" name="client.c"/>
 			<file role="src" name="connection.c"/>
