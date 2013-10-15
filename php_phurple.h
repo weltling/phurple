@@ -102,6 +102,8 @@ PHP_METHOD(PhurpleConversation, getName);
 PHP_METHOD(PhurpleConversation, sendIM);
 PHP_METHOD(PhurpleConversation, getAccount);
 PHP_METHOD(PhurpleConversation, setAccount);
+PHP_METHOD(PhurpleConversation, inviteUser);
+PHP_METHOD(PhurpleConversation, isUserInChat);
 
 PHP_METHOD(PhurpleBuddy, __construct);
 PHP_METHOD(PhurpleBuddy, getName);

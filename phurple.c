@@ -276,6 +276,13 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(PhurpleConversation_setAccount, 0, 0, 1)
 	    ZEND_ARG_OBJ_INFO(0, account, Phurple\\Account, 0)
 ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(PhurpleConversation_inviteUser, 0, 0, 2)
+	    ZEND_ARG_INFO(0, user)
+	    ZEND_ARG_INFO(0, mesage)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(PhurpleConversation_isUserInChat, 0, 0, 1)
+	    ZEND_ARG_INFO(0, user)
+ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(PhurpleAccount_construct, 0, 0, 2)
 	    ZEND_ARG_INFO(0, user_name)
 	    ZEND_ARG_INFO(0, protocol_name)
@@ -386,6 +393,8 @@ zend_function_entry PhurpleConversation_methods[] = {
 	PHP_ME(PhurpleConversation, sendIM, PhurpleConversation_sendIM, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, getAccount, PhurpleConversation_setAccount, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, setAccount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConversation, inviteUser, PhurpleConversation_inviteUser, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConversation, isUserInChat, PhurpleConversation_isUserInChat, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

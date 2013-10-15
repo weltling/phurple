@@ -258,7 +258,7 @@ PHP_METHOD(PhurpleConversation, getAccount)
 }
 /* }}} */
 
-/* {{{ proto void PhurpleConversation::setAccount(PhurpleAccount account)
+/* {{{ proto void Phurple\Conversation::setAccount(Phurple\Account account)
 	Sets the specified conversation's phurple_account */
 PHP_METHOD(PhurpleConversation, setAccount)
 {
@@ -266,7 +266,7 @@ PHP_METHOD(PhurpleConversation, setAccount)
 	struct ze_conversation_obj *zco;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &account, PhurpleAccount_ce) == FAILURE) {
-		RETURN_NULL();
+		return;
 	}
 	
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
@@ -276,6 +276,65 @@ PHP_METHOD(PhurpleConversation, setAccount)
 			zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
 			purple_conversation_set_account(zco->pconversation, zao->paccount);
 	}
+}
+/* }}} */
+
+/* {{{ proto void Phurple\Conversation::inviteUser(string user, string message)
+	Invite a user to a chat */
+PHP_METHOD(PhurpleConversation, inviteUser)
+{
+	struct ze_conversation_obj *zco;
+	char *user, *msg;
+	int user_len, msg_len;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &user, &user_len, &msg, &msg_len) == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if(NULL != zco->pconversation) {
+		switch (zco->ptype) {
+			case PURPLE_CONV_TYPE_CHAT:
+				purple_conv_chat_invite_user(PURPLE_CONV_CHAT(zco->pconversation), user, msg, 0);
+				break;
+
+			default:
+				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Initialized conversation type doesn't support invitations");
+				return;
+		}
+	}
+}
+/* }}} */
+
+/* {{{ proto boolean Phurple\Conversation::inviteUser(string user)
+	Invite a user to a chat */
+PHP_METHOD(PhurpleConversation, isUserInChat)
+{
+	struct ze_conversation_obj *zco;
+	char *user;
+	int user_len;
+	gboolean ret;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &user, &user_len) == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if(NULL != zco->pconversation) {
+		switch (zco->ptype) {
+			case PURPLE_CONV_TYPE_CHAT:
+				ret = purple_conv_chat_find_user(PURPLE_CONV_CHAT(zco->pconversation), user);
+				break;
+
+			default:
+				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Initialized conversation type doesn't support invitations");
+				return;
+		}
+	}
+
+	RETVAL_BOOL((long)ret);
 }
 /* }}} */
 
