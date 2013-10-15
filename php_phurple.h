@@ -89,6 +89,10 @@ PHP_METHOD(PhurpleAccount, getUserName);
 PHP_METHOD(PhurpleAccount, getPassword);
 PHP_METHOD(PhurpleAccount, getPresence);
 PHP_METHOD(PhurpleAccount, setStatus);
+PHP_METHOD(PhurpleAccount, connect);
+PHP_METHOD(PhurpleAccount, disconnect);
+PHP_METHOD(PhurpleAccount, isDisconnecting);
+PHP_METHOD(PhurpleAccount, isDisconnected);
 
 PHP_METHOD(PhurpleConnection, __construct);
 PHP_METHOD(PhurpleConnection, getAccount);

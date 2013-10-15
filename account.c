@@ -476,6 +476,70 @@ PHP_METHOD(PhurpleAccount, setStatus)
 }
 /* }}} */
 
+/* {{{ proto void PhurpleAccount::connect(void)
+	Connect to an account */
+PHP_METHOD(PhurpleAccount, connect)
+{
+	struct ze_account_obj *zao;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	purple_account_connect(zao->paccount);
+}
+/* }}} */
+
+/* {{{ proto void PhurpleAccount::disconnect(void)
+	Disconnect from an account */
+PHP_METHOD(PhurpleAccount, disconnect)
+{
+	struct ze_account_obj *zao;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	purple_account_disconnect(zao->paccount);
+}
+/* }}} */
+  
+/* {{{ proto boolean PhurpleAccount::isDisconnecting(void)
+	Whether user is currently being disconnected */
+PHP_METHOD(PhurpleAccount, isDisconnecting)
+{
+	struct ze_account_obj *zao;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	RETVAL_BOOL((long) purple_account_is_disconnecting(zao->paccount));
+}
+/* }}} */
+
+/* {{{ proto boolean PhurpleAccount::isDisconnected(void)
+	Whether user is disconnected */
+PHP_METHOD(PhurpleAccount, isDisconnected)
+{
+	struct ze_account_obj *zao;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	RETVAL_BOOL((long) purple_account_is_disconnected(zao->paccount));
+}
+/* }}} */
+
 /*
 **
 **
