@@ -1411,31 +1411,6 @@
   </para>
         </refsect1>
       </refentry>
-      <refentry xml:id="Phurple--Account-isconnected">
-        <refnamediv>
-          <refname>Phurple\Account::isConnected</refname>
-          <refpurpose>Returns whether or not the account is connected</refpurpose>
-        </refnamediv>
-        <refsect1 role="description">
-          <methodsynopsis>
-		  <modifier>public</modifier>
-            <type>bool</type>
-            <methodname>Phurple\Account::isConnected</methodname>
-            <void/>
-          </methodsynopsis>
-          <para>
-   Returns whether or not the account is connected
-  </para>
-        </refsect1>
-        <refsect1 role="parameters">
-          <para>
-  </para>
-        </refsect1>
-        <refsect1 role="returnvalues">
-          <para>
-  </para>
-        </refsect1>
-      </refentry>
       <refentry xml:id="Phurple--Account-clearsettings">
 	      <refnamediv>
 		      <refname>Phurple\Account::clearSettings</refname>
@@ -1578,6 +1553,132 @@
   </para>
  </refsect1>
 </refentry>
+<refentry xml:id="Phurple--Account-isdisconnecting">
+ <refnamediv>
+  <refname>Phurple\Account::isDisconnecting</refname>
+  <refpurpose>Indicates that account is being disconnected</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Account::isDisconnecting</methodname>
+   <void/>
+  </methodsynopsis>
+  <para>
+   Indicates that account is being disconnected
+  </para>
+ </refsect1>
+
+ <refsect1 role="parameters">
+  <para>
+  </para>
+
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+      <refentry xml:id="Phurple--Account-isconnected">
+        <refnamediv>
+          <refname>Phurple\Account::isConnected</refname>
+          <refpurpose>Returns whether or not the account is connected</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>bool</type>
+            <methodname>Phurple\Account::isConnected</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns whether or not the account is connected
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="Phurple--Account-isdisconnected">
+        <refnamediv>
+          <refname>Phurple\Account::isDisconnected</refname>
+          <refpurpose>Returns whether the account is disconnected</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>bool</type>
+            <methodname>Phurple\Account::isDisconnected</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns whether or not the account is disconnected
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="Phurple--Account-connect">
+        <refnamediv>
+          <refname>Phurple\Account::connect</refname>
+          <refpurpose>Connect the account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>void</type>
+            <methodname>Phurple\Account::connect</methodname>
+			<void />
+          </methodsynopsis>
+          <para>
+   Connect the account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="Phurple--Account-disconnect">
+        <refnamediv>
+          <refname>Phurple\Account::disconnect</refname>
+          <refpurpose>Disconnect the account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>void</type>
+            <methodname>Phurple\Account::disconnect</methodname>
+			<void />
+          </methodsynopsis>
+          <para>
+   Disconnect the account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
 <refentry xml:id="Phurple--Account-getpresence">
  <refnamediv>
   <refname>Phurple\Account::getPresence</refname>
