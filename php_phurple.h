@@ -193,7 +193,6 @@ struct ze_account_obj {
 struct ze_conversation_obj {
 	zend_object zo;
 	PurpleConversation *pconversation;
-	PurpleConversationType ptype;
 };
 
 struct ze_connection_obj {

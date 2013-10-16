@@ -81,7 +81,7 @@ extern zval *
 php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 
 extern zval *
-php_create_conversation_obj_zval(PurpleConversation *pconv, PurpleConversationType ptype TSRMLS_DC);
+php_create_conversation_obj_zval(PurpleConversation *pconv TSRMLS_DC);
 
 extern zval *
 php_create_buddy_obj_zval(PurpleBuddy *pbuddy TSRMLS_DC);
@@ -1177,7 +1177,7 @@ phurple_write_conv_function(PurpleConversation *conv, const char *who, const cha
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
 
-	conversation = php_create_conversation_obj_zval(conv, PURPLE_CONV_TYPE_CHAT TSRMLS_CC);
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
 
 	paccount = purple_conversation_get_account(conv);
 	if(paccount) {
@@ -1242,7 +1242,7 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
 
-	conversation = php_create_conversation_obj_zval(conv, PURPLE_CONV_TYPE_IM TSRMLS_CC);
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
 
 	paccount = purple_conversation_get_account(conv);
 	if(paccount) {

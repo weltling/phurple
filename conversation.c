@@ -71,7 +71,6 @@ php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC)
 #endif
 
 	zao->pconversation = NULL;
-	zao->ptype = PURPLE_CONV_TYPE_UNKNOWN;
 
 	ret.handle = zend_objects_store_put(zao, NULL,
 								(zend_objects_free_object_storage_t) php_conversation_obj_destroy,
@@ -83,7 +82,7 @@ php_conversation_obj_init(zend_class_entry *ce TSRMLS_DC)
 }/*}}}*/
 
 zval *
-php_create_conversation_obj_zval(PurpleConversation *pconv, PurpleConversationType ptype TSRMLS_DC)
+php_create_conversation_obj_zval(PurpleConversation *pconv TSRMLS_DC)
 {/*{{{*/
 	zval *ret;
 	struct ze_conversation_obj *zco;
@@ -94,7 +93,6 @@ php_create_conversation_obj_zval(PurpleConversation *pconv, PurpleConversationTy
 
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(ret TSRMLS_CC);
 	zco->pconversation = pconv;
-	zco->ptype = ptype;
 
 
 	return ret;
@@ -132,7 +130,6 @@ PHP_METHOD(PhurpleConversation, __construct)
 			if (!zco->pconversation) {
 				zco->pconversation = purple_conversation_new(type, zao->paccount, name);
 			}
-			zco->ptype = type;
 			break;
 
 		default:
@@ -212,7 +209,7 @@ PHP_METHOD(PhurpleConversation, sendIM)
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(message_len && NULL != zco->pconversation) {
-		switch (zco->ptype) {
+		switch (purple_conversation_get_type(zco->pconversation)) {
 			case PURPLE_CONV_TYPE_IM:
 				purple_conv_im_send(PURPLE_CONV_IM(zco->pconversation), message);
 				break;
@@ -294,7 +291,7 @@ PHP_METHOD(PhurpleConversation, inviteUser)
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(NULL != zco->pconversation) {
-		switch (zco->ptype) {
+		switch (purple_conversation_get_type(zco->pconversation)) {
 			case PURPLE_CONV_TYPE_CHAT:
 				purple_conv_chat_invite_user(PURPLE_CONV_CHAT(zco->pconversation), user, msg, 0);
 				break;
@@ -323,7 +320,7 @@ PHP_METHOD(PhurpleConversation, isUserInChat)
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(NULL != zco->pconversation) {
-		switch (zco->ptype) {
+		switch (purple_conversation_get_type(zco->pconversation)) {
 			case PURPLE_CONV_TYPE_CHAT:
 				ret = purple_conv_chat_find_user(PURPLE_CONV_CHAT(zco->pconversation), user);
 				break;
