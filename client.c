@@ -44,6 +44,7 @@
 extern PurpleEventLoopUiOps glib_eventloops;
 extern PurpleCoreUiOps php_core_uiops;
 extern PurpleAccountUiOps php_account_uiops;
+extern PurpleRequestUiOps php_request_uiops;
 #if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 extern char *segfault_message;
 #endif
@@ -532,6 +533,7 @@ PHP_METHOD(PhurpleClient, getInstance)
 		purple_debug_set_enabled(Z_LVAL_PP(debug));
 		purple_core_set_ui_ops(&php_core_uiops);
 		purple_accounts_set_ui_ops(&php_account_uiops);
+		purple_request_set_ui_ops(&php_request_uiops);
 		purple_eventloop_set_ui_ops(&glib_eventloops);
 		/*purple_plugins_add_search_path(PHURPLE_G(custom_plugin_path));*/
 		purple_plugins_add_search_path(INI_STR("phurple.custom_plugin_path"));
@@ -880,6 +882,14 @@ PHP_METHOD(PhurpleClient, onSignedOff)
 }
 /* }}} */
 
+
+/* {{{ proto public int Phurple\Client::requestAction(string title, string primary, string secondary, integer default_action, Phurple\Account account, string who, Phurple\Conversation conv, array actions)
+ 	Handle action requests received from server or elsewhere.*/
+PHP_METHOD(PhurpleClient, requestAction)
+{
+
+}
+/* }}} */
 
 /*
 **

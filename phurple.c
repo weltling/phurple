@@ -64,6 +64,11 @@ static void phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_le
 static void phurple_ui_init(void);
 static void phurple_quit(void);
 static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message, gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
+//void *phurple_request_action(void *handle, const char *title, const char *primary, const char *secondary, int default_action, PurpleAccount *account, const char *who, PurpleConversation *conv, void *user_data, size_t action_count, ...);
+void *phurple_request_action(const char *title, const char *primary,
+		                                                const char *secondary, int default_action,
+														                                            PurpleAccount *account, const char *who, PurpleConversation *conv,
+																									                                                void *user_data, size_t action_count, va_list actions);
 
 /* {{{ object init functions */
 extern zend_object_value
@@ -100,7 +105,7 @@ extern zend_object_value
 php_presence_obj_init(zend_class_entry *ce TSRMLS_DC);
 /* }}} */
 
-/* {{{ libpurple definitions */
+/*  libpurple definitions */
 /* XXX no signal handler on windows, for now at least */
 #if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 static void sighandler(int sig);
@@ -199,7 +204,23 @@ PurpleAccountUiOps php_account_uiops =
 	NULL,
 	NULL
 };
-/* }}} */
+
+PurpleRequestUiOps php_request_uiops = 
+{
+	NULL, /* request input */
+	NULL, /* request choice */
+	phurple_request_action,
+	NULL, /* request fields */
+	NULL, /* request file */
+	NULL, /* close request */
+	NULL, /* request folder */
+	NULL, /* request_action_with_icon */
+	NULL,
+	NULL,
+	NULL
+};
+
+/*  */
 
 /* classes definitions*/
 zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleGroup_ce, *PhurpleException_ce, *PhurplePresence_ce;
@@ -381,6 +402,7 @@ zend_function_entry PhurpleClient_methods[] = {
 	PHP_ME(PhurpleClient, setDebug, PhurpleClient_setDebug, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setUiId, PhurpleClient_setUiId, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, __clone, NULL, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE)
+	PHP_ME(PhurpleClient, requestAction, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -1274,6 +1296,39 @@ phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const g
 }
 /* }}} */
 
+void
+*phurple_request_action(const char *title, const char *primary, const char *secondary, int default_action, PurpleAccount *account, const char *who, PurpleConversation *conv, void *user_data, size_t action_count, va_list actions)
+{
+	int i, step;
+	PurpleRequestActionCb *cb_acts;
+	zval *acts, *conversation, *acc;
+	TSRMLS_FETCH();
+
+	if (action_count < 1) {
+		return NULL;
+	}
+
+	/* XXX find a way to use the action callbacks not only from dialog window like GTK */
+	cb_acts = emalloc(action_count * sizeof(PurpleRequestActionCb));
+
+	MAKE_STD_ZVAL(acts);
+	array_init(acts);	
+
+	for (i = 0, step = 0; i < action_count * 2; i += 2, step++) {
+		char *txt = va_arg(actions, char *);
+		//GCallback func = va_arg(actions, GCallback);
+
+		//printf("%s\n\n\n", txt);
+	}
+
+	/* call phurple client cb*/
+	/* call action cb depending on phurple client return */
+	
+	efree(cb_acts);
+	zval_ptr_dtor(&acts);
+
+	return NULL;
+}
 
 /*
  * Local variables:

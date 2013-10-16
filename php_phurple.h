@@ -74,6 +74,7 @@ PHP_METHOD(PhurpleClient, setUserDir);
 PHP_METHOD(PhurpleClient, setDebug);
 PHP_METHOD(PhurpleClient, setUiId);
 PHP_METHOD(PhurpleClient, __clone);
+PHP_METHOD(PhurpleClient, requestAction);
 
 PHP_METHOD(PhurpleAccount, __construct);
 PHP_METHOD(PhurpleAccount, setPassword);
