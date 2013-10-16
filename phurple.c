@@ -402,7 +402,7 @@ zend_function_entry PhurpleClient_methods[] = {
 	PHP_ME(PhurpleClient, setDebug, PhurpleClient_setDebug, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setUiId, PhurpleClient_setUiId, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, __clone, NULL, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE)
-	PHP_ME(PhurpleClient, requestAction, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleClient, requestAction, NULL, ZEND_ACC_PROTECTED)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -1276,7 +1276,7 @@ phurple_write_im_function(PurpleConversation *conv, const char *who, const char 
 					   &tmp1,
 					   &tmp2,
 					   &tmp3
-					   );
+	);
 
 	zval_ptr_dtor(&tmp1);
 	zval_ptr_dtor(&tmp2);
@@ -1298,37 +1298,108 @@ phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_level, const g
 
 void
 *phurple_request_action(const char *title, const char *primary, const char *secondary, int default_action, PurpleAccount *account, const char *who, PurpleConversation *conv, void *user_data, size_t action_count, va_list actions)
-{
+{/*{{{*/
+	const int PARAMS_COUNT = 8;
 	int i, step;
-	PurpleRequestActionCb *cb_acts;
-	zval *acts, *conversation, *acc;
+	PurpleRequestActionCb *act_cbs;
+	zval *acts, *conversation, *acc, *tmp0, *tmp1, *tmp2, *tmp3, *tmp4;
+	zval *client_ret = NULL;
+	zval *client;
+	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
 	if (action_count < 1) {
 		return NULL;
 	}
 
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
 	/* XXX find a way to use the action callbacks not only from dialog window like GTK */
-	cb_acts = emalloc(action_count * sizeof(PurpleRequestActionCb));
+	act_cbs = emalloc(action_count * sizeof(PurpleRequestActionCb));
 
 	MAKE_STD_ZVAL(acts);
 	array_init(acts);	
 
 	for (i = 0, step = 0; i < action_count * 2; i += 2, step++) {
 		char *txt = va_arg(actions, char *);
-		//GCallback func = va_arg(actions, GCallback);
+		PurpleRequestActionCb cb = va_arg(actions, PurpleRequestActionCb);;
 
-		//printf("%s\n\n\n", txt);
+		add_index_string(acts, step, txt, 1);
+		act_cbs[step] = cb;
+		/*GCallback func = va_arg(actions, GCallback);*/
 	}
 
+	if (title) {
+		tmp0 = phurple_string_zval(title);
+	} else {
+		MAKE_STD_ZVAL(tmp0);
+		ZVAL_NULL(tmp0);
+	}
+
+	if (primary) {
+		tmp1 = phurple_string_zval(primary);
+	} else {
+		MAKE_STD_ZVAL(tmp1);
+		ZVAL_NULL(tmp1);
+	}
+
+	if (secondary) {
+		tmp2 = phurple_string_zval(secondary);
+	} else {
+		MAKE_STD_ZVAL(tmp2);
+		ZVAL_NULL(tmp2);
+	}
+
+	tmp3 = phurple_long_zval(default_action);
+	acc = php_create_account_obj_zval(account TSRMLS_CC);	
+
+	if (who) {
+		tmp4 = phurple_string_zval(who);
+	} else {
+		MAKE_STD_ZVAL(tmp4);
+		ZVAL_NULL(tmp4);
+	}
+
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+
 	/* call phurple client cb*/
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "requestaction",
+					   sizeof("requestaction")-1,
+					   &client_ret,
+					   PARAMS_COUNT,
+					   &tmp0,
+					   &tmp1,
+					   &tmp2,
+					   &tmp3,
+					   &acc,
+					   &tmp4,
+					   &conversation,
+					   &acts
+	);
+	convert_to_long(client_ret);
+
 	/* call action cb depending on phurple client return */
+	if (Z_LVAL_P(client_ret) >= 0 && Z_LVAL_P(client_ret) < action_count) {
+		PurpleRequestActionCb act_to_call = act_cbs[Z_LVAL_P(client_ret)];;
+		act_to_call(user_data, 0);
+	} /* else issue waning? */	
 	
-	efree(cb_acts);
+	efree(act_cbs);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+	zval_ptr_dtor(&tmp3);
+	zval_ptr_dtor(&tmp4);
 	zval_ptr_dtor(&acts);
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&conversation);
 
 	return NULL;
-}
+}/*}}}*/
 
 /*
  * Local variables:
