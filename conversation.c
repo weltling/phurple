@@ -158,13 +158,14 @@ PHP_METHOD(PhurpleConversation, __construct)
 			g_hash_table_replace(components, g_strdup("channel"), g_strdup(name));
 		}
 
-		/*pchat = purple_blist_find_chat(zao->paccount, name);
-		if (!pchat) {*/
+		pchat = purple_blist_find_chat(zao->paccount, name);
+		if (!pchat) {
 			pchat = purple_chat_new(zao->paccount, name, components);
-		//}
+		}
 		//purple_blist_node_set_flags((PurpleBlistNode *)pchat, PURPLE_BLIST_NODE_FLAG_NO_SAVE);
 		//
 		serv_join_chat(purple_account_get_connection(zao->paccount), components);
+		//purple_conversation_present(zco->pconversation);
 	}
 }
 /* }}} */
@@ -304,8 +305,8 @@ PHP_METHOD(PhurpleConversation, inviteUser)
 }
 /* }}} */
 
-/* {{{ proto boolean Phurple\Conversation::inviteUser(string user)
-	Invite a user to a chat */
+/* {{{ proto boolean Phurple\Conversation::isUserInChat(string user)
+	Lookup user in chat */
 PHP_METHOD(PhurpleConversation, isUserInChat)
 {
 	struct ze_conversation_obj *zco;

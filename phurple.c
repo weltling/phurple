@@ -64,11 +64,7 @@ static void phurple_g_log_handler(const gchar *log_domain, GLogLevelFlags log_le
 static void phurple_ui_init(void);
 static void phurple_quit(void);
 static void *phurple_request_authorize(PurpleAccount *account, const char *remote_user, const char *id, const char *alias, const char *message, gboolean on_list, PurpleAccountRequestAuthorizationCb auth_cb, PurpleAccountRequestAuthorizationCb deny_cb, void *user_data);
-//void *phurple_request_action(void *handle, const char *title, const char *primary, const char *secondary, int default_action, PurpleAccount *account, const char *who, PurpleConversation *conv, void *user_data, size_t action_count, ...);
-void *phurple_request_action(const char *title, const char *primary,
-		                                                const char *secondary, int default_action,
-														                                            PurpleAccount *account, const char *who, PurpleConversation *conv,
-																									                                                void *user_data, size_t action_count, va_list actions);
+void *phurple_request_action(const char *title, const char *primary, const char *secondary, int default_action, PurpleAccount *account, const char *who, PurpleConversation *conv, void *user_data, size_t action_count, va_list actions);
 
 /* {{{ object init functions */
 extern zend_object_value
@@ -1400,6 +1396,7 @@ void
 
 	return NULL;
 }/*}}}*/
+
 
 /*
  * Local variables:
