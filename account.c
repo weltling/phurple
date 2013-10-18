@@ -508,6 +508,7 @@ PHP_METHOD(PhurpleAccount, disconnect)
 }
 /* }}} */
   
+#if PURPLE_MAJOR_VERSION > 2
 /* {{{ proto boolean PhurpleAccount::isDisconnecting(void)
 	Whether user is currently being disconnected */
 PHP_METHOD(PhurpleAccount, isDisconnecting)
@@ -523,6 +524,7 @@ PHP_METHOD(PhurpleAccount, isDisconnecting)
 	RETVAL_BOOL((long) purple_account_is_disconnecting(zao->paccount));
 }
 /* }}} */
+#endif
 
 /* {{{ proto boolean PhurpleAccount::isDisconnected(void)
 	Whether user is disconnected */

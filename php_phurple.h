@@ -92,7 +92,9 @@ PHP_METHOD(PhurpleAccount, getPresence);
 PHP_METHOD(PhurpleAccount, setStatus);
 PHP_METHOD(PhurpleAccount, connect);
 PHP_METHOD(PhurpleAccount, disconnect);
+#if PURPLE_MAJOR_VERSION > 2
 PHP_METHOD(PhurpleAccount, isDisconnecting);
+#endif
 PHP_METHOD(PhurpleAccount, isDisconnected);
 
 PHP_METHOD(PhurpleConnection, __construct);

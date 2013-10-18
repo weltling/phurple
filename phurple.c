@@ -436,7 +436,9 @@ zend_function_entry PhurpleAccount_methods[] = {
 	PHP_ME(PhurpleAccount, setStatus, PhurpleAccount_setStatus, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleAccount, connect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleAccount, disconnect, NULL, ZEND_ACC_PUBLIC)
+#if PURPLE_MAJOR_VERSION > 2
 	PHP_ME(PhurpleAccount, isDisconnecting, NULL, ZEND_ACC_PUBLIC)
+#endif
 	PHP_ME(PhurpleAccount, isDisconnected, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
