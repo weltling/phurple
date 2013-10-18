@@ -58,6 +58,9 @@ php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 extern zval *
 php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC);
 
+extern zval *
+php_create_conversation_obj_zval(PurpleConversation *pconv TSRMLS_DC);
+
 extern zval*
 phurple_long_zval(long l);
 
@@ -91,7 +94,7 @@ phurple_heartbeat_callback(gpointer data)
 /* }}} */
 
 static void
-phurple_signed_all_cb(char *php_method, PurpleConnection *conn, gpointer data)
+phurple_signed_all_cb(char *php_method, PurpleConnection *conn)
 {/*{{{*/
 	zval *connection;
 	zval *client;
@@ -121,31 +124,31 @@ phurple_signed_all_cb(char *php_method, PurpleConnection *conn, gpointer data)
 }/*}}}*/
 
 static void
-phurple_signed_on_function(PurpleConnection *conn, gpointer data)
+phurple_signed_on_function(PurpleConnection *conn)
 {/* {{{ */
-	phurple_signed_all_cb("onsignedon", conn, data);
+	phurple_signed_all_cb("onsignedon", conn);
 }/* }}} */
 
 static void
-phurple_signing_on_function(PurpleConnection *conn, gpointer data)
+phurple_signing_on_function(PurpleConnection *conn)
 {/* {{{ */
-	phurple_signed_all_cb("onsigningon", conn, data);
+	phurple_signed_all_cb("onsigningon", conn);
 }/* }}} */
 
 static void
-phurple_signed_off_function(PurpleConnection *conn, gpointer data)
+phurple_signed_off_function(PurpleConnection *conn)
 {/* {{{ */
-	phurple_signed_all_cb("onsignedoff", conn, data);
+	phurple_signed_all_cb("onsignedoff", conn);
 }/* }}} */
 
 static void
-phurple_signing_off_function(PurpleConnection *conn, gpointer data)
+phurple_signing_off_function(PurpleConnection *conn)
 {/* {{{ */
-	phurple_signed_all_cb("onsigningoff", conn, data);
+	phurple_signed_all_cb("onsigningoff", conn);
 }/* }}} */
 
 static void
-phurple_connection_error_function(PurpleConnection *conn, PurpleConnectionError err, const gchar *desc, gpointer data)
+phurple_connection_error_function(PurpleConnection *conn, PurpleConnectionError err, const gchar *desc)
 {/* {{{ */
 	zval *connection;
 	zval *client;
@@ -184,11 +187,11 @@ phurple_connection_error_function(PurpleConnection *conn, PurpleConnectionError 
 /* }}} */
 
 static gboolean
-phurple_autojoin_function(PurpleConnection *conn, gpointer data)
+phurple_autojoin_function(PurpleConnection *conn)
 {/* {{{ */
 	zval *connection;
 	zval *client;
-	zval *method_ret;
+	zval *method_ret = NULL;
 	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
@@ -740,6 +743,7 @@ PHP_METHOD(PhurpleClient, connect)
 						  PURPLE_CALLBACK(phurple_autojoin_function),
 						  NULL
 	);
+
 }
 /* }}} */
 
