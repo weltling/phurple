@@ -1161,6 +1161,138 @@
 		    </para>
 	    </refsect1>
 </refentry>
+      <refentry xml:id="phurpleclient-requestaction">
+        <refnamediv>
+          <refname>Phurple\Client::requestAction</refname>
+          <refpurpose>Prompts user for an action</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>integer</type>
+            <methodname>Phurple\Client::requestAction</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>title</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>primary</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>secondary</parameter>
+            </methodparam>
+            <methodparam>
+              <type>integer</type>
+              <parameter>default_action</parameter>
+            </methodparam>
+            <methodparam>
+              <type>Phurple\Account</type>
+              <parameter>account</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>who</parameter>
+            </methodparam>
+            <methodparam>
+              <type>Phurple\Conversation</type>
+              <parameter>conv</parameter>
+            </methodparam>
+            <methodparam>
+              <type>array</type>
+              <parameter>actions</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   This callback is invoked when some user action is required. In a desktop client it's often represented as a dialog window with buttons for each action. Besides all the other arguments, the last one contains the actions array which is an integer indexed array with action numbers as keys and button names as values. To call one or another action this method has to return the appropriate integer key from the actions array.
+  </para>
+  <para>Unfortunately there's almost no reliable way to programmatically determine which action axactly is requested. The popup dialog a desktop user would see would present the title, primary and secondary in a readable way so user could react correspondingly. So there are two work arounds for this - parse that data and check for certain content. Or, if your script is supposed to just do a limited set on functionality, you could record the values come in for the action requests you expect and hardcode the return values. That's the nature of libpurple, so nothing to do about it in PHP.
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>title</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>primary</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>secondary</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>default_action</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>account</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>who</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>conversation</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>actions</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
     </reference>
     <reference id="account">
       <title>Phurple\Account</title>
@@ -2004,6 +2136,97 @@
 		      <para>
 		      </para>
 	      </refsect1></refentry>
+      <refentry xml:id="phurpleconversation-isuserinchat">
+        <refnamediv>
+          <refname>Phurple\Conversation::isUserInChat</refname>
+          <refpurpose>Lookup user in a chat room</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>boolean</type>
+            <methodname>Phurple\Conversation::isUserInChat</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>user</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Lookup user in a chat conversation
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>user</parameter>
+                </term>
+                <listitem>
+                  <para>User name to lookup
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="phurpleconversation-inviteuser">
+        <refnamediv>
+          <refname>Phurple\Conversation::inviteUser</refname>
+          <refpurpose>Invite user into a chat room</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>void</type>
+            <methodname>Phurple\Conversation::inviteUser</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>user</parameter>
+            </methodparam>
+            <methodparam>
+              <type>string</type>
+              <parameter>message</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+  Invite user into a chat conversation
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>user</parameter>
+                </term>
+                <listitem>
+                  <para>User to be invited
+      </para>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>
+                  <parameter>Message</parameter>
+                </term>
+                <listitem>
+                  <para>Message to show to the user in the invitation dialog
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
     </reference>
     <reference id="buddy">
       <title>Phurple\Buddy</title>
