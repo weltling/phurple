@@ -27,7 +27,10 @@
 		- Account::setStatus()
 		- BuddyList::addChat()
 		- Client::on*() callbacks
-		- addd arginfo on functions
+		- added arginfo on functions
+		- Conversation::inviteUser()
+		- Conversation::isUserInChat()
+		- Client::requestAction() callback
 		* changed
 		- Client::writeConv() signature was changed, be docs aware
 	</notes>
