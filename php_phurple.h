@@ -107,6 +107,7 @@ PHP_METHOD(PhurpleConversation, getAccount);
 PHP_METHOD(PhurpleConversation, setAccount);
 PHP_METHOD(PhurpleConversation, inviteUser);
 PHP_METHOD(PhurpleConversation, isUserInChat);
+PHP_METHOD(PhurpleConversation, getConnection);
 
 PHP_METHOD(PhurpleBuddy, __construct);
 PHP_METHOD(PhurpleBuddy, getName);
@@ -214,6 +215,11 @@ struct ze_presence_obj {
 };
 
 zend_object_handlers default_phurple_obj_handlers;
+
+/* These functions are renamed in libpurple >= 3, we can be compatible with < 3 then */
+#if PURPLE_MAJOR_VERSION < 3 
+# define purple_conversation_get_connection purple_conversation_get_gc
+#endif
 
 #endif	/* PHP_PHURPLE_H */
 

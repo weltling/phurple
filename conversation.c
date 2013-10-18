@@ -36,6 +36,9 @@
 extern zval *
 php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 
+extern zval *
+php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC);
+
 #if PHURPLE_INTERNAL_DEBUG
 extern void phurple_dump_zval(zval *var);
 #endif
@@ -335,6 +338,30 @@ PHP_METHOD(PhurpleConversation, isUserInChat)
 	RETVAL_BOOL((long)ret);
 }
 /* }}} */
+
+PHP_METHOD(PhurpleConversation, getConnection)
+{
+	struct ze_conversation_obj *zco;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if(NULL != zco->pconversation) {
+		const PurpleConnection *pconn = purple_conversation_get_connection(zco->pconversation);
+		if (pconn) {
+			zval *tmp = php_create_connection_obj_zval(pconn TSRMLS_CC);
+
+			*return_value = *tmp;
+
+			return;
+		}
+	}
+
+	RETURN_NULL();
+}
 
 /*
 **
