@@ -511,6 +511,7 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
+			      <modifier>final public static</modifier>
 			      <type>void</type><methodname>Phurple\Client::setUiId</methodname>
 			      <void/>
 		      </methodsynopsis>
@@ -537,6 +538,7 @@
 	      
 	      <refsect1 role="description">
 		      <methodsynopsis>
+			      <modifier>final public static</modifier>
 			      <type>void</type><methodname>Phurple\Client::setDebug</methodname>
 			      <void/>
 		      </methodsynopsis>
