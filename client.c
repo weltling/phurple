@@ -225,9 +225,189 @@ phurple_autojoin_function(PurpleConnection *conn)
 
 static gboolean
 phurple_writing_im_msg(PurpleAccount *account, const char *who, char **message, PurpleConversation *conv, PurpleMessageFlags flags)
-{
+{/*{{{*/
 
-}
+}/*}}}*/
+
+static void
+phurple_wrote_im_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_sending_im_msg(PurpleAccount *account, const char *receiver, char **message)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_sent_im_msg(PurpleAccount *account, const char *receiver, const char *message)
+{/*{{{*/
+
+}/*}}}*/
+
+static gboolean
+phurple_receiving_im_msg(PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, PurpleMessageFlags *flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_received_im_msg(PurpleAccount *account, char *sender, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static gboolean 
+phurple_writing_chat_msg(PurpleAccount *account, const char *who, char **message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_wrote_chat_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_sending_chat_msg(PurpleAccount *account, char **message, int id)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_sent_chat_msg(PurpleAccount *account, const char *message, int id)
+{/*{{{*/
+
+}/*}}}*/
+
+static gboolean
+phurple_receiving_chat_msg(PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, int *flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_blocked_im_msg(PurpleAccount *account, const char *sender, const char *message, PurpleMessageFlags flags, time_t when)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_received_chat_msg(PurpleAccount *account, char *sender, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_conversation_created(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_conversation_updated(PurpleConversation *conv, PurpleConvUpdateType type)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_deleting_conversation(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_buddy_typing(PurpleAccount *account, const char *name)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_buddy_typing_stopped(PurpleAccount *account, const char *name)
+{/*{{{*/
+
+}/*}}}*/
+
+static gboolean
+phurple_chat_buddy_joining(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_buddy_joined(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags flags, gboolean new_arrival)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_join_failed(PurpleConnection *gc, GHashTable *components)
+{/*{{{*/
+
+}/*}}}*/
+
+static gboolean
+phurple_chat_buddy_leaving(PurpleConversation *conv, const char *name, const char *reason)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_buddy_left(PurpleConversation *conv, const char *name, const char *reason)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_inviting_user(PurpleConversation *conv, const char *name, char **invite_message)
+{/*{{{*/
+
+}/*}}}*/
+
+static void 
+phurple_chat_invited_user(PurpleConversation *conv, const char *name, const char *invite_message)
+{/*{{{*/
+
+}/*}}}*/
+
+static gint
+phurple_chat_invited(PurpleAccount *account, const char *inviter, const char *chat, const char *invite_message, const GHashTable *components)
+{/*{{{*/
+
+}/*}}}*/
+
+static void 
+phurple_chat_invite_blocked(PurpleAccount *account, const char *inviter, const char *name, const char *message, GHashTable *data)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_joined(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_left(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_topic_changed(PurpleConversation *conv, const char *who, const char *topic)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_buddy_flags(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags oldflags, PurpleConvChatBuddyFlags newflags)
+{/*{{{*/
+
+}/*}}}*/
 
 static void
 phurple_g_loop_callback(gpointer data)
@@ -750,6 +930,222 @@ PHP_METHOD(PhurpleClient, connect)
 						  NULL
 	);
 
+	purple_signal_connect(purple_connections_get_handle(),
+						  "writing-im-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_writing_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "wrote-im-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_wrote_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "sending-im-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_sending_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "sent-im-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_sent_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "receiving-im-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_receiving_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "received-im-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_received_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "blocked-im-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_blocked_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "writing-chat-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_writing_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "wrote-chat-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_wrote_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "sending-chat-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_sending_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "sent-chat-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_sent_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "receiving-chat-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_receiving_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "received-chat-msg",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_received_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "conversation-created",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_conversation_created),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "conversation-updated",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_conversation_updated),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "deleting-conversation",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_deleting_conversation),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "buddy-typing",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_buddy_typing),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "buddy-typing-stopped",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_buddy_typing_stopped),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-buddy-joined",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_buddy_joined),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-buddy-joined",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_buddy_joined),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-buddy-leaving",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_buddy_leaving),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-buddy-left",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_buddy_left),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-inviting-user",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_inviting_user),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-invited-user",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_invited_user),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-invited",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_invited),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-invite-blocked",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_invite_blocked),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-joined",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_joined),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-join-failed",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_join_failed),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-left",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_left),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-topic-changed",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_topic_changed),
+						  NULL
+	);
+
+	purple_signal_connect(purple_connections_get_handle(),
+						  "chat-buddy-flags",
+						  &zco->connection_handle,
+						  PURPLE_CALLBACK(phurple_chat_buddy_flags),
+						  NULL
+	);
 }
 /* }}} */
 
@@ -896,6 +1292,254 @@ PHP_METHOD(PhurpleClient, onSignedOff)
 /* {{{ proto public int Phurple\Client::requestAction(string title, string primary, string secondary, integer default_action, Phurple\Account account, string who, Phurple\Conversation conv, array actions)
  	Handle action requests received from server or elsewhere.*/
 PHP_METHOD(PhurpleClient, requestAction)
+{
+
+}
+/* }}} */
+
+/* {{{ protected boolean Phurple\Client::writinImMsg(string who, string &message, Phurple\Conversation conv) 
+	This callback is invoked before the message is written into conversation. Return true to cancel the msg. */
+PHP_METHOD(PhurpleClient, writingImMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::wroteImMsg(string who, string message, Phurple\Conversation conv) 
+	This callback is invoked after the message is written. */
+PHP_METHOD(PhurpleClient, wroteImMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::sendingImMsg(string receiver, string &message) 
+	This callback is invoked before sending IM. */
+PHP_METHOD(PhurpleClient, sendingImMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::sentImMsg(string receiver, string &message) 
+	This callback is invoked after IM is sent. */
+PHP_METHOD(PhurpleClient, sentImMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected boolean Phurple\Client::receivingImMsg(string &sender, string &message, Phurple\Conversation conv) 
+	This callback is invoked when the message is received. Return true to cancel the msg. */
+PHP_METHOD(PhurpleClient, receivingImMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::receivedImMsg(string sender, string message, Phurple\Conversation conv) 
+	This callback is invoked after the IM is received. */
+PHP_METHOD(PhurpleClient, receivedImMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::blockedImMsg(string sender, string message, integer timestamp) 
+	This callback is invoked after the IM is blocked due to privacy settings. */
+PHP_METHOD(PhurpleClient, blockedImMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected boolean Phurple\Client::writinChatMsg(string who, string &message, Phurple\Conversation conv) 
+	This callback is invoked before the message is written into chat conversation. Return true to cancel the msg. */
+PHP_METHOD(PhurpleClient, writingChatMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::wroteChatMsg(string who, string message, Phurple\Conversation conv) 
+	This callback is invoked after the message is written to chat conversation. */
+PHP_METHOD(PhurpleClient, wroteChatMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::sendingChatMsg(string &message, integer chatId) 
+	This callback is invoked before sending message to a chat. */
+PHP_METHOD(PhurpleClient, sendingChatMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::sentImMsg(string receiver, string &message) 
+	This callback is invoked after IM is sent. */
+PHP_METHOD(PhurpleClient, sentChatMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected boolean Phurple\Client::receivingChatMsg(string &sender, string &message, Phurple\Conversation conv) 
+	This callback is invoked when chat message is received. Return true to cancel the msg. */
+PHP_METHOD(PhurpleClient, receivingChatMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::receivedChatMsg(string sender, string message, Phurple\Conversation conv) 
+	This callback is invoked after chat message is received. */
+PHP_METHOD(PhurpleClient, receivedChatMsg)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::conversationCreated(Phurple\Conversation conv) 
+	This callback is invoked when a new conversation is created. */
+PHP_METHOD(PhurpleClient, conversationCreated)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::conversationUpdated(Phurple\Conversation conv, integer type) 
+	This callback is invoked when a new conversation is updated. */
+PHP_METHOD(PhurpleClient, conversationUpdated)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::deletingConversation(Phurple\Conversation conv) 
+	This callback is invoked when a conversation is about destroyed. */
+PHP_METHOD(PhurpleClient, deletingConversation)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::buddyTyping(Phurple\Account account, string name) 
+	This callback is invoked when buddy starts typing into conversation. */
+PHP_METHOD(PhurpleClient, buddyTyping)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::buddyTypingStopped(Phurple\Account account, string name) 
+	This callback is invoked when buddy stops typing into conversation. */
+PHP_METHOD(PhurpleClient, buddyTypingStopped)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatBuddyJoining(Phurple\Conversation conv, string name, integer buddyflags) 
+	This callback is invoked when buddy is joining a chat. */
+PHP_METHOD(PhurpleClient, chatBuddyJoining)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatBuddyJoined(Phurple\Conversation conv, string name, boolean new_arrival, integer buddyflags) 
+	This callback is invoked when buddy has joined a chat. */
+PHP_METHOD(PhurpleClient, chatBuddyJoined)
+{
+
+}
+/* }}} */
+
+/* {{{ protected boolean Phurple\Client::chatBuddyLeaving(Phurple\Conversation conv, string name, string reason) 
+	This callback is invoked when user is leaving a chat. Return true to hide the leave. */
+PHP_METHOD(PhurpleClient, chatBuddyLeaving)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatBuddyLeft(Phurple\Conversation conv, string name, string reason) 
+	This callback is invoked when user left a chat. */
+PHP_METHOD(PhurpleClient, chatBuddyLeft)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatInvitingUser(Phurple\Conversation conv, string name, string &invite_message) 
+	This callback is invoked when user is being invited to chat. The callback can replace the invite message. */
+PHP_METHOD(PhurpleClient, chatInvitingUser)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatInvitedUser(Phurple\Conversation conv, string name, string invite_message) 
+	This callback is invoked when user invited another user to chat. */
+PHP_METHOD(PhurpleClient, chatInvitedUser)
+{
+
+}
+/* }}} */
+
+/* {{{ protected integer Phurple\Client::chatInvited(string inviter, string chat, string invite_message) 
+	This callback is invoked when account was invited to a chat. Return -1 to reject, 1 to accept, 0 for user to be prompted.*/
+PHP_METHOD(PhurpleClient, chatInvited)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatInviteBlocked(string inviter, string chat, string message) 
+	This callback is invoked when invitation to join a chat was blocked. */
+PHP_METHOD(PhurpleClient, chatInviteBlocked)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatJoined(Phurple\Conversation conv) 
+	This callback is invoked when account joined a chat. */
+PHP_METHOD(PhurpleClient, chatJoined)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatJoinFailed(Phurple\Conversation conv) 
+	This callback is invoked when account failed to join a chat. */
+PHP_METHOD(PhurpleClient, chatJoinFalied)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatLeft(Phurple\Conversation conv) 
+	This callback is invoked when account left a chat. */
+PHP_METHOD(PhurpleClient, chatLeft)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatTopicChanged(Phurple\Conversation conv, string who, string topic) 
+	This callback is invoked when the chat topic is changed. */
+PHP_METHOD(PhurpleClient, chatTopicChanged)
+{
+
+}
+/* }}} */
+
+/* {{{ protected void Phurple\Client::chatTopicChanged(Phurple\Conversation conv, string name, integer oldflags, integer newflags) 
+	This callback is invoked when flags of a user in chat are changed. */
+PHP_METHOD(PhurpleClient, chatBuddyFlags)
 {
 
 }

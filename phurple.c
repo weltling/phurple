@@ -402,6 +402,37 @@ zend_function_entry PhurpleClient_methods[] = {
 	PHP_ME(PhurpleClient, setUiId, PhurpleClient_setUiId, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, __clone, NULL, ZEND_ACC_FINAL | ZEND_ACC_PRIVATE)
 	PHP_ME(PhurpleClient, requestAction, NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, writingImMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, wroteImMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, sendingImMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, sentImMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, receivingImMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, receivedImMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, blockedImMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, writingChatMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, wroteChatMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, sendingChatMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, sentChatMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, receivingChatMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, receivedChatMsg ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, conversationCreated ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, conversationUpdated ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, deletingConversation ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, buddyTyping ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, buddyTypingStopped ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatBuddyJoining ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatBuddyJoined ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatBuddyLeaving ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatBuddyLeft ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatInvitingUser ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatInvitedUser ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatInvited ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatInviteBlocked ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatJoined ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatJoinFalied ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatLeft ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatTopicChanged ,NULL, ZEND_ACC_PROTECTED)
+	PHP_ME(PhurpleClient, chatBuddyFlags, NULL, ZEND_ACC_PROTECTED)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -600,6 +631,21 @@ PHP_MINIT_FUNCTION(phurple)
 	ce.create_object = php_conversation_obj_init;
 	PhurpleConversation_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
+	zend_declare_class_constant_long(PhurpleConversation_ce, "TYPE_IM", sizeof("CONV_TYPE_IM")-1, PURPLE_CONV_TYPE_IM TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "TYPE_CHAT", sizeof("CONV_TYPE_CHAT")-1, PURPLE_CONV_TYPE_CHAT TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_ADD", sizeof("UPDATE_ADD")-1, PURPLE_CONV_UPDATE_ADD TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_REMOVE", sizeof("UPDATE_REMOVE")-1, PURPLE_CONV_UPDATE_REMOVE TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_ACCOUNT", sizeof("UPDATE_ACCOUNT")-1, PURPLE_CONV_UPDATE_ACCOUNT TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_TYPING", sizeof("UPDATE_TYPING")-1, PURPLE_CONV_UPDATE_TYPING TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_UNSEEN", sizeof("UPDATE_UNSEEN")-1, PURPLE_CONV_UPDATE_UNSEEN TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_LOGGING", sizeof("UPDATE_LOGGING")-1, PURPLE_CONV_UPDATE_LOGGING TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_TOPIC", sizeof("UPDATE_TOPIC")-1, PURPLE_CONV_UPDATE_TOPIC TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "ACCOUNT_ONLINE", sizeof("ACCOUNT_ONLINE")-1, PURPLE_CONV_ACCOUNT_ONLINE TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "ACCOUNT_OFFLINE", sizeof("ACCOUNT_OFFLINE")-1, PURPLE_CONV_ACCOUNT_OFFLINE TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_AWAY", sizeof("UPDATE_AWAY")-1, PURPLE_CONV_UPDATE_AWAY TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_ICON", sizeof("UPDATE_ICON")-1, PURPLE_CONV_UPDATE_ICON TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConversation_ce, "UPDATE_FEATURES", sizeof("UPDATE_FEATURES")-1, PURPLE_CONV_UPDATE_FEATURES TSRMLS_CC);
+
 	INIT_CLASS_ENTRY(ce, PHURPLE_ACCOUNT_CLASS_NAME, PhurpleAccount_methods);
 	ce.create_object = php_account_obj_init;
 	PhurpleAccount_ce = zend_register_internal_class(&ce TSRMLS_CC);
@@ -629,6 +675,13 @@ PHP_MINIT_FUNCTION(phurple)
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_CLASS_NAME, PhurpleBuddy_methods);
 	ce.create_object = php_buddy_obj_init;
 	PhurpleBuddy_ce = zend_register_internal_class(&ce TSRMLS_CC);
+
+	zend_declare_class_constant_long(PhurpleBuddy_ce, "FLAG_NONE", sizeof("FLAG_NONE")-1, PURPLE_CBFLAGS_NONE TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleBuddy_ce, "FLAG_VOICE", sizeof("FLAG_VOICE")-1, PURPLE_CBFLAGS_VOICE  TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleBuddy_ce, "FLAG_HALFOP", sizeof("FLAG_HALFOP")-1, PURPLE_CBFLAGS_HALFOP TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleBuddy_ce, "FLAG_OP", sizeof("FLAG_OP")-1, PURPLE_CBFLAGS_OP TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleBuddy_ce, "FLAG_FOUNDER", sizeof("FLAG_FOUNDER")-1, PURPLE_CBFLAGS_FOUNDER TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleBuddy_ce, "FLAG_TYPING", sizeof("FLAG_TYPING")-1, PURPLE_CBFLAGS_TYPING TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDYLIST_CLASS_NAME, PhurpleBuddyList_methods);
 	PhurpleBuddyList_ce = zend_register_internal_class(&ce TSRMLS_CC);
