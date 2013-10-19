@@ -339,6 +339,8 @@ PHP_METHOD(PhurpleConversation, isUserInChat)
 }
 /* }}} */
 
+/* {{{ proto public Phurple\Connection Phurple\Conversation::getConnection(void)
+	Get the connection object corresponding to the conversation */
 PHP_METHOD(PhurpleConversation, getConnection)
 {
 	struct ze_conversation_obj *zco;
@@ -362,6 +364,46 @@ PHP_METHOD(PhurpleConversation, getConnection)
 
 	RETURN_NULL();
 }
+/* }}} */
+
+
+/* {{{ proto public void Phurple\Conversation::setTitle(string title)
+	Set conversation title */
+PHP_METHOD(PhurpleConversation, setTitle)
+{
+	struct ze_conversation_obj *zco;
+	char *title;
+	int title_len;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &title, &title_len) == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if (zco->pconversation) {
+		purple_conversation_set_name(zco->pconversation, title);
+	}
+}
+/* }}} */
+
+/* {{{ proto public string Phurple\Conversation::setTitle(void)
+	Set conversation title */
+PHP_METHOD(PhurpleConversation, getTitle)
+{
+	struct ze_conversation_obj *zco;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if (zco->pconversation) {
+		RETVAL_STRING(purple_conversation_get_title(zco->pconversation), 1);
+	}
+}
+/* }}} */
 
 /*
 **

@@ -2229,6 +2229,73 @@
   </para>
         </refsect1>
       </refentry>
+      <refentry xml:id="phurpleconversation-gettitle">
+	      <refnamediv>
+		      <refname>Phurple\Conversation::getTitle</refname>
+		      <refpurpose>Gets conversation title</refpurpose>
+	      </refnamediv>
+	      
+	      <refsect1 role="description">
+		      <methodsynopsis>
+			      <modifier>public</modifier>
+			      <type>string</type>
+			      <methodname>Phurple\Conversation::getTitle</methodname>
+			      <void/>
+		      </methodsynopsis>
+		      <para>
+			      Gets the title of this conversation
+		      </para>
+	      </refsect1>
+	      
+	      <refsect1 role="parameters">
+		      <para>
+		      </para>
+		      
+	      </refsect1>
+	      <refsect1 role="returnvalues">
+		      <para>
+		      </para>
+	  </refsect1>
+  		</refentry>
+      <refentry xml:id="phurpleconversation-settitle">
+        <refnamediv>
+          <refname>Phurple\Conversation::setTitle</refname>
+		  <refpurpose>Set conversation title</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>void</type>
+            <methodname>Phurple\Conversation::setTitle</methodname>
+            <methodparam>
+              <type>string</type>
+              <parameter>title</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+  Set chat conversation topic
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>title</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
     </reference>
     <reference id="buddy">
       <title>Phurple\Buddy</title>

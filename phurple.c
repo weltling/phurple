@@ -101,7 +101,7 @@ extern zend_object_value
 php_presence_obj_init(zend_class_entry *ce TSRMLS_DC);
 /* }}} */
 
-/*  libpurple definitions */
+/*  {{{ libpurple definitions */
 /* XXX no signal handler on windows, for now at least */
 #if defined(HAVE_SIGNAL_H) && !defined(PHP_WIN32)
 static void sighandler(int sig);
@@ -216,7 +216,7 @@ PurpleRequestUiOps php_request_uiops =
 	NULL
 };
 
-/*  */
+/* }}} */
 
 /* classes definitions*/
 zend_class_entry *PhurpleClient_ce, *PhurpleConversation_ce, *PhurpleAccount_ce, *PhurpleConnection_ce, *PhurpleBuddy_ce, *PhurpleBuddyList_ce, *PhurpleGroup_ce, *PhurpleException_ce, *PhurplePresence_ce;
@@ -299,6 +299,9 @@ ZEND_BEGIN_ARG_INFO_EX(PhurpleConversation_inviteUser, 0, 0, 2)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(PhurpleConversation_isUserInChat, 0, 0, 1)
 	    ZEND_ARG_INFO(0, user)
+ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(PhurpleConversation_setTitle, 0, 0, 1)
+	    ZEND_ARG_INFO(0, title)
 ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(PhurpleAccount_construct, 0, 0, 2)
 	    ZEND_ARG_INFO(0, user_name)
@@ -414,6 +417,8 @@ zend_function_entry PhurpleConversation_methods[] = {
 	PHP_ME(PhurpleConversation, inviteUser, PhurpleConversation_inviteUser, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, isUserInChat, PhurpleConversation_isUserInChat, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, getConnection, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConversation, setTitle, PhurpleConversation_setTitle, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConversation, getTitle, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

@@ -223,6 +223,12 @@ phurple_autojoin_function(PurpleConnection *conn)
 }
 /* }}} */
 
+static gboolean
+phurple_writing_im_msg(PurpleAccount *account, const char *who, char **message, PurpleConversation *conv, PurpleMessageFlags flags)
+{
+
+}
+
 static void
 phurple_g_loop_callback(gpointer data)
 {/* {{{ */
