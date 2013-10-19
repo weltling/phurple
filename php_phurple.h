@@ -102,7 +102,7 @@ PHP_METHOD(PhurpleClient, chatInvitedUser);
 PHP_METHOD(PhurpleClient, chatInvited);
 PHP_METHOD(PhurpleClient, chatInviteBlocked);
 PHP_METHOD(PhurpleClient, chatJoined);
-PHP_METHOD(PhurpleClient, chatJoinFalied);
+PHP_METHOD(PhurpleClient, chatJoinFailed);
 PHP_METHOD(PhurpleClient, chatLeft);
 PHP_METHOD(PhurpleClient, chatTopicChanged);
 PHP_METHOD(PhurpleClient, chatBuddyFlags);

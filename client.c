@@ -1321,7 +1321,7 @@ PHP_METHOD(PhurpleClient, sendingImMsg)
 }
 /* }}} */
 
-/* {{{ protected void Phurple\Client::sentImMsg(string receiver, string &message) 
+/* {{{ protected void Phurple\Client::sentImMsg(string receiver, string message) 
 	This callback is invoked after IM is sent. */
 PHP_METHOD(PhurpleClient, sentImMsg)
 {
@@ -1345,7 +1345,7 @@ PHP_METHOD(PhurpleClient, receivedImMsg)
 }
 /* }}} */
 
-/* {{{ protected void Phurple\Client::blockedImMsg(string sender, string message, integer timestamp) 
+/* {{{ protected void Phurple\Client::blockedImMsg(string sender, string message, integer message_flags, integer timestamp) 
 	This callback is invoked after the IM is blocked due to privacy settings. */
 PHP_METHOD(PhurpleClient, blockedImMsg)
 {
@@ -1377,7 +1377,7 @@ PHP_METHOD(PhurpleClient, sendingChatMsg)
 }
 /* }}} */
 
-/* {{{ protected void Phurple\Client::sentImMsg(string receiver, string &message) 
+/* {{{ protected void Phurple\Client::sentImMsg(string receiver, integer chatId) 
 	This callback is invoked after IM is sent. */
 PHP_METHOD(PhurpleClient, sentChatMsg)
 {
@@ -1513,9 +1513,9 @@ PHP_METHOD(PhurpleClient, chatJoined)
 }
 /* }}} */
 
-/* {{{ protected void Phurple\Client::chatJoinFailed(Phurple\Conversation conv) 
+/* {{{ protected void Phurple\Client::chatJoinFailed(Phurple\Connection conv) 
 	This callback is invoked when account failed to join a chat. */
-PHP_METHOD(PhurpleClient, chatJoinFalied)
+PHP_METHOD(PhurpleClient, chatJoinFailed)
 {
 
 }
@@ -1537,7 +1537,7 @@ PHP_METHOD(PhurpleClient, chatTopicChanged)
 }
 /* }}} */
 
-/* {{{ protected void Phurple\Client::chatTopicChanged(Phurple\Conversation conv, string name, integer oldflags, integer newflags) 
+/* {{{ protected void Phurple\Client::chatBuddyFlags(Phurple\Conversation conv, string name, integer oldflags, integer newflags) 
 	This callback is invoked when flags of a user in chat are changed. */
 PHP_METHOD(PhurpleClient, chatBuddyFlags)
 {
