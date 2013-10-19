@@ -30,6 +30,8 @@
 		- added arginfo on functions
 		- Conversation::inviteUser()
 		- Conversation::isUserInChat()
+		- Conversation::setTitle()
+		- Conversation::getTitle()
 		- Client::requestAction() callback
 		* changed
 		- Client::writeConv() signature was changed, be docs aware
