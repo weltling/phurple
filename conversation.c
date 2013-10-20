@@ -508,25 +508,107 @@ phurple_received_chat_msg(PurpleAccount *account, char *sender, char *message, P
 static void
 phurple_blocked_im_msg(PurpleAccount *account, const char *sender, const char *message, PurpleMessageFlags flags, time_t when)
 {/*{{{*/
+	zval *ts, *acc, *tmp0, *tmp1, *tmp2;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(sender);
+	tmp1 = phurple_string_zval(message);
+	tmp2 = phurple_long_zval((long)flags);
+	ts = phurple_long_zval((long)when);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "blockedimmsg",
+					   sizeof("blockedimmsg")-1,
+					   NULL,
+					   5,
+					   &acc,
+					   &tmp0,
+					   &tmp1,
+					   &tmp2,
+					   ts
+	);
+
+	zval_ptr_dtor(&ts);
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
 }/*}}}*/
+
+static void
+phurple_conversation_arg_only_cb(char *method, PurpleConversation *conv)
+{
+
+	zval *conversation;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+	
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   method,
+					   strlen(method),
+					   NULL,
+					   1,
+					   &conversation
+	);
+	
+	zval_ptr_dtor(&conversation);
+}
 
 static void
 phurple_conversation_created(PurpleConversation *conv)
 {/*{{{*/
-
+	phurple_conversation_arg_only_cb("conversationcreated", conv);
 }/*}}}*/
 
 static void
 phurple_conversation_updated(PurpleConversation *conv, PurpleConvUpdateType type)
 {/*{{{*/
+	zval *conversation, *uptype;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	uptype = phurple_long_zval(type);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+	
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "conversationupdated",
+					   sizeof("conversationupdated")-1,
+					   NULL,
+					   2,
+					   &conversation,
+					   &uptype
+	);
+	
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&uptype);
 }/*}}}*/
 
 static void
 phurple_deleting_conversation(PurpleConversation *conv)
 {/*{{{*/
-
+	phurple_conversation_arg_only_cb("deletingconversation", conv);
 }/*}}}*/
 
 static void
@@ -598,13 +680,13 @@ phurple_chat_invite_blocked(PurpleAccount *account, const char *inviter, const c
 static void
 phurple_chat_joined(PurpleConversation *conv)
 {/*{{{*/
-
+	phurple_conversation_arg_only_cb("chatjoined", conv);
 }/*}}}*/
 
 static void
 phurple_chat_left(PurpleConversation *conv)
 {/*{{{*/
-
+	phurple_conversation_arg_only_cb("chatleft", conv);
 }/*}}}*/
 
 static void
