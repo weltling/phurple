@@ -101,6 +101,427 @@ php_create_conversation_obj_zval(PurpleConversation *pconv TSRMLS_DC)
 	return ret;
 }/*}}}*/
 
+
+static gboolean
+phurple_writing_im_msg(PurpleAccount *account, const char *who, char **message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	//printf(" writing XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	return 0;
+}/*}}}*/
+
+static void
+phurple_wrote_im_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	//printf(" wrote XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+}/*}}}*/
+
+static void
+phurple_sending_im_msg(PurpleAccount *account, const char *receiver, char **message)
+{/*{{{*/
+	//printf(" sending XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+
+}/*}}}*/
+
+static void
+phurple_sent_im_msg(PurpleAccount *account, const char *receiver, const char *message)
+{/*{{{*/
+	//printf(" sent XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+
+}/*}}}*/
+
+static gboolean
+phurple_receiving_im_msg(PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, PurpleMessageFlags *flags)
+{/*{{{*/
+	//printf(" receiving XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	return 0;
+}/*}}}*/
+
+static void
+phurple_received_im_msg(PurpleAccount *account, char *sender, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	//printf(" received XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+
+}/*}}}*/
+
+static gboolean 
+phurple_writing_chat_msg(PurpleAccount *account, const char *who, char **message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	return 0;
+}/*}}}*/
+
+static void
+phurple_wrote_chat_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_sending_chat_msg(PurpleAccount *account, char **message, int id)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_sent_chat_msg(PurpleAccount *account, const char *message, int id)
+{/*{{{*/
+	
+}/*}}}*/
+
+static gboolean
+phurple_receiving_chat_msg(PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, int *flags)
+{/*{{{*/
+	return 0;
+}/*}}}*/
+
+static void
+phurple_blocked_im_msg(PurpleAccount *account, const char *sender, const char *message, PurpleMessageFlags flags, time_t when)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_received_chat_msg(PurpleAccount *account, char *sender, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_conversation_created(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_conversation_updated(PurpleConversation *conv, PurpleConvUpdateType type)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_deleting_conversation(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_buddy_typing(PurpleAccount *account, const char *name)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_buddy_typing_stopped(PurpleAccount *account, const char *name)
+{/*{{{*/
+
+}/*}}}*/
+
+static gboolean
+phurple_chat_buddy_joining(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags flags)
+{/*{{{*/
+	return 0;
+}/*}}}*/
+
+static void
+phurple_chat_buddy_joined(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags flags, gboolean new_arrival)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_join_failed(PurpleConnection *gc, GHashTable *components)
+{/*{{{*/
+
+}/*}}}*/
+
+static gboolean
+phurple_chat_buddy_leaving(PurpleConversation *conv, const char *name, const char *reason)
+{/*{{{*/
+	return 0;
+}/*}}}*/
+
+static void
+phurple_chat_buddy_left(PurpleConversation *conv, const char *name, const char *reason)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_inviting_user(PurpleConversation *conv, const char *name, char **invite_message)
+{/*{{{*/
+
+}/*}}}*/
+
+static void 
+phurple_chat_invited_user(PurpleConversation *conv, const char *name, const char *invite_message)
+{/*{{{*/
+
+}/*}}}*/
+
+static gint
+phurple_chat_invited(PurpleAccount *account, const char *inviter, const char *chat, const char *invite_message, const GHashTable *components)
+{/*{{{*/
+	return 0;
+}/*}}}*/
+
+static void 
+phurple_chat_invite_blocked(PurpleAccount *account, const char *inviter, const char *name, const char *message, GHashTable *data)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_joined(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_left(PurpleConversation *conv)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_topic_changed(PurpleConversation *conv, const char *who, const char *topic)
+{/*{{{*/
+
+}/*}}}*/
+
+static void
+phurple_chat_buddy_flags(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags oldflags, PurpleConvChatBuddyFlags newflags)
+{/*{{{*/
+
+}/*}}}*/
+
+void
+phurple_setup_conv_signals(PurpleConversation *conv)
+{
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "writing-im-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_writing_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "wrote-im-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_wrote_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "sending-im-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_sending_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "sent-im-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_sent_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "receiving-im-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_receiving_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "received-im-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_received_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "blocked-im-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_blocked_im_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "writing-chat-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_writing_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "wrote-chat-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_wrote_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "sending-chat-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_sending_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "sent-chat-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_sent_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "receiving-chat-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_receiving_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "received-chat-msg",
+						  conv,
+						  PURPLE_CALLBACK(phurple_received_chat_msg),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "conversation-created",
+						  conv,
+						  PURPLE_CALLBACK(phurple_conversation_created),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "conversation-updated",
+						  conv,
+						  PURPLE_CALLBACK(phurple_conversation_updated),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "deleting-conversation",
+						  conv,
+						  PURPLE_CALLBACK(phurple_deleting_conversation),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "buddy-typing",
+						  conv,
+						  PURPLE_CALLBACK(phurple_buddy_typing),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "buddy-typing-stopped",
+						  conv,
+						  PURPLE_CALLBACK(phurple_buddy_typing_stopped),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-buddy-joined",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_buddy_joined),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-buddy-joined",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_buddy_joined),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-buddy-leaving",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_buddy_leaving),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-buddy-left",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_buddy_left),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-inviting-user",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_inviting_user),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-invited-user",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_invited_user),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-invited",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_invited),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-invite-blocked",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_invite_blocked),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-joined",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_joined),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-join-failed",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_join_failed),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-left",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_left),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-topic-changed",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_topic_changed),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-buddy-flags",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_buddy_flags),
+						  NULL
+	);
+
+	purple_signal_connect(purple_conversations_get_handle(),
+						  "chat-buddy-joining",
+						  conv,
+						  PURPLE_CALLBACK(phurple_chat_buddy_joining),
+						  NULL
+	);
+}
+
 /*
 **
 **
@@ -145,6 +566,8 @@ PHP_METHOD(PhurpleConversation, __construct)
 		return;
 	}
 
+	phurple_setup_conv_signals(zco->pconversation);
+
 	pchat = purple_blist_find_chat(zao->paccount, name);
 	if (!pchat) {
 		GHashTable *components;
@@ -169,7 +592,9 @@ PHP_METHOD(PhurpleConversation, __construct)
 		//
 		serv_join_chat(purple_account_get_connection(zao->paccount), components);
 		//purple_conversation_present(zco->pconversation);
+		//
 	}
+
 }
 /* }}} */
 
