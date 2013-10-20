@@ -179,6 +179,7 @@ phurple_connection_error_function(PurpleConnection *conn, PurpleConnectionError 
 static gboolean
 phurple_autojoin_function(PurpleConnection *conn)
 {/* {{{ */
+	gboolean ret;
 	zval *connection;
 	zval *client;
 	zval *method_ret = NULL;
@@ -200,11 +201,12 @@ phurple_autojoin_function(PurpleConnection *conn)
 					   &connection
 	);
 	
+	convert_to_boolean(method_ret);
+	ret = Z_BVAL_P(method_ret);
+
 	zval_ptr_dtor(&connection);
 
-	convert_to_boolean(method_ret);
-
-	return Z_BVAL_P(method_ret);
+	return ret;
 }
 /* }}} */
 

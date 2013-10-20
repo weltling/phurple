@@ -39,6 +39,12 @@ php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC);
 extern void phurple_dump_zval(zval *var);
 #endif
 
+extern zval*
+phurple_long_zval(long l);
+
+extern zval*
+phurple_string_zval(const char *s);
+
 void
 php_connection_obj_destroy(void *obj TSRMLS_DC)
 {/*{{{*/
