@@ -376,33 +376,137 @@ phurple_sent_chat_msg(PurpleAccount *account, const char *message, int id)
 }/*}}}*/
 
 static gboolean
+phurple_receiving_msg_all_cb(char *method, PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, PurpleMessageFlags *flags)
+{/*{{{*/
+	gboolean ret;
+	zval *conversation, *acc, *tmp0, *tmp1, *tmp2;
+	zval *client;
+	zval *method_ret = NULL;
+	zend_class_entry *ce;
+	char *orig_msg_ptr, *orig_sender_ptr;
+	PurpleMessageFlags orig_flags;
+	TSRMLS_FETCH();
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(*sender);
+	orig_sender_ptr = Z_STRVAL_P(tmp0);
+	tmp1 = phurple_string_zval(*message);
+	orig_msg_ptr = Z_STRVAL_P(tmp1);
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	tmp2 = phurple_long_zval((long)*flags);
+	orig_flags = *flags;
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   method,
+					   strlen(method),
+					   &method_ret,
+					   5,
+					   &acc,
+					   &tmp0,
+					   &tmp1,
+					   &conversation,
+					   &tmp2
+	);
+
+	convert_to_string(tmp0);
+	if (orig_sender_ptr != Z_STRVAL_P(tmp0)) {
+		g_free(*sender);
+		*sender = g_strdup(Z_STRVAL_P(tmp0));
+	}
+
+	convert_to_string(tmp1);
+	if (orig_msg_ptr != Z_STRVAL_P(tmp1)) {
+		g_free(*message);
+		*message = g_strdup(Z_STRVAL_P(tmp1));
+	}
+
+	convert_to_long(tmp2);
+	if (orig_flags != Z_LVAL_P(tmp2)) {
+		*flags = Z_LVAL_P(tmp2);
+	}
+
+	convert_to_boolean(method_ret);
+	ret = Z_BVAL_P(method_ret);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+	zval_ptr_dtor(&method_ret);
+
+	return ret;
+}/*}}}*/
+
+static gboolean
 phurple_receiving_im_msg(PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, PurpleMessageFlags *flags)
 {/*{{{*/
-	//printf(" receiving XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-	return 0;
+	return phurple_receiving_msg_all_cb("receivingimmsg", account, sender, message, conv, flags);
+}/*}}}*/
+
+static gboolean
+phurple_receiving_chat_msg(PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, PurpleMessageFlags *flags)
+{/*{{{*/
+	return phurple_receiving_msg_all_cb("receivingchatmsg", account, sender, message, conv, flags);
+}/*}}}*/
+
+static void
+phurple_received_msg_all_cb(char *method, PurpleAccount *account, char *sender, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	zval *conversation, *acc, *tmp0, *tmp1, *tmp2;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(sender);
+	tmp1 = phurple_string_zval(message);
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	tmp2 = phurple_long_zval((long)flags);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   method,
+					   strlen(method),
+					   NULL,
+					   5,
+					   &acc,
+					   &tmp0,
+					   &tmp1,
+					   &conversation,
+					   &tmp2
+	);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
 }/*}}}*/
 
 static void
 phurple_received_im_msg(PurpleAccount *account, char *sender, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
 {/*{{{*/
-	//printf(" received XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
-
-}/*}}}*/
-
-static gboolean
-phurple_receiving_chat_msg(PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, int *flags)
-{/*{{{*/
-	return 0;
-}/*}}}*/
-
-static void
-phurple_blocked_im_msg(PurpleAccount *account, const char *sender, const char *message, PurpleMessageFlags flags, time_t when)
-{/*{{{*/
-
+	phurple_received_msg_all_cb("receivedimmsg", account, sender, message, conv, flags);
 }/*}}}*/
 
 static void
 phurple_received_chat_msg(PurpleAccount *account, char *sender, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	phurple_received_msg_all_cb("receivedchatmsg", account, sender, message, conv, flags);
+}/*}}}*/
+
+static void
+phurple_blocked_im_msg(PurpleAccount *account, const char *sender, const char *message, PurpleMessageFlags flags, time_t when)
 {/*{{{*/
 
 }/*}}}*/
