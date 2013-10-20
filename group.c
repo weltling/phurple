@@ -91,12 +91,17 @@ php_create_group_obj_zval(PurpleGroup *pgroup TSRMLS_DC)
 	zval *ret;
 	struct ze_group_obj *zao;
 
-	ALLOC_ZVAL(ret);
-	object_init_ex(ret, PhurpleGroup_ce);
-	INIT_PZVAL(ret);
+	if (!pgroup) {
+		ALLOC_INIT_ZVAL(ret);
+		ZVAL_NULL(ret);
+	} else {
+		ALLOC_ZVAL(ret);
+		object_init_ex(ret, PhurpleGroup_ce);
+		INIT_PZVAL(ret);
 
-	zao = (struct ze_group_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-	zao->pgroup = pgroup;
+		zao = (struct ze_group_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+		zao->pgroup = pgroup;
+	}
 
 	return ret;
 }/*}}}*/

@@ -90,13 +90,17 @@ php_create_conversation_obj_zval(PurpleConversation *pconv TSRMLS_DC)
 	zval *ret;
 	struct ze_conversation_obj *zco;
 
-	ALLOC_ZVAL(ret);
-	object_init_ex(ret, PhurpleConversation_ce);
-	INIT_PZVAL(ret);
+	if (!pconv) {
+		ALLOC_INIT_ZVAL(ret);
+		ZVAL_NULL(ret);
+	} else {
+		ALLOC_ZVAL(ret);
+		object_init_ex(ret, PhurpleConversation_ce);
+		INIT_PZVAL(ret);
 
-	zco = (struct ze_conversation_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-	zco->pconversation = pconv;
-
+		zco = (struct ze_conversation_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+		zco->pconversation = pconv;
+	}
 
 	return ret;
 }/*}}}*/
@@ -105,6 +109,15 @@ php_create_conversation_obj_zval(PurpleConversation *pconv TSRMLS_DC)
 static gboolean
 phurple_writing_im_msg(PurpleAccount *account, const char *who, char **message, PurpleConversation *conv, PurpleMessageFlags flags)
 {/*{{{*/
+	/*zval *connection, *account, *tmp0, *tmp1, *tmp2;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);*/
+
+
 	//printf(" writing XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 	return 0;
 }/*}}}*/

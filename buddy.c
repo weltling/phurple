@@ -94,12 +94,17 @@ php_create_buddy_obj_zval(PurpleBuddy *pbuddy TSRMLS_DC)
 	zval *ret;
 	struct ze_buddy_obj *zao;
 
-	ALLOC_ZVAL(ret);
-	object_init_ex(ret, PhurpleBuddy_ce);
-	INIT_PZVAL(ret);
+	if (!pbuddy) {
+		ALLOC_INIT_ZVAL(ret);
+		ZVAL_NULL(ret);
+	} else {
+		ALLOC_ZVAL(ret);
+		object_init_ex(ret, PhurpleBuddy_ce);
+		INIT_PZVAL(ret);
 
-	zao = (struct ze_buddy_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-	zao->pbuddy = pbuddy;
+		zao = (struct ze_buddy_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+		zao->pbuddy = pbuddy;
+	}
 
 	return ret;
 }/*}}}*/

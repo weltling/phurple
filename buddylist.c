@@ -46,12 +46,17 @@ php_create_buddylist_obj_zval(PurpleBuddyList *pbuddylist TSRMLS_DC)
 	zval *ret;
 	struct ze_buddylist_obj *zao;
 
-	ALLOC_ZVAL(ret);
-	object_init_ex(ret, Phurplebuddylist_ce);
-	INIT_PZVAL(ret);
+	if (!pbuddy) {
+		ALLOC_INIT_ZVAL(ret);
+		ZVAL_NULL(ret);
+	} else {
+		ALLOC_ZVAL(ret);
+		object_init_ex(ret, Phurplebuddylist_ce);
+		INIT_PZVAL(ret);
 
-	zao = (struct ze_buddylist_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-	zao->pbuddylist = pbuddylist;
+		zao = (struct ze_buddylist_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+		zao->pbuddylist = pbuddylist;
+	}
 
 	return ret;
 }*/

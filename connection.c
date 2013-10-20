@@ -90,12 +90,17 @@ php_create_connection_obj_zval(PurpleConnection *pconnection TSRMLS_DC)
 	zval *ret;
 	struct ze_connection_obj *zao;
 
-	ALLOC_ZVAL(ret);
-	object_init_ex(ret, PhurpleConnection_ce);
-	INIT_PZVAL(ret);
+	if (!pconnection) {
+		ALLOC_INIT_ZVAL(ret);
+		ZVAL_NULL(ret);
+	} else {
+		ALLOC_ZVAL(ret);
+		object_init_ex(ret, PhurpleConnection_ce);
+		INIT_PZVAL(ret);
 
-	zao = (struct ze_connection_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-	zao->pconnection = pconnection;
+		zao = (struct ze_connection_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+		zao->pconnection = pconnection;
+	}
 
 	return ret;
 }/*}}}*/

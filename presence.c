@@ -90,12 +90,17 @@ php_create_presence_obj_zval(PurplePresence *ppresence TSRMLS_DC)
 	zval *ret;
 	struct ze_presence_obj *zpo;
 
-	ALLOC_ZVAL(ret);
-	object_init_ex(ret, PhurplePresence_ce);
-	INIT_PZVAL(ret);
+	if (!ppresence) {
+		ALLOC_INIT_ZVAL(ret);
+		ZVAL_NULL(ret);
+	} else {
+		ALLOC_ZVAL(ret);
+		object_init_ex(ret, PhurplePresence_ce);
+		INIT_PZVAL(ret);
 
-	zpo = (struct ze_presence_obj *) zend_object_store_get_object(ret TSRMLS_CC);
-	zpo->ppresence = ppresence;
+		zpo = (struct ze_presence_obj *) zend_object_store_get_object(ret TSRMLS_CC);
+		zpo->ppresence = ppresence;
+	}
 
 	return ret;
 }/*}}}*/

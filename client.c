@@ -101,12 +101,7 @@ phurple_signed_all_cb(char *php_method, PurpleConnection *conn)
 	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
-	if (!conn) {
-		ALLOC_INIT_ZVAL(connection);
-		ZVAL_NULL(connection);
-	} else {
-		connection = php_create_connection_obj_zval(conn TSRMLS_CC);
-	}
+	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -156,12 +151,7 @@ phurple_connection_error_function(PurpleConnection *conn, PurpleConnectionError 
 	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
-	if (!conn) {
-		ALLOC_INIT_ZVAL(connection);
-		ZVAL_NULL(connection);
-	} else {
-		connection = php_create_connection_obj_zval(conn TSRMLS_CC);
-	}
+	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
 	tmp1 = phurple_long_zval((long)err);
 	tmp2 = phurple_string_zval(desc);
 
@@ -195,12 +185,7 @@ phurple_autojoin_function(PurpleConnection *conn)
 	zend_class_entry *ce;
 	TSRMLS_FETCH();
 
-	if (!conn) {
-		ALLOC_INIT_ZVAL(connection);
-		ZVAL_NULL(connection);
-	} else {
-		connection = php_create_connection_obj_zval(conn TSRMLS_CC);
-	}
+	connection = php_create_connection_obj_zval(conn TSRMLS_CC);
 
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
@@ -898,7 +883,7 @@ PHP_METHOD(PhurpleClient, requestAction)
 	This callback is invoked before the message is written into conversation. Return true to cancel the msg. */
 PHP_METHOD(PhurpleClient, writingImMsg)
 {
-
+	RETVAL_LONG(0);
 }
 /* }}} */
 
@@ -906,7 +891,6 @@ PHP_METHOD(PhurpleClient, writingImMsg)
 	This callback is invoked after the message is written. */
 PHP_METHOD(PhurpleClient, wroteImMsg)
 {
-
 }
 /* }}} */
 
@@ -930,7 +914,7 @@ PHP_METHOD(PhurpleClient, sentImMsg)
 	This callback is invoked when the message is received. Return true to cancel the msg. */
 PHP_METHOD(PhurpleClient, receivingImMsg)
 {
-
+	RETVAL_LONG(0);
 }
 /* }}} */
 
@@ -986,7 +970,7 @@ PHP_METHOD(PhurpleClient, sentChatMsg)
 	This callback is invoked when chat message is received. Return true to cancel the msg. */
 PHP_METHOD(PhurpleClient, receivingChatMsg)
 {
-
+	RETVAL_LONG(0);
 }
 /* }}} */
 
@@ -1042,7 +1026,7 @@ PHP_METHOD(PhurpleClient, buddyTypingStopped)
 	This callback is invoked when buddy is joining a chat. */
 PHP_METHOD(PhurpleClient, chatBuddyJoining)
 {
-
+	RETVAL_LONG(0);
 }
 /* }}} */
 
@@ -1058,7 +1042,7 @@ PHP_METHOD(PhurpleClient, chatBuddyJoined)
 	This callback is invoked when user is leaving a chat. Return true to hide the leave. */
 PHP_METHOD(PhurpleClient, chatBuddyLeaving)
 {
-
+	RETVAL_LONG(0);
 }
 /* }}} */
 
@@ -1090,7 +1074,7 @@ PHP_METHOD(PhurpleClient, chatInvitedUser)
 	This callback is invoked when account was invited to a chat. Return -1 to reject, 1 to accept, 0 for user to be prompted.*/
 PHP_METHOD(PhurpleClient, chatInvited)
 {
-
+	RETVAL_LONG(0);
 }
 /* }}} */
 
