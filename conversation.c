@@ -545,8 +545,7 @@ phurple_blocked_im_msg(PurpleAccount *account, const char *sender, const char *m
 
 static void
 phurple_conversation_arg_only_cb(char *method, PurpleConversation *conv)
-{
-
+{/*{{{*/
 	zval *conversation;
 	zval *client;
 	zend_class_entry *ce;
@@ -568,7 +567,7 @@ phurple_conversation_arg_only_cb(char *method, PurpleConversation *conv)
 	);
 	
 	zval_ptr_dtor(&conversation);
-}
+}/*}}}*/
 
 static void
 phurple_conversation_created(PurpleConversation *conv)
@@ -655,31 +654,175 @@ phurple_buddy_typing_stopped(PurpleAccount *account, const char *name)
 static gboolean
 phurple_chat_buddy_joining(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags flags)
 {/*{{{*/
-	return 0;
+	gboolean ret;
+	zval *conversation, *nm, *bflags;
+	zval *client;
+	zval *method_ret;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	nm = phurple_string_zval(name);
+	bflags = phurple_long_zval(flags);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatbuddyjoining",
+					   sizeof("chatbuddyjoining")-1,
+					   &method_ret,
+					   3,
+					   &conversation,
+					   &nm,
+					   &bflags
+	);
+
+	convert_to_boolean(method_ret);
+	ret = Z_BVAL_P(method_ret);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&nm);
+	zval_ptr_dtor(&bflags);
+	zval_ptr_dtor(&method_ret);
+
+	return ret;
 }/*}}}*/
 
 static void
 phurple_chat_buddy_joined(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags flags, gboolean new_arrival)
 {/*{{{*/
+	zval *conversation, *nm, *bflags, *newa;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	nm = phurple_string_zval(name);
+	bflags = phurple_long_zval(flags);
+	newa = phurple_long_zval(new_arrival);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatbuddyjoined",
+					   sizeof("chatbuddyjoined")-1,
+					   NULL,
+					   4,
+					   &conversation,
+					   &nm,
+					   &bflags,
+					   &newa
+	);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&nm);
+	zval_ptr_dtor(&bflags);
+	zval_ptr_dtor(&newa);
 }/*}}}*/
 
 static void
 phurple_chat_join_failed(PurpleConnection *gc, GHashTable *components)
 {/*{{{*/
+	zval *connection;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	connection = php_create_connection_obj_zval(gc TSRMLS_CC);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+	
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatjoinfailed",
+					   sizeof("chatjoinfailed")+1,
+					   NULL,
+					   1,
+					   &connection
+	);
+	
+	zval_ptr_dtor(&connection);
 
 }/*}}}*/
 
 static gboolean
 phurple_chat_buddy_leaving(PurpleConversation *conv, const char *name, const char *reason)
 {/*{{{*/
-	return 0;
+	gboolean ret;
+	zval *conversation, *nm, *reas;
+	zval *client;
+	zval *method_ret;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	nm = phurple_string_zval(name);
+	reas = phurple_string_zval(reason);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatbuddyleaving",
+					   sizeof("chatbuddyleaving")-1,
+					   &method_ret,
+					   3,
+					   &conversation,
+					   &nm,
+					   &reas
+	);
+
+	convert_to_boolean(method_ret);
+	ret = Z_BVAL_P(method_ret);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&nm);
+	zval_ptr_dtor(&reas);
+	zval_ptr_dtor(&method_ret);
+
+	return ret;
 }/*}}}*/
 
 static void
 phurple_chat_buddy_left(PurpleConversation *conv, const char *name, const char *reason)
 {/*{{{*/
+	zval *conversation, *nm, *reas;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	nm = phurple_string_zval(name);
+	reas = phurple_string_zval(reason);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatbuddyleft",
+					   sizeof("chatbuddyleft")-1,
+					   NULL,
+					   3,
+					   &conversation,
+					   &nm,
+					   &reas
+	);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&nm);
+	zval_ptr_dtor(&reas);
 }/*}}}*/
 
 static void
