@@ -149,6 +149,7 @@ phurple_writing_msg_all_cb(char *method, PurpleAccount *account, const char *who
 					   &tmp2
 	);
 
+	convert_to_string(tmp1);
 	if (orig_msg_ptr != Z_STRVAL_P(tmp1)) {
 		g_free(*message);
 		*message = g_strdup(Z_STRVAL_P(tmp1));
@@ -180,23 +181,198 @@ phurple_writing_chat_msg(PurpleAccount *account, const char *who, char **message
 }/*}}}*/
 
 static void
+phurple_wrote_msg_all_cb(char *method, PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	zval *conversation, *acc, *tmp0, *tmp1, *tmp2;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(who);
+	tmp1 = phurple_string_zval(message);
+	tmp2 = phurple_long_zval((long)flags);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   method,
+					   strlen(method),
+					   NULL,
+					   5,
+					   &acc,
+					   &tmp0,
+					   &tmp1,
+					   &conversation,
+					   &tmp2
+	);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+}/*}}}*/
+
+static void
 phurple_wrote_im_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
 {/*{{{*/
-	//printf(" wrote XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	return phurple_wrote_msg_all_cb("wroteimmsg", account, who, message, conv, flags);
+}/*}}}*/
+
+static void
+phurple_wrote_chat_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
+{/*{{{*/
+	return phurple_wrote_msg_all_cb("wrotechatmsg", account, who, message, conv, flags);
 }/*}}}*/
 
 static void
 phurple_sending_im_msg(PurpleAccount *account, const char *receiver, char **message)
 {/*{{{*/
-	//printf(" sending XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	zval *acc, *tmp0, *tmp1;
+	zval *client;
+	zend_class_entry *ce;
+	char *orig_msg_ptr;
+	TSRMLS_FETCH();
 
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(receiver);
+	tmp1 = phurple_string_zval(*message);
+	orig_msg_ptr = Z_STRVAL_P(tmp1);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "sendingimmsg",
+					   sizeof("sendingimmsg")-1,
+					   NULL,
+					   3,
+					   &acc,
+					   &tmp0,
+					   &tmp1
+	);
+
+	convert_to_string(tmp1);
+	if (orig_msg_ptr != Z_STRVAL_P(tmp1)) {
+		g_free(*message);
+		*message = g_strdup(Z_STRVAL_P(tmp1));
+	}
+
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+}/*}}}*/
+
+static void
+phurple_sending_chat_msg(PurpleAccount *account, char **message, int id)
+{/*{{{*/
+	zval *acc, *tmp0, *tmp1;
+	zval *client;
+	zend_class_entry *ce;
+	char *orig_msg_ptr;
+	TSRMLS_FETCH();
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(*message);
+	orig_msg_ptr = Z_STRVAL_P(tmp1);
+	tmp1 = phurple_long_zval(id);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "sendingchatmsg",
+					   sizeof("sendingchatmsg")-1,
+					   NULL,
+					   3,
+					   &acc,
+					   &tmp0,
+					   &tmp1
+	);
+
+	convert_to_string(tmp0);
+	if (orig_msg_ptr != Z_STRVAL_P(tmp0)) {
+		g_free(*message);
+		*message = g_strdup(Z_STRVAL_P(tmp0));
+	}
+
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
 }/*}}}*/
 
 static void
 phurple_sent_im_msg(PurpleAccount *account, const char *receiver, const char *message)
 {/*{{{*/
-	//printf(" sent XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
+	zval *acc, *tmp0, *tmp1;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(receiver);
+	tmp1 = phurple_string_zval(message);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "sentimmsg",
+					   sizeof("sentimmsg")-1,
+					   NULL,
+					   3,
+					   &acc,
+					   &tmp0,
+					   &tmp1
+	);
+
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+}/*}}}*/
+
+static void
+phurple_sent_chat_msg(PurpleAccount *account, const char *message, int id)
+{/*{{{*/
+	zval *acc, *tmp0, *tmp1;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(message);
+	tmp1 = phurple_long_zval(id);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "sentchatmsg",
+					   sizeof("sentchatmsg")-1,
+					   NULL,
+					   3,
+					   &acc,
+					   &tmp0,
+					   &tmp1
+	);
+
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	
 }/*}}}*/
 
 static gboolean
@@ -211,24 +387,6 @@ phurple_received_im_msg(PurpleAccount *account, char *sender, char *message, Pur
 {/*{{{*/
 	//printf(" received XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n");
 
-}/*}}}*/
-
-static void
-phurple_wrote_chat_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
-{/*{{{*/
-
-}/*}}}*/
-
-static void
-phurple_sending_chat_msg(PurpleAccount *account, char **message, int id)
-{/*{{{*/
-
-}/*}}}*/
-
-static void
-phurple_sent_chat_msg(PurpleAccount *account, const char *message, int id)
-{/*{{{*/
-	
 }/*}}}*/
 
 static gboolean
