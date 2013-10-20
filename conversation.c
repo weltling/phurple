@@ -612,15 +612,44 @@ phurple_deleting_conversation(PurpleConversation *conv)
 }/*}}}*/
 
 static void
+phurple_buddy_typing_all_cb(char *method, PurpleAccount *account, const char *name)
+{/*{{{*/
+	zval *acc, *nm;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	nm = phurple_string_zval(name);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+	
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   method,
+					   strlen(method),
+					   NULL,
+					   2,
+					   &acc,
+					   &nm
+	);
+	
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&nm);
+}/*}}}*/
+
+static void
 phurple_buddy_typing(PurpleAccount *account, const char *name)
 {/*{{{*/
-
+	phurple_buddy_typing_all_cb("buddytyping", account, name);
 }/*}}}*/
 
 static void
 phurple_buddy_typing_stopped(PurpleAccount *account, const char *name)
 {/*{{{*/
-
+	phurple_buddy_typing_all_cb("buddytypingstopped", account, name);
 }/*}}}*/
 
 static gboolean
