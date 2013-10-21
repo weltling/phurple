@@ -284,7 +284,7 @@ phurple_sending_chat_msg(PurpleAccount *account, char **message, int id)
 
 	acc = php_create_account_obj_zval(account TSRMLS_CC);
 	tmp0 = phurple_string_zval(*message);
-	orig_msg_ptr = Z_STRVAL_P(tmp1);
+	orig_msg_ptr = Z_STRVAL_P(tmp0);
 	tmp1 = phurple_long_zval(id);
 
 	call_custom_method(&client,
