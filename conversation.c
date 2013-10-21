@@ -828,25 +828,152 @@ phurple_chat_buddy_left(PurpleConversation *conv, const char *name, const char *
 static void
 phurple_chat_inviting_user(PurpleConversation *conv, const char *name, char **invite_message)
 {/*{{{*/
+	zval *conversation, *nm, *msg;
+	zval *client;
+	zend_class_entry *ce;
+	char *orig_msg_ptr;
+	TSRMLS_FETCH();
 
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	nm = phurple_string_zval(name);
+	orig_msg_ptr = Z_STRVAL_P(nm);
+	msg = phurple_string_zval(*invite_message);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatinvitinguser",
+					   sizeof("chatinvitinguser")-1,
+					   NULL,
+					   3,
+					   &conversation,
+					   &nm,
+					   &msg
+	);
+
+	convert_to_string(msg);
+	if (orig_msg_ptr != Z_STRVAL_P(msg)) {
+		g_free(*invite_message);
+		*invite_message = g_strdup(Z_STRVAL_P(msg));
+	}
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&nm);
+	zval_ptr_dtor(&msg);
 }/*}}}*/
 
 static void 
 phurple_chat_invited_user(PurpleConversation *conv, const char *name, const char *invite_message)
 {/*{{{*/
+	zval *conversation, *nm, *msg;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	nm = phurple_string_zval(name);
+	msg = phurple_string_zval(invite_message);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatinviteduser",
+					   sizeof("chatinviteduser")-1,
+					   NULL,
+					   3,
+					   &conversation,
+					   &nm,
+					   &msg
+	);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&nm);
+	zval_ptr_dtor(&msg);
 
 }/*}}}*/
 
 static gint
 phurple_chat_invited(PurpleAccount *account, const char *inviter, const char *chat, const char *invite_message, const GHashTable *components)
 {/*{{{*/
-	return 0;
+	gint ret;
+	zval *acc, *tmp0, *tmp1, *tmp2;
+	zval *client;
+	zval *method_ret = NULL;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
+
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(inviter);
+	tmp1 = phurple_string_zval(chat);
+	tmp2 = phurple_string_zval(invite_message);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatinvited",
+					   sizeof("chatinvited")-1,
+					   &method_ret,
+					   4,
+					   &acc,
+					   &tmp0,
+					   &tmp1,
+					   &tmp2
+	);
+
+	convert_to_long(method_ret);
+	ret = Z_LVAL_P(method_ret);
+
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
+	zval_ptr_dtor(&method_ret);
+
+	return ret;
 }/*}}}*/
 
 static void 
 phurple_chat_invite_blocked(PurpleAccount *account, const char *inviter, const char *name, const char *message, GHashTable *data)
 {/*{{{*/
+	zval *acc, *tmp0, *tmp1, *tmp2;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	acc = php_create_account_obj_zval(account TSRMLS_CC);
+	tmp0 = phurple_string_zval(inviter);
+	tmp1 = phurple_string_zval(name);
+	tmp2 = phurple_string_zval(message);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatinviteblocked",
+					   sizeof("chatinviteblocked")-1,
+					   NULL,
+					   4,
+					   &acc,
+					   &tmp0,
+					   &tmp1,
+					   &tmp2
+	);
+
+	zval_ptr_dtor(&acc);
+	zval_ptr_dtor(&tmp0);
+	zval_ptr_dtor(&tmp1);
+	zval_ptr_dtor(&tmp2);
 }/*}}}*/
 
 static void
@@ -864,18 +991,73 @@ phurple_chat_left(PurpleConversation *conv)
 static void
 phurple_chat_topic_changed(PurpleConversation *conv, const char *who, const char *topic)
 {/*{{{*/
+	zval *conversation, *wh, *top;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	wh = phurple_string_zval(who);
+	top = phurple_string_zval(topic);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chattopicchanged",
+					   sizeof("chattopicchanged")-1,
+					   NULL,
+					   3,
+					   &conversation,
+					   &wh,
+					   &top
+	);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&wh);
+	zval_ptr_dtor(&top);
 }/*}}}*/
 
 static void
 phurple_chat_buddy_flags(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags oldflags, PurpleConvChatBuddyFlags newflags)
 {/*{{{*/
+	zval *conversation, *nam, *oldf, *newf;
+	zval *client;
+	zend_class_entry *ce;
+	TSRMLS_FETCH();
 
+	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
+	nam = phurple_string_zval(name);
+	oldf = phurple_long_zval(oldflags);
+	newf = phurple_long_zval(newflags);
+
+	client = PHURPLE_G(phurple_client_obj);
+	ce = Z_OBJCE_P(client);
+
+	call_custom_method(&client,
+					   ce,
+					   NULL,
+					   "chatbuddyflags",
+					   sizeof("chatbuddyflags")-1,
+					   NULL,
+					   4,
+					   &conversation,
+					   &nam,
+					   &oldf,
+					   &newf
+	);
+
+	zval_ptr_dtor(&conversation);
+	zval_ptr_dtor(&nam);
+	zval_ptr_dtor(&oldf);
+	zval_ptr_dtor(&newf);
 }/*}}}*/
 
 void
 phurple_setup_conv_signals(PurpleConversation *conv)
-{
+{/*{{{*/
 
 	purple_signal_connect(purple_conversations_get_handle(),
 						  "writing-im-msg",
@@ -1100,7 +1282,7 @@ phurple_setup_conv_signals(PurpleConversation *conv)
 						  PURPLE_CALLBACK(phurple_chat_buddy_joining),
 						  NULL
 	);
-}
+}/*}}}*/
 
 /*
 **
