@@ -1292,9 +1292,75 @@
         </refsect1>
         <refsect1 role="returnvalues">
           <para>
-  </para>
-        </refsect1>
+</para>
+	</refsect1>
       </refentry>
+<refentry xml:id="Phurple--Client-writingimmsg">
+ <refnamediv>
+  <refname>Phurple\Client::writingImMsg</refname>
+  <refpurpose>Invoked when a message is being written in an IM conversation.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Client::writingImMsg</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>who</parameter></methodparam>
+   <methodparam><type>string</type><parameter role="reference">message</parameter></methodparam>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>flags</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Callback invoked when a message is written into an IM conversation.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>who</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
     </reference>
     <reference id="account">
       <title>Phurple\Account</title>
