@@ -1427,6 +1427,138 @@
   </para>
  </refsect1>
 </refentry>
+<refentry xml:id="Phurple--Client-wroteimmsg">
+ <refnamediv>
+  <refname>Phurple\Client::wroteImMsg</refname>
+  <refpurpose>Invoked after a message was written in IM conversation.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Client::wroteImMsg</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>who</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message</parameter></methodparam>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>flags</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Callback invoked after a message was written into an IM conversation.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>who</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-wrotechatmsg">
+ <refnamediv>
+  <refname>Phurple\Client::wroteChatMsg</refname>
+  <refpurpose>Invoked after a message was written in a chat conversation.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Client::wroteChatMsg</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>who</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message</parameter></methodparam>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>flags</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Callback invoked after a message was written into a chat conversation.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>who</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
     </reference>
     <reference id="account">
       <title>Phurple\Account</title>
