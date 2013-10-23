@@ -2089,6 +2089,179 @@
   </para>
  </refsect1>
 </refentry>
+<refentry xml:id="Phurple--Client-conversationcreated">
+ <refnamediv>
+  <refname>Phurple\Client::conversationCreated</refname>
+  <refpurpose>Invoked when new conversation is created</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::conversationCreated</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when new conversation is created
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-conversationupdated">
+ <refnamediv>
+  <refname>Phurple\Client::conversationUpdated</refname>
+  <refpurpose>Invoked when conversation is updated</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::conversationUpdated</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>type</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when conversation is updated
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>type</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-deletingconversation">
+ <refnamediv>
+  <refname>Phurple\Client::deletingConversation</refname>
+  <refpurpose>Invoked before the conversation is about to be destroyed</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::deletingConversation</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked before the conversation is about to be destroyed
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatjoined">
+ <refnamediv>
+  <refname>Phurple\Client::chatJoined</refname>
+  <refpurpose>Invoked when account joins a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatJoined</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when account joins a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatleft">
+ <refnamediv>
+  <refname>Phurple\Client::chatLeft</refname>
+  <refpurpose>Invoked when account leaves a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatLeft</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when account leaves a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
     </reference>
     <reference id="account">
       <title>Phurple\Account</title>
