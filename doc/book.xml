@@ -1559,6 +1559,206 @@
   </para>
  </refsect1>
 </refentry>
+<refentry xml:id="Phurple--Client-sendingimmsg">
+ <refnamediv>
+  <refname>Phurple\Client::sendingImMsg</refname>
+  <refpurpose>Invoked before a message is sent to IM conversation.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Client::sendingImMsg</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>receiver</parameter></methodparam>
+   <methodparam><type>string</type><parameter role="reference">message</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Callback invoked before a message is sent to IM conversation.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>receiver</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-sendingchatmsg">
+ <refnamediv>
+  <refname>Phurple\Client::sendingChatMsg</refname>
+  <refpurpose>Invoked before a message is sent to chat.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Client::sendingChatMsg</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter role="reference">message</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>id</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Callback invoked before a message is sent to chat.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>id</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-sentimmsg">
+ <refnamediv>
+  <refname>Phurple\Client::sentImMsg</refname>
+  <refpurpose>Invoked after a message was sent to IM conversation.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Client::sentImMsg</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>receiver</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Callback invoked after a message was sent to IM conversation.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>receiver</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-sentchatmsg">
+ <refnamediv>
+  <refname>Phurple\Client::sentChatMsg</refname>
+  <refpurpose>Invoked after a message was sent to chat.</refpurpose>
+ </refnamediv>
+
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>boolean</type><methodname>Phurple\Client::sentChatMsg</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>id</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+   Callback invoked after a message was sent to chat.
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>id</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
     </reference>
     <reference id="account">
       <title>Phurple\Account</title>
