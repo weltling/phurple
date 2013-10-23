@@ -2344,6 +2344,561 @@
   </para>
  </refsect1>
 </refentry>
+<refentry xml:id="Phurple--Client-chatbuddyjoining">
+ <refnamediv>
+  <refname>Phurple\Client::chatBuddyJoining</refname>
+  <refpurpose>Invoked when buddy is joining a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatBuddyJoining</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>flags</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when buddy is joining a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatbuddyjoined">
+ <refnamediv>
+  <refname>Phurple\Client::chatBuddyJoined</refname>
+  <refpurpose>Invoked when buddy joined a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatBuddyJoined</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>boolean</type><parameter>new_arrival</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>flags</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when buddy joined a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>new_arrival</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>flags</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatjoinfailed">
+ <refnamediv>
+  <refname>Phurple\Client::chatJoinFailed</refname>
+  <refpurpose>Invoked when account fails to join a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatJoinFailed</methodname>
+   <methodparam><type>Phurple\Connection</type><parameter>connection</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when account fails to join a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>connection</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatinvitinguser">
+ <refnamediv>
+  <refname>Phurple\Client::chatInvitingUser</refname>
+  <refpurpose>Invoked when user is being invited to a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatInvitingUser</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>string</type><parameter role="reference">invite_message</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when user is being invited to a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>invite_message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatinviteduser">
+ <refnamediv>
+  <refname>Phurple\Client::chatInvitedUser</refname>
+  <refpurpose>Invoked when user invited another to a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatInvitedUser</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>string</type><parameter>invite_message</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when user invited another user to a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>invite_message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatbuddyleaving">
+ <refnamediv>
+  <refname>Phurple\Client::chatBuddyLeaving</refname>
+  <refpurpose>Invoked when user is leaving a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatBuddyLeaving</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>string</type><parameter>reason</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when user is leaving a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>reason</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatbuddyleft">
+ <refnamediv>
+  <refname>Phurple\Client::chatBuddyLeft</refname>
+  <refpurpose>Invoked when user leavs a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatBuddyLeft</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>string</type><parameter>reason</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when user leavs a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>reason</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatinvited">
+ <refnamediv>
+  <refname>Phurple\Client::chatInvited</refname>
+  <refpurpose>Invoked when account was invited to a chat</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>integer</type><methodname>Phurple\Client::chatInvited</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>inviter</parameter></methodparam>
+   <methodparam><type>string</type><parameter>chat</parameter></methodparam>
+   <methodparam><type>string</type><parameter>invite_message</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when account was invited to a chat
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>inviter</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>chat</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>invite_message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatinviteblocked">
+ <refnamediv>
+  <refname>Phurple\Client::chatInviteBlocked</refname>
+  <refpurpose>Invoked when invitation to join a chat is blocked</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatInviteBlocked</methodname>
+   <methodparam><type>Phurple\Account</type><parameter>account</parameter></methodparam>
+   <methodparam><type>string</type><parameter>inviter</parameter></methodparam>
+   <methodparam><type>string</type><parameter>chat</parameter></methodparam>
+   <methodparam><type>string</type><parameter>message</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when invitation to join a chat is blocked
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>account</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>inviter</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>chat</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>message</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chattopicchanged">
+ <refnamediv>
+  <refname>Phurple\Client::chatTopicChanged</refname>
+  <refpurpose>Invoked when chat topic is changed</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatTopicChanged</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>who</parameter></methodparam>
+   <methodparam><type>string</type><parameter>topic</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when chat topic is changed
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>who</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>topic</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
+<refentry xml:id="Phurple--Client-chatbuddyflags">
+ <refnamediv>
+  <refname>Phurple\Client::chatBuddyFlags</refname>
+  <refpurpose>Invoked when user flags in chat was changed</refpurpose>
+ </refnamediv>
+ <refsect1 role="description">
+  <methodsynopsis>
+      <modifier>public</modifier>
+   <type>void</type><methodname>Phurple\Client::chatBuddyFlags</methodname>
+   <methodparam><type>Phurple\Conversation</type><parameter>conversation</parameter></methodparam>
+   <methodparam><type>string</type><parameter>name</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>oldflags</parameter></methodparam>
+   <methodparam><type>integer</type><parameter>newflags</parameter></methodparam>
+  </methodsynopsis>
+  <para>
+	  Callback invoked when user flags in chat are changed
+  </para>
+ </refsect1>
+ <refsect1 role="parameters">
+  <para>
+   <variablelist>
+    <varlistentry>
+     <term><parameter>conversation</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>name</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>oldflags</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>newflags</parameter></term>
+     <listitem>
+      <para>
+      </para>
+     </listitem>
+    </varlistentry>
+   </variablelist>
+  </para>
+ </refsect1>
+ <refsect1 role="returnvalues">
+  <para>
+  </para>
+ </refsect1>
+</refentry>
     </reference>
     <reference id="account">
       <title>Phurple\Account</title>
