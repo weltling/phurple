@@ -32,7 +32,7 @@
 		- Conversation::isUserInChat()
 		- Conversation::setTitle()
 		- Conversation::getTitle()
-		- Client::requestAction() callback
+		- about 30 new callbacks like, Client::requestAction(), chatInvited(), etc.
 		* changed
 		- Client::writeConv() signature was changed, be docs aware
 	</notes>
