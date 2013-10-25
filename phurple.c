@@ -538,6 +538,9 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(PhurpleConnection_setAccount, 0, 0, 1)
 	    ZEND_ARG_OBJ_INFO(0, account, Phurple\\Account, 0)
 ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(PhurpleConnection_setFlags, 0, 0, 1)
+	    ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
 /* }}} */
 
 
@@ -665,6 +668,10 @@ zend_function_entry PhurpleConnection_methods[] = {
 	PHP_ME(PhurpleConnection, getAccount, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConnection, getAccount, PhurpleConnection_setAccount, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConnection, getState, NULL, ZEND_ACC_PUBLIC)
+#if PURPLE_MAJOR_VERSION > 2
+	PHP_ME(PhurpleConnection, getFlags, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConnection, setFlags, PhurpleConnection_setFlags, ZEND_ACC_PUBLIC)
+#endif
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -850,6 +857,7 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_SELF_SIGNED ", sizeof("ERROR_CERT_SELF_SIGNED ")-1, PURPLE_CONNECTION_ERROR_CERT_SELF_SIGNED  TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_OTHER_ERROR", sizeof("ERROR_CERT_OTHER_ERROR")-1, PURPLE_CONNECTION_ERROR_CERT_OTHER_ERROR TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_OTHER_ERROR", sizeof("ERROR_OTHER_ERROR")-1, PURPLE_CONNECTION_ERROR_OTHER_ERROR TSRMLS_CC);
+#if PURPLE_MAJOR_VERSION > 2
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_HTML", sizeof("FLAG_HTML")-1, PURPLE_CONNECTION_HTML TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_NO_BGCOLOR", sizeof("FLAG_NO_BGCOLOR")-1, PURPLE_CONNECTION_NO_BGCOLOR TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_AUTO_RESP", sizeof("FLAG_AUTO_RESP")-1, PURPLE_CONNECTION_AUTO_RESP TSRMLS_CC);
@@ -861,6 +869,7 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_ALLOW_CUSTOM_SMILEY", sizeof("FLAG_ALLOW_CUSTOM_SMILEY")-1, PURPLE_CONNECTION_ALLOW_CUSTOM_SMILEY TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_SUPPORT_MOODS", sizeof("FLAG_SUPPORT_MOODS")-1, PURPLE_CONNECTION_SUPPORT_MOODS TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_SUPPORT_MOOD_MESSAGES", sizeof("FLAG_SUPPORT_MOOD_MESSAGES")-1, PURPLE_CONNECTION_SUPPORT_MOOD_MESSAGES TSRMLS_CC);
+#endif
 	zend_declare_class_constant_long(PhurpleConnection_ce, "STATE_DISCONNECTED", sizeof("STATE_DISCONNECTED")-1, PURPLE_DISCONNECTED TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "STATE_CONNECTED", sizeof("STATE_CONNECTED")-1, PURPLE_CONNECTED TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "STATE_CONNECTING", sizeof("STATE_CONNECTING")-1, PURPLE_CONNECTING TSRMLS_CC);
