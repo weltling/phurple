@@ -156,6 +156,27 @@ PHP_METHOD(PhurpleConnection, getAccount)
 /* }}} */
 
 
+/* {{{ proto void Phurple\Connection::setAccount(Phurple\Account account)
+	Sets the specified connection's phurple_account */
+PHP_METHOD(PhurpleConnection, setAccount)
+{
+	zval *account;
+	struct ze_connection_obj *zco;
+	
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &account, PhurpleAccount_ce) == FAILURE) {
+		return;
+	}
+	
+	zco = (struct ze_connection_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	if(zco->pconnection) {
+			struct ze_account_obj *zao;
+			zao = (struct ze_account_obj *) zend_object_store_get_object(account TSRMLS_CC);
+			purple_connection_set_account(zco->pconnection, zao->paccount);
+	}
+}
+/* }}} */
+
 /*
 **
 **
