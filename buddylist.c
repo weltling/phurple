@@ -263,6 +263,9 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 }
 /* }}} */
 
+
+/* {{{ proto boolean PhurpleBuddyList::addChat(string name, Phurple\Account account)
+	Save chat into buddy list */
 PHP_METHOD(PhurpleBuddyList, addChat)
 {
 	char *chat;
@@ -285,6 +288,8 @@ PHP_METHOD(PhurpleBuddyList, addChat)
 
 	purple_blist_add_chat(pchat, NULL, NULL);
 }
+/* }}} */
+
 
 /*
 **
