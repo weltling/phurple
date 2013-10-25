@@ -195,6 +195,43 @@ PHP_METHOD(PhurpleConnection, getState)
 /*}}}*/
 
 
+#if PURPLE_MAJOR_VERSION > 2
+/*{{{ proto public integer Phurple\Connection::getFlags(void) get connection flags */
+PHP_METHOD(PhurpleConnection, getFlags)
+{
+	struct ze_connection_obj *zco;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_connection_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+
+	RETURN_LONG((long)purple_connection_get_flags(zco->pconnection));
+}
+/*}}}*/
+
+
+/*{{{ proto public void Phurple\Connection::setFlags(integer flags) set connection flags */
+PHP_METHOD(PhurpleConnection, setFlags)
+{
+	long flags;
+	struct ze_connection_obj *zco;
+	
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &flags) == FAILURE) {
+		return;
+	}
+	
+	zco = (struct ze_connection_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	if(zco->pconnection) {
+			purple_connection_set_flags(zco->pconnection, flags);
+	}
+}
+/*}}}*/
+#endif
+
 /*
 **
 **

@@ -132,6 +132,10 @@ PHP_METHOD(PhurpleConnection, __construct);
 PHP_METHOD(PhurpleConnection, getAccount);
 PHP_METHOD(PhurpleConnection, setAccount);
 PHP_METHOD(PhurpleConnection, getState);
+#if PURPLE_MAJOR_VERSION > 2
+PHP_METHOD(PhurpleConnection, getFlags);
+PHP_METHOD(PhurpleConnection, setFlags);
+#endif
 
 PHP_METHOD(PhurpleConversation, __construct);
 PHP_METHOD(PhurpleConversation, getName);
