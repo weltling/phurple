@@ -856,6 +856,9 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_ALLOW_CUSTOM_SMILEY", sizeof("FLAG_ALLOW_CUSTOM_SMILEY")-1, PURPLE_CONNECTION_ALLOW_CUSTOM_SMILEY TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_SUPPORT_MOODS", sizeof("FLAG_SUPPORT_MOODS")-1, PURPLE_CONNECTION_SUPPORT_MOODS TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_SUPPORT_MOOD_MESSAGES", sizeof("FLAG_SUPPORT_MOOD_MESSAGES")-1, PURPLE_CONNECTION_SUPPORT_MOOD_MESSAGES TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "STATE_DISCONNECTED", sizeof("STATE_DISCONNECTED")-1, PURPLE_DISCONNECTED TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "STATE_CONNECTED", sizeof("STATE_CONNECTED")-1, PURPLE_CONNECTED TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "STATE_CONNECTING", sizeof("STATE_CONNECTING")-1, PURPLE_CONNECTING TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_CLASS_NAME, PhurpleBuddy_methods);
 	ce.create_object = php_buddy_obj_init;
