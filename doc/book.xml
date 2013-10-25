@@ -3544,6 +3544,70 @@
   </para>
         </refsect1>
       </refentry>
+      <refentry xml:id="Phurple--Connection-setaccount">
+        <refnamediv>
+          <refname>Phurple\Connection::setAccount</refname>
+          <refpurpose>Set the connection's account</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>void</type>
+            <methodname>Phurple\Connection::setAccount</methodname>
+            <methodparam>
+              <type>Phurple\Account</type>
+              <parameter>account</parameter>
+            </methodparam>
+          </methodsynopsis>
+          <para>
+   Set the connection's account
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+            <variablelist>
+              <varlistentry>
+                <term>
+                  <parameter>account</parameter>
+                </term>
+                <listitem>
+                  <para>
+      </para>
+                </listitem>
+              </varlistentry>
+		  </variablelist>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="Phurple--Connection-getstate">
+        <refnamediv>
+          <refname>Phurple\Connection::getState</refname>
+          <refpurpose>Returns the connection state</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+		  <modifier>public</modifier>
+            <type>integer</type>
+            <methodname>Phurple\Connection::getState</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Returns the connection state
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
     </reference>
     <reference id="conversation">
       <title>Phurple\Conversation</title>
