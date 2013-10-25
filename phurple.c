@@ -666,7 +666,7 @@ zend_function_entry PhurpleAccount_methods[] = {
 zend_function_entry PhurpleConnection_methods[] = {
 	PHP_ME(PhurpleConnection, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConnection, getAccount, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleConnection, getAccount, PhurpleConnection_setAccount, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConnection, setAccount, PhurpleConnection_setAccount, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConnection, getState, NULL, ZEND_ACC_PUBLIC)
 #if PURPLE_MAJOR_VERSION > 2
 	PHP_ME(PhurpleConnection, getFlags, NULL, ZEND_ACC_PUBLIC)
