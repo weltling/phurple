@@ -845,6 +845,17 @@ PHP_MINIT_FUNCTION(phurple)
 	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_SELF_SIGNED ", sizeof("ERROR_CERT_SELF_SIGNED ")-1, PURPLE_CONNECTION_ERROR_CERT_SELF_SIGNED  TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_CERT_OTHER_ERROR", sizeof("ERROR_CERT_OTHER_ERROR")-1, PURPLE_CONNECTION_ERROR_CERT_OTHER_ERROR TSRMLS_CC);
 	zend_declare_class_constant_long(PhurpleConnection_ce, "ERROR_OTHER_ERROR", sizeof("ERROR_OTHER_ERROR")-1, PURPLE_CONNECTION_ERROR_OTHER_ERROR TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_HTML", sizeof("FLAG_HTML")-1, PURPLE_CONNECTION_HTML TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_NO_BGCOLOR", sizeof("FLAG_NO_BGCOLOR")-1, PURPLE_CONNECTION_NO_BGCOLOR TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_AUTO_RESP", sizeof("FLAG_AUTO_RESP")-1, PURPLE_CONNECTION_AUTO_RESP TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_FORMATTING_WBFO", sizeof("FLAG_FORMATTING_WBFO")-1, PURPLE_CONNECTION_FORMATTING_WBFO TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_NO_NEWLINES", sizeof("FLAG_NO_NEWLINES")-1, PURPLE_CONNECTION_NO_NEWLINES TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_NO_FONTSIZE", sizeof("FLAG_NO_FONTSIZE")-1, PURPLE_CONNECTION_NO_FONTSIZE TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_NO_URLDESC", sizeof("FLAG_NO_URLDESC")-1, PURPLE_CONNECTION_NO_URLDESC TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_NO_IMAGES", sizeof("FLAG_NO_IMAGES")-1, PURPLE_CONNECTION_NO_IMAGES TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_ALLOW_CUSTOM_SMILEY", sizeof("FLAG_ALLOW_CUSTOM_SMILEY")-1, PURPLE_CONNECTION_ALLOW_CUSTOM_SMILEY TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_SUPPORT_MOODS", sizeof("FLAG_SUPPORT_MOODS")-1, PURPLE_CONNECTION_SUPPORT_MOODS TSRMLS_CC);
+	zend_declare_class_constant_long(PhurpleConnection_ce, "FLAG_SUPPORT_MOOD_MESSAGES", sizeof("FLAG_SUPPORT_MOOD_MESSAGES")-1, PURPLE_CONNECTION_SUPPORT_MOOD_MESSAGES TSRMLS_CC);
 
 	INIT_CLASS_ENTRY(ce, PHURPLE_BUDDY_CLASS_NAME, PhurpleBuddy_methods);
 	ce.create_object = php_buddy_obj_init;
