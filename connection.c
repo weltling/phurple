@@ -177,6 +177,24 @@ PHP_METHOD(PhurpleConnection, setAccount)
 }
 /* }}} */
 
+
+/*{{{ proto public integer Phurple\Connection::getState(void) get connection state */
+PHP_METHOD(PhurpleConnection, getState)
+{
+	struct ze_connection_obj *zco;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_connection_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+
+	RETURN_LONG((long)purple_connection_get_state(zco->pconnection));
+}
+/*}}}*/
+
+
 /*
 **
 **

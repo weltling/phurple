@@ -535,6 +535,9 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(PhurpleGroup_construct, 0, 0, 1)
 	    ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
+ZEND_BEGIN_ARG_INFO_EX(PhurpleConnection_setAccount, 0, 0, 1)
+	    ZEND_ARG_OBJ_INFO(0, account, Phurple\\Account, 0)
+ZEND_END_ARG_INFO()
 /* }}} */
 
 
@@ -617,8 +620,8 @@ zend_function_entry PhurpleConversation_methods[] = {
 	PHP_ME(PhurpleConversation, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, getName, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, sendIM, PhurpleConversation_sendIM, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleConversation, getAccount, PhurpleConversation_setAccount, ZEND_ACC_PUBLIC)
-	PHP_ME(PhurpleConversation, setAccount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConversation, getAccount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConversation, setAccount, PhurpleConversation_setAccount, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, inviteUser, PhurpleConversation_inviteUser, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, isUserInChat, PhurpleConversation_isUserInChat, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, getConnection, NULL, ZEND_ACC_PUBLIC)
@@ -660,6 +663,8 @@ zend_function_entry PhurpleAccount_methods[] = {
 zend_function_entry PhurpleConnection_methods[] = {
 	PHP_ME(PhurpleConnection, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConnection, getAccount, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConnection, getAccount, PhurpleConnection_setAccount, ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleConnection, getState, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

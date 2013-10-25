@@ -130,6 +130,8 @@ PHP_METHOD(PhurpleAccount, isDisconnected);
 
 PHP_METHOD(PhurpleConnection, __construct);
 PHP_METHOD(PhurpleConnection, getAccount);
+PHP_METHOD(PhurpleConnection, setAccount);
+PHP_METHOD(PhurpleConnection, getState);
 
 PHP_METHOD(PhurpleConversation, __construct);
 PHP_METHOD(PhurpleConversation, getName);
