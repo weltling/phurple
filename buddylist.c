@@ -93,6 +93,8 @@ PHP_METHOD(PhurpleBuddyList, addBuddy)
 
 	purple_blist_add_buddy(zbo->pbuddy, NULL, zgo->pgroup, NULL);
 
+	purple_blist_schedule_save();
+
 	RETURN_TRUE;
 }
 /* }}} */
@@ -112,6 +114,8 @@ PHP_METHOD(PhurpleBuddyList, addGroup)
 	zgo = (struct ze_group_obj *) zend_object_store_get_object(group TSRMLS_CC);
 	
 	purple_blist_add_group(zgo->pgroup, NULL);
+
+	purple_blist_schedule_save();
 
 	RETURN_TRUE;
 }
@@ -231,6 +235,8 @@ PHP_METHOD(PhurpleBuddyList, removeBuddy)
 
 	purple_blist_remove_buddy(zbo->pbuddy);
 
+	purple_blist_schedule_save();
+
 	RETURN_TRUE;
 }
 /* }}} */
@@ -258,6 +264,8 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 	}
 	
 	purple_blist_remove_group(zgo->pgroup);
+
+	purple_blist_schedule_save();
 
 	RETURN_TRUE;
 }
@@ -287,6 +295,8 @@ PHP_METHOD(PhurpleBuddyList, addChat)
 	pchat = purple_chat_new(zao->paccount, NULL, components);
 
 	purple_blist_add_chat(pchat, NULL, NULL);
+
+	purple_blist_schedule_save();
 }
 /* }}} */
 
