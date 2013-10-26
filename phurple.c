@@ -231,7 +231,7 @@ void phurple_globals_ctor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 
 void phurple_globals_dtor(zend_phurple_globals *phurple_globals TSRMLS_DC)
 {/*{{{*/
-	if(NULL != phurple_globals->phurple_client_obj) {
+	if (NULL != phurple_globals->phurple_client_obj) {
 		zval_ptr_dtor(&phurple_globals->phurple_client_obj);
 	}
 }/*}}}*/
@@ -780,9 +780,10 @@ PHP_MINIT_FUNCTION(phurple)
 	ce.create_object = php_client_obj_init;
 	PhurpleClient_ce = zend_register_internal_class(&ce TSRMLS_CC);
 
-	zend_declare_property_string(PhurpleClient_ce, "user_dir", strlen("user_dir"), g_strdup("/dev/null"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+	/* XXX /dev/null is a fail on windows, pass empty? */
+	zend_declare_property_string(PhurpleClient_ce, "user_dir", strlen("user_dir"), "/dev/null", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 	zend_declare_property_long(PhurpleClient_ce, "debug", strlen("debug"), 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
-	zend_declare_property_string(PhurpleClient_ce, "ui_id", strlen("ui_id"), estrdup("PHP"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_string(PhurpleClient_ce, "ui_id", strlen("ui_id"), "PHP", ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 
 	/* A type of conversation */
 	zend_declare_class_constant_long(PhurpleClient_ce, "CONV_TYPE_IM", sizeof("CONV_TYPE_IM")-1, PURPLE_CONV_TYPE_IM TSRMLS_CC);
@@ -1448,19 +1449,12 @@ phurple_write_conv_function(PurpleConversation *conv, const char *who, const cha
 	conversation = php_create_conversation_obj_zval(conv TSRMLS_CC);
 
 	paccount = purple_conversation_get_account(conv);
-	if(paccount) {
-		pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
-		
-		if(NULL != pbuddy) {
-			buddy = php_create_buddy_obj_zval(pbuddy TSRMLS_CC);
-		} else {
-			if(who_san) {
-				buddy = phurple_string_zval(who_san);
-			} else {
-				MAKE_STD_ZVAL(buddy);
-				ZVAL_NULL(buddy);
-			}
-		}
+
+	pbuddy = purple_find_buddy(paccount, !who_san ? purple_conversation_get_name(conv) : who_san);
+	if(NULL != pbuddy) {
+		buddy = php_create_buddy_obj_zval(pbuddy TSRMLS_CC);
+	} else {
+		buddy = phurple_string_zval(who_san);
 	}
 
 	tmp1 = phurple_string_zval(alias_san);

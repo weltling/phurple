@@ -235,7 +235,6 @@ php_client_obj_destroy(void *obj TSRMLS_DC)
 {/*{{{*/
 	struct ze_client_obj *zco = (struct ze_client_obj *)obj;
 
-	zco->ce = NULL;
 	if (zco->loop) {
 		g_main_loop_unref(zco->loop);
 		zco->loop = NULL;
@@ -271,7 +270,6 @@ php_client_obj_init(zend_class_entry *ce TSRMLS_DC)
 #endif
 
 	zco->connection_handle = 0;
-	zco->ce = PhurpleClient_ce;
 	zco->loop = NULL;
 
 	ret.handle = zend_objects_store_put(zco, NULL,
@@ -542,7 +540,7 @@ PHP_METHOD(PhurpleClient, getInstance)
 #else
 		user_dir = zend_std_get_static_property(PhurpleClient_ce, "user_dir", sizeof("user_dir")-1, 0, NULL TSRMLS_CC);
 #endif
-		purple_util_set_user_dir(g_strdup(Z_STRVAL_PP(user_dir)));
+		purple_util_set_user_dir(Z_STRVAL_PP(user_dir));
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
 		debug = zend_std_get_static_property(PhurpleClient_ce, "debug", sizeof("debug")-1, 0 TSRMLS_CC);
 #else
@@ -647,7 +645,7 @@ PHP_METHOD(PhurpleClient, setUserDir) {
 
 	zend_update_static_property_string(PhurpleClient_ce, "user_dir", strlen("user_dir"), user_dir TSRMLS_CC);
 	
-	purple_util_set_user_dir(g_strdup(user_dir));
+	purple_util_set_user_dir(user_dir);
 }
 /* }}} */
 

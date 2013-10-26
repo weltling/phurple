@@ -246,7 +246,6 @@ struct ze_connection_obj {
 struct ze_client_obj {
 	zend_object zo;
 	int connection_handle;
-	zend_class_entry *ce;
 	GMainLoop *loop;
 };
 
