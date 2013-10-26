@@ -233,11 +233,19 @@ phurple_g_loop_callback(gpointer data)
 void
 php_client_obj_destroy(void *obj TSRMLS_DC)
 {/*{{{*/
-	struct ze_client_obj *zgo = (struct ze_client_obj *)obj;
+	struct ze_client_obj *zco = (struct ze_client_obj *)obj;
 
-	zend_object_std_dtor(&zgo->zo TSRMLS_CC);
+	zco->ce = NULL;
+	if (zco->loop) {
+		g_main_loop_unref(zco->loop);
+		zco->loop = NULL;
+	}
 
-	efree(zgo);
+	zend_object_std_dtor(&zco->zo TSRMLS_CC);
+
+	efree(zco);
+
+	purple_timeout_add(0, purple_core_quit_cb, NULL);
 }/*}}}*/
 
 zend_object_value
@@ -263,6 +271,8 @@ php_client_obj_init(zend_class_entry *ce TSRMLS_DC)
 #endif
 
 	zco->connection_handle = 0;
+	zco->ce = PhurpleClient_ce;
+	zco->loop = NULL;
 
 	ret.handle = zend_objects_store_put(zco, NULL,
 								(zend_objects_free_object_storage_t) php_client_obj_destroy,
@@ -293,24 +303,41 @@ PHP_METHOD(PhurpleClient, __construct)
 PHP_METHOD(PhurpleClient, runLoop)
 {
 	long interval = 0;
-	GMainLoop *loop;
+	struct ze_client_obj *zco;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &interval) == FAILURE) {
 		RETURN_NULL();
 	}
 	
+	zco = (struct ze_client_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
 	phurple_g_loop_callback(NULL);
 
 	if(interval > 0) {
 		g_timeout_add(interval, (GSourceFunc)phurple_heartbeat_callback, NULL);
 	}
 	
-	loop = g_main_loop_new(NULL, FALSE);
+	zco->loop = g_main_loop_new(NULL, FALSE);
 	
-	g_main_loop_run(loop);
+	g_main_loop_run(zco->loop);
 }
 /* }}} */
 
+/* {{{ proto public void PhurpleClient::quitLoop(void)
+	Quits the main loop*/
+PHP_METHOD(PhurpleClient, quitLoop)
+{
+	struct ze_client_obj *zco;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	zco = (struct ze_client_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	g_main_loop_quit(zco->loop);
+}
+/* }}} */
 
 /* {{{ proto object PhurpleClient::addAccount(string dsn)
 	adds a new account to the current client*/
@@ -364,13 +391,13 @@ PHP_METHOD(PhurpleClient, addAccount)
 	port = emalloc(offsets[11] - offsets[10] + 1);
 	php_sprintf(port, "%.*s", offsets[11] - offsets[10], account_dsn + offsets[10]);
 
-	account = purple_account_new(g_strdup(nick), phurple_get_protocol_id_by_name(protocol));
+	account = purple_account_new(nick, phurple_get_protocol_id_by_name(protocol));
 
 	if(NULL != account) {
 		zval *ret;
 		zval **ui_id = NULL;
 
-		purple_account_set_password(account, estrdup(password));
+		purple_account_set_password(account, password);
 
 		if(strlen(host)) {
 			purple_account_set_string(account, "server", host);
@@ -689,6 +716,8 @@ PHP_METHOD(PhurpleClient, connect)
 
 	zco = (struct ze_client_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
+	purple_connections_init();
+
 	purple_signal_connect(purple_connections_get_handle(),
 						  "signed-on",
 						  &zco->connection_handle,
@@ -736,23 +765,10 @@ PHP_METHOD(PhurpleClient, connect)
 
 /* {{{ proto void PhurpleClient::disconnect()
 	Close all client connections*/
-/*PHP_METHOD(PhurpleClient, disconnect)
+PHP_METHOD(PhurpleClient, disconnect)
 {
-	GList *iter = purple_accounts_get_all();
-
-	for (; iter; iter = iter->next)
-	{
-		PurpleAccount *account = iter->data;
-		purple_account_disconnect(account);
-	}
-
-	purple_signal_connect(purple_connections_get_handle(),
-						  SIGNAL_SIGNED_OFF,
-						  &PHURPLE_G(connection_handle),
-						  PURPLE_CALLBACK(phurple_signed_off_function),
-						  NULL
-						  );
-}*/
+	purple_connections_disconnect_all();
+}
 /* }}} */
 
 

@@ -565,6 +565,7 @@ zend_function_entry PhurpleClient_methods[] = {
 	PHP_ME(PhurpleClient, onSigningOff, PhurpleClient_simpleCallback, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, onAutojoin, PhurpleClient_simpleCallback, ZEND_ACC_PROTECTED)
 	PHP_ME(PhurpleClient, runLoop, PhurpleClient_runLoop, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
+	PHP_ME(PhurpleClient, quitLoop, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, addAccount, PhurpleClient_addAccount, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, getProtocols, NULL, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, loopCallback, NULL, ZEND_ACC_PROTECTED)
@@ -576,7 +577,7 @@ zend_function_entry PhurpleClient_methods[] = {
 	/*PHP_ME(PhurpleClient, set, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, get, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)*/
 	PHP_ME(PhurpleClient, connect, NULL, ZEND_ACC_PUBLIC)
-	/*PHP_ME(PhurpleClient, disconnect, NULL, ZEND_ACC_PUBLIC)*/
+	PHP_ME(PhurpleClient, disconnect, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleClient, setUserDir, PhurpleClient_setUserDir, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setDebug, PhurpleClient_setDebug, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhurpleClient, setUiId, PhurpleClient_setUiId, ZEND_ACC_FINAL | ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -781,7 +782,7 @@ PHP_MINIT_FUNCTION(phurple)
 
 	zend_declare_property_string(PhurpleClient_ce, "user_dir", strlen("user_dir"), g_strdup("/dev/null"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 	zend_declare_property_long(PhurpleClient_ce, "debug", strlen("debug"), 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
-	zend_declare_property_string(PhurpleClient_ce, "ui_id", strlen("ui_id"), g_strdup("PHP"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
+	zend_declare_property_string(PhurpleClient_ce, "ui_id", strlen("ui_id"), estrdup("PHP"), ZEND_ACC_PUBLIC | ZEND_ACC_STATIC TSRMLS_CC);
 
 	/* A type of conversation */
 	zend_declare_class_constant_long(PhurpleClient_ce, "CONV_TYPE_IM", sizeof("CONV_TYPE_IM")-1, PURPLE_CONV_TYPE_IM TSRMLS_CC);
@@ -953,7 +954,7 @@ PHP_MSHUTDOWN_FUNCTION(phurple)
 #else
 	phurple_globals_dtor(&phurple_globals TSRMLS_CC);
 #endif
-	
+
 	return SUCCESS;
 }
 /* }}} */
@@ -1117,11 +1118,18 @@ phurple_get_protocol_id_by_name(const char *protocol_name)
 
 		if (info && info->name) {
 			char *lc_name = phurple_tolower(info->name);
+
 			if (0 == strcmp(lc_name, lc_proto)) {
-				return estrdup(info->id);
+				efree(lc_proto);
+				efree(lc_name);
+				return info->id;
 			}
+
+			efree(lc_name);
 		}
 	}
+
+	efree(lc_proto);
 
 	return NULL;
 }
@@ -1265,11 +1273,7 @@ phurple_request_authorize(PurpleAccount *account,
 	client = PHURPLE_G(phurple_client_obj);
 	ce = Z_OBJCE_P(client);
 	
-	if(NULL != account) {
-		php_account = php_create_account_obj_zval(account TSRMLS_CC);
-	} else {
-		ALLOC_INIT_ZVAL(php_account);
-	}
+	php_account = php_create_account_obj_zval(account TSRMLS_CC);
 	
 	MAKE_STD_ZVAL(php_on_list);
 	ZVAL_BOOL(php_on_list, (long)on_list);
@@ -1298,6 +1302,11 @@ phurple_request_authorize(PurpleAccount *account,
 		}
 		
 	}
+
+	zval_ptr_dtor(&php_account);
+	zval_ptr_dtor(&php_remote_user);
+	zval_ptr_dtor(&php_message);
+	zval_ptr_dtor(&php_on_list);
 
 	return NULL;
 }

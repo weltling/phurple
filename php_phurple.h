@@ -58,6 +58,7 @@ PHP_METHOD(PhurpleClient, onSigningdOn);
 PHP_METHOD(PhurpleClient, onSigningOff);
 PHP_METHOD(PhurpleClient, onAutojoin);
 PHP_METHOD(PhurpleClient, runLoop);
+PHP_METHOD(PhurpleClient, quitLoop);
 PHP_METHOD(PhurpleClient, addAccount);
 PHP_METHOD(PhurpleClient, getProtocols);
 PHP_METHOD(PhurpleClient, loopCallback);
@@ -69,7 +70,7 @@ PHP_METHOD(PhurpleClient, iterate);
 /*PHP_METHOD(PhurpleClient, set);
 PHP_METHOD(PhurpleClient, get);*/
 PHP_METHOD(PhurpleClient, connect);
-/*PHP_METHOD(PhurpleClient, disconnect);*/
+PHP_METHOD(PhurpleClient, disconnect);
 PHP_METHOD(PhurpleClient, setUserDir);
 PHP_METHOD(PhurpleClient, setDebug);
 PHP_METHOD(PhurpleClient, setUiId);
@@ -246,6 +247,7 @@ struct ze_client_obj {
 	zend_object zo;
 	int connection_handle;
 	zend_class_entry *ce;
+	GMainLoop *loop;
 };
 
 struct ze_presence_obj {
