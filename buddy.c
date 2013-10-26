@@ -157,6 +157,10 @@ PHP_METHOD(PhurpleBuddy, getName)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	RETURN_STRING(purple_buddy_get_name(zbo->pbuddy), 1);
@@ -172,6 +176,10 @@ PHP_METHOD(PhurpleBuddy, getAlias)
 	const char *alias;
 
 	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
 		return;
 	}
 
@@ -194,6 +202,10 @@ PHP_METHOD(PhurpleBuddy, getGroup)
 	struct ze_buddy_obj *zbo;
 			
 	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
 		return;
 	}
 
@@ -226,6 +238,10 @@ PHP_METHOD(PhurpleBuddy, getAccount)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zbo = (struct ze_buddy_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 			
 	paccount = purple_buddy_get_account(zbo->pbuddy);
@@ -236,8 +252,6 @@ PHP_METHOD(PhurpleBuddy, getAccount)
 
 		return;
 	}
-
-	RETURN_NULL();
 }
 /* }}} */
 

@@ -138,6 +138,10 @@ PHP_METHOD(PhurpleConnection, getAccount)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zco = (struct ze_connection_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(NULL != zco->pconnection) {
@@ -150,8 +154,6 @@ PHP_METHOD(PhurpleConnection, getAccount)
 			return;
 		}
 	}
-
-	RETURN_NULL();
 }
 /* }}} */
 
@@ -187,6 +189,10 @@ PHP_METHOD(PhurpleConnection, getState)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zco = (struct ze_connection_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 
@@ -202,6 +208,10 @@ PHP_METHOD(PhurpleConnection, getFlags)
 	struct ze_connection_obj *zco;
 
 	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
 		return;
 	}
 

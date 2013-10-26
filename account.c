@@ -335,6 +335,10 @@ PHP_METHOD(PhurpleAccount, get)
 		RETURN_NULL();
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if((table = g_hash_table_lookup(zao->paccount->ui_settings, Z_STRVAL_PP(ui_id))) == NULL) {
@@ -408,6 +412,10 @@ PHP_METHOD(PhurpleAccount, getUserName)
 		return;
 	}
 	
+	if (!return_value_used) {
+		return;
+	}
+
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	RETURN_STRING(purple_account_get_username(zao->paccount), 1);
@@ -424,6 +432,10 @@ PHP_METHOD(PhurpleAccount, getPassword)
 		return;
 	}
 	
+	if (!return_value_used) {
+		return;
+	}
+
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	RETURN_STRING(purple_account_get_password(zao->paccount), 1);
@@ -439,6 +451,10 @@ PHP_METHOD(PhurpleAccount, getPresence)
 	struct ze_account_obj *zao;
 
 	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
 		return;
 	}
 

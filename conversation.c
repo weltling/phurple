@@ -1371,6 +1371,10 @@ PHP_METHOD(PhurpleConversation, getName)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(NULL != zco->pconversation) {
@@ -1429,6 +1433,10 @@ PHP_METHOD(PhurpleConversation, getAccount)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	
 	if(NULL != zco->pconversation) {
@@ -1441,8 +1449,6 @@ PHP_METHOD(PhurpleConversation, getAccount)
 			return;
 		}
 	}
-
-	RETURN_NULL();
 }
 /* }}} */
 
@@ -1536,6 +1542,10 @@ PHP_METHOD(PhurpleConversation, getConnection)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if(NULL != zco->pconversation) {
@@ -1581,6 +1591,10 @@ PHP_METHOD(PhurpleConversation, getTitle)
 	struct ze_conversation_obj *zco;
 
 	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
 		return;
 	}
 

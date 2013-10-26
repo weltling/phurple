@@ -415,8 +415,10 @@ PHP_METHOD(PhurpleClient, addAccount)
 
 		purple_accounts_add(account);
 
-		ret = php_create_account_obj_zval(account TSRMLS_CC);
-		*return_value = *ret;
+		if (return_value_used) {
+			ret = php_create_account_obj_zval(account TSRMLS_CC);
+			*return_value = *ret;
+		}
 
 		efree(protocol);
 		efree(nick);
@@ -425,7 +427,6 @@ PHP_METHOD(PhurpleClient, addAccount)
 		efree(port);
 
 		return;
-
 	}
 
 	efree(protocol);
@@ -433,13 +434,11 @@ PHP_METHOD(PhurpleClient, addAccount)
 	efree(password);
 	efree(host);
 	efree(port);
-	
-	RETURN_NULL();
 }
 /* }}} */
 
 
-/* {{{ proto void PhurpleClient::deleteAccount(PhurpleAccount account)
+/* {{{ proto public void PhurpleClient::deleteAccount(PhurpleAccount account)
 	Removes an account from the list of accounts*/
 PHP_METHOD(PhurpleClient, deleteAccount)
 {
@@ -468,10 +467,7 @@ PHP_METHOD(PhurpleClient, deleteAccount)
 		
 	if(paccount) {
 		purple_accounts_delete(paccount);
-		
 	}
-	
-	RETURN_FALSE;
 }
 /* }}} */
 
@@ -486,6 +482,10 @@ PHP_METHOD(PhurpleClient, findAccount)
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_name, &account_name_len) == FAILURE) {
 		RETURN_NULL();
+	}
+
+	if (!return_value_used) {
+		return;
 	}
 
 	paccount = purple_accounts_find(account_name, NULL);
@@ -518,6 +518,10 @@ PHP_METHOD(PhurpleClient, getCoreVersion)
 	creates new PhurpleClient instance*/
 PHP_METHOD(PhurpleClient, getInstance)
 {	
+	if (!return_value_used) {
+		return;
+	}
+
 	if(NULL == PHURPLE_G(phurple_client_obj)) {
 
 		struct ze_client_obj *zco;
@@ -602,6 +606,10 @@ PHP_METHOD(PhurpleClient, getProtocols)
 	GList *iter = purple_plugins_get_protocols();
 	zval *protocols;
 	
+	if (!return_value_used) {
+		return;
+	}
+
 	MAKE_STD_ZVAL(protocols);
 	array_init(protocols);
 	

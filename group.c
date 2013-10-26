@@ -151,6 +151,10 @@ PHP_METHOD(PhurpleGroup, getAccounts)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zgo = (struct ze_group_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 	
 	iter = purple_group_get_accounts(zgo->pgroup);
@@ -186,6 +190,10 @@ PHP_METHOD(PhurpleGroup, getSize)
 		return;
 	}
 
+	if (!return_value_used) {
+		return;
+	}
+
 	zgo = (struct ze_group_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	RETURN_LONG(purple_blist_get_group_size(zgo->pgroup, (gboolean)TRUE));
@@ -200,6 +208,10 @@ PHP_METHOD(PhurpleGroup, getOnlineCount)
 	struct ze_group_obj *zgo;
 
 	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
 		return;
 	}
 
@@ -218,6 +230,10 @@ PHP_METHOD(PhurpleGroup, getName)
 	const char *name;
 
 	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
 		return;
 	}
 
