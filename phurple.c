@@ -631,6 +631,7 @@ zend_function_entry PhurpleConversation_methods[] = {
 	PHP_ME(PhurpleConversation, getConnection, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, setTitle, PhurpleConversation_setTitle, ZEND_ACC_PUBLIC)
 	PHP_ME(PhurpleConversation, getTitle, NULL, ZEND_ACC_PUBLIC)
+	/*PHP_ME(PhurpleConversation, getUsersInChat, NULL, ZEND_ACC_PUBLIC)*/
 	{NULL, NULL, NULL}
 };
 /* }}} */

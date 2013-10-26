@@ -1584,6 +1584,7 @@ PHP_METHOD(PhurpleConversation, setTitle)
 }
 /* }}} */
 
+
 /* {{{ proto public string Phurple\Conversation::setTitle(void)
 	Set conversation title */
 PHP_METHOD(PhurpleConversation, getTitle)
@@ -1604,6 +1605,46 @@ PHP_METHOD(PhurpleConversation, getTitle)
 		RETVAL_STRING(purple_conversation_get_title(zco->pconversation), 1);
 	}
 }
+/* }}} */
+
+
+/* {{{ proto public array Phurple\Conversation::getUsersInChat(void) Get users in this chat conv  */
+/*PHP_METHOD(PhurpleConversation, getUsersInChat)
+{
+	struct ze_conversation_obj *zco;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	if (!return_value_used) {
+		return;
+	}
+
+	zco = (struct ze_conversation_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if(NULL != zco->pconversation) {
+		switch (purple_conversation_get_type(zco->pconversation)) {
+			case PURPLE_CONV_TYPE_CHAT: {
+				GList *l, *cbuddies = purple_conv_chat_get_users(PURPLE_CONV_CHAT(zco->pconversation));
+
+				array_init(return_value);
+
+				l = cbuddies;
+				while (NULL != l) {
+					PurpleConvChatBuddy *bud = (PurpleConvChatBuddy *)l->data;
+					zval *tmp;
+				}
+
+				break;
+				}
+
+			default:
+				zend_throw_exception_ex(PhurpleException_ce, 0 TSRMLS_CC, "Initialized conversation type doesn't support chat user listing");
+				return;
+		}
+	}
+}*/
 /* }}} */
 
 /*
