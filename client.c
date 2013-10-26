@@ -348,7 +348,6 @@ PHP_METHOD(PhurpleClient, addAccount)
 	int account_dsn_len, erroffset, offsets[19], rc;
 	pcre *re;
 	PurpleAccount *account = NULL;
-	GList *accounts;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_dsn, &account_dsn_len) == FAILURE) {
 		RETURN_FALSE;
@@ -415,8 +414,6 @@ PHP_METHOD(PhurpleClient, addAccount)
 		purple_account_set_enabled(account, g_strdup(Z_STRVAL_PP(ui_id)), 1);
 
 		purple_accounts_add(account);
-
-		accounts = purple_accounts_get_all();
 
 		ret = php_create_account_obj_zval(account TSRMLS_CC);
 		*return_value = *ret;
