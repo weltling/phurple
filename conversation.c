@@ -1634,6 +1634,7 @@ PHP_METHOD(PhurpleConversation, getTitle)
 				while (NULL != l) {
 					PurpleConvChatBuddy *bud = (PurpleConvChatBuddy *)l->data;
 					zval *tmp;
+					/* XXX implement ChatBuddy class */
 				}
 
 				break;
