@@ -411,7 +411,7 @@ PHP_METHOD(PhurpleClient, addAccount)
 #else
 		ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0, NULL TSRMLS_CC);
 #endif
-		purple_account_set_enabled(account, g_strdup(Z_STRVAL_PP(ui_id)), 1);
+		purple_account_set_enabled(account, Z_STRVAL_PP(ui_id), 1);
 
 		purple_accounts_add(account);
 
