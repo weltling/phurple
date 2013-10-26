@@ -221,13 +221,13 @@ phurple_wrote_msg_all_cb(char *method, PurpleAccount *account, const char *who, 
 static void
 phurple_wrote_im_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
 {/*{{{*/
-	return phurple_wrote_msg_all_cb("wroteimmsg", account, who, message, conv, flags);
+	phurple_wrote_msg_all_cb("wroteimmsg", account, who, message, conv, flags);
 }/*}}}*/
 
 static void
 phurple_wrote_chat_msg(PurpleAccount *account, const char *who, char *message, PurpleConversation *conv, PurpleMessageFlags flags)
 {/*{{{*/
-	return phurple_wrote_msg_all_cb("wrotechatmsg", account, who, message, conv, flags);
+	phurple_wrote_msg_all_cb("wrotechatmsg", account, who, message, conv, flags);
 }/*}}}*/
 
 static void
@@ -1634,7 +1634,7 @@ PHP_METHOD(PhurpleConversation, getTitle)
 				while (NULL != l) {
 					PurpleConvChatBuddy *bud = (PurpleConvChatBuddy *)l->data;
 					zval *tmp;
-					/* XXX implement ChatBuddy class */
+					// XXX implement ChatBuddy class
 				}
 
 				break;
