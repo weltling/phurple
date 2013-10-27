@@ -978,6 +978,9 @@ PHP_RSHUTDOWN_FUNCTION(phurple)
 /* {{{ PHP_MINFO_FUNCTION */
 PHP_MINFO_FUNCTION(phurple)
 {
+	/*if (!sapi_module.phpinfo_as_text) {
+		<img border="0" src="data:image/gif;base64,datahere" alt="" /> 
+	}*/
 	php_info_print_table_start();
 	php_info_print_table_header(2, "phurple support", "enabled");
 	php_info_print_table_header(2, "phurple version", PHP_PHURPLE_VERSION);
