@@ -2899,6 +2899,56 @@
   </para>
  </refsect1>
 </refentry>
+      <refentry xml:id="Phurple--Client-disconnect">
+        <refnamediv>
+          <refname>Phurple\Client::disconnect</refname>
+          <refpurpose>Disconnects all the connections</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+	<modifier>public static</modifier>
+            <type>void</type>
+            <methodname>Phurple\Client::disconnect</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Closes all the opened connections
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
+      <refentry xml:id="Phurple--Client-quitloop">
+        <refnamediv>
+          <refname>Phurple\Client::quitLoop</refname>
+          <refpurpose>Quits the main loop</refpurpose>
+        </refnamediv>
+        <refsect1 role="description">
+          <methodsynopsis>
+	<modifier>public static</modifier>
+            <type>void</type>
+            <methodname>Phurple\Client::quitLoop</methodname>
+            <void/>
+          </methodsynopsis>
+          <para>
+   Quits the main loop when called after the main loop was started with Client::runLoop(). This can be done from everywhere.
+  </para>
+        </refsect1>
+        <refsect1 role="parameters">
+          <para>
+  </para>
+        </refsect1>
+        <refsect1 role="returnvalues">
+          <para>
+  </para>
+        </refsect1>
+      </refentry>
     </reference>
     <reference id="account">
       <title>Phurple\Account</title>
