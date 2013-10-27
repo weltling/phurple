@@ -333,7 +333,9 @@ PHP_METHOD(PhurpleClient, quitLoop)
 
 	zco = (struct ze_client_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	g_main_loop_quit(zco->loop);
+	if (zco->loop) {
+		g_main_loop_quit(zco->loop);
+	}
 }
 /* }}} */
 
