@@ -44,7 +44,7 @@ php_create_presence_obj_zval(PurplePresence *ppresence TSRMLS_DC);
  * should fit it as well.
  */
 typedef struct
-{
+{/*{{{*/
 	PurplePrefType type;
 
 	char *ui;
@@ -56,7 +56,7 @@ typedef struct
 		gboolean boolean;
 
 	} value;
-
+/*}}}*/
 } PurpleAccountSetting;
 
 #if PHURPLE_INTERNAL_DEBUG

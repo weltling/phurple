@@ -42,7 +42,7 @@ extern void phurple_dump_zval(zval *var);
 
 void
 php_group_obj_destroy(void *obj TSRMLS_DC)
-{
+{/*{{{*/
 	struct ze_group_obj *zgo = (struct ze_group_obj *)obj;
 
 	zend_object_std_dtor(&zgo->zo TSRMLS_CC);
@@ -52,11 +52,11 @@ php_group_obj_destroy(void *obj TSRMLS_DC)
 	}*/
 
 	efree(zgo);
-}
+}/*}}}*/
 
 zend_object_value
 php_group_obj_init(zend_class_entry *ce TSRMLS_DC)
-{
+{/*{{{*/
 	zend_object_value ret;
 	struct ze_group_obj *zgo;
 #if PHP_MAJOR_VERSION > 5 || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
@@ -83,7 +83,7 @@ php_group_obj_init(zend_class_entry *ce TSRMLS_DC)
 	ret.handlers = &default_phurple_obj_handlers;
 
 	return ret;
-}
+}/*}}}*/
 
 zval *
 php_create_group_obj_zval(PurpleGroup *pgroup TSRMLS_DC)
