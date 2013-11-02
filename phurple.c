@@ -1272,7 +1272,7 @@ phurple_request_authorize(PurpleAccount *account,
 {/* {{{ */
 	zval *client;
 	zend_class_entry *ce;
-	zval *result, *php_account, *php_on_list, *php_remote_user, *php_message;
+	zval *result = NULL, *php_account, *php_on_list, *php_remote_user, *php_message;
 	TSRMLS_FETCH();
 
 	client = PHURPLE_G(phurple_client_obj);
@@ -1299,7 +1299,7 @@ phurple_request_authorize(PurpleAccount *account,
 					   &php_on_list
 					   );
 	
-	if(Z_TYPE_P(result) == IS_BOOL || Z_TYPE_P(result) == IS_LONG || Z_TYPE_P(result) == IS_DOUBLE) {
+	if(result && (Z_TYPE_P(result) == IS_BOOL || Z_TYPE_P(result) == IS_LONG || Z_TYPE_P(result) == IS_DOUBLE)) {
 		if((gboolean) Z_LVAL_P(result)) {
 			auth_cb(user_data);
 		} else {

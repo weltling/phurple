@@ -117,7 +117,7 @@ php_create_conversation_obj_zval(PurpleConversation *pconv TSRMLS_DC)
 static gboolean
 phurple_writing_msg_all_cb(char *method, PurpleAccount *account, const char *who, char **message, PurpleConversation *conv, PurpleMessageFlags flags)
 {/*{{{*/
-	gboolean ret;
+	gboolean ret = 0;
 	zval *conversation, *acc, *tmp0, *tmp1, *tmp2;
 	zval *client;
 	zval *method_ret = NULL;
@@ -155,8 +155,10 @@ phurple_writing_msg_all_cb(char *method, PurpleAccount *account, const char *who
 		*message = g_strdup(Z_STRVAL_P(tmp1));
 	}
 
-	convert_to_boolean(method_ret);
-	ret = Z_BVAL_P(method_ret);
+	if (NULL != method_ret) {
+		convert_to_boolean(method_ret);
+		ret = Z_BVAL_P(method_ret);
+	}
 
 	zval_ptr_dtor(&conversation);
 	zval_ptr_dtor(&acc);
@@ -378,7 +380,7 @@ phurple_sent_chat_msg(PurpleAccount *account, const char *message, int id)
 static gboolean
 phurple_receiving_msg_all_cb(char *method, PurpleAccount *account, char **sender, char **message, PurpleConversation *conv, PurpleMessageFlags *flags)
 {/*{{{*/
-	gboolean ret;
+	gboolean ret = 0;
 	zval *conversation, *acc, *tmp0, *tmp1, *tmp2;
 	zval *client;
 	zval *method_ret = NULL;
@@ -430,8 +432,10 @@ phurple_receiving_msg_all_cb(char *method, PurpleAccount *account, char **sender
 		*flags = Z_LVAL_P(tmp2);
 	}
 
-	convert_to_boolean(method_ret);
-	ret = Z_BVAL_P(method_ret);
+	if (NULL != method_ret) {
+		convert_to_boolean(method_ret);
+		ret = Z_BVAL_P(method_ret);
+	}
 
 	zval_ptr_dtor(&conversation);
 	zval_ptr_dtor(&acc);
@@ -654,7 +658,7 @@ phurple_buddy_typing_stopped(PurpleAccount *account, const char *name)
 static gboolean
 phurple_chat_buddy_joining(PurpleConversation *conv, const char *name, PurpleConvChatBuddyFlags flags)
 {/*{{{*/
-	gboolean ret;
+	gboolean ret = 0;
 	zval *conversation, *nm, *bflags;
 	zval *client;
 	zval *method_ret;
@@ -680,8 +684,10 @@ phurple_chat_buddy_joining(PurpleConversation *conv, const char *name, PurpleCon
 					   &bflags
 	);
 
-	convert_to_boolean(method_ret);
-	ret = Z_BVAL_P(method_ret);
+	if (NULL != method_ret) {
+		convert_to_boolean(method_ret);
+		ret = Z_BVAL_P(method_ret);
+	}
 
 	zval_ptr_dtor(&conversation);
 	zval_ptr_dtor(&nm);
@@ -901,7 +907,7 @@ phurple_chat_invited_user(PurpleConversation *conv, const char *name, const char
 static gint
 phurple_chat_invited(PurpleAccount *account, const char *inviter, const char *chat, const char *invite_message, const GHashTable *components)
 {/*{{{*/
-	gint ret;
+	gint ret = 0;
 	zval *acc, *tmp0, *tmp1, *tmp2;
 	zval *client;
 	zval *method_ret = NULL;
@@ -929,8 +935,10 @@ phurple_chat_invited(PurpleAccount *account, const char *inviter, const char *ch
 					   &tmp2
 	);
 
-	convert_to_long(method_ret);
-	ret = Z_LVAL_P(method_ret);
+	if (NULL != method_ret) {
+		convert_to_long(method_ret);
+		ret = Z_LVAL_P(method_ret);
+	}
 
 	zval_ptr_dtor(&acc);
 	zval_ptr_dtor(&tmp0);
