@@ -57,7 +57,7 @@ class JabberClient extends Client
 
 	public function onConnectionError($connection, $code, $description)
 	{/*{{{*/
-		$account = $connection->getAccount();
+		throw new \Exception($description, $code);
 	}/*}}}*/
 
 	protected function loopHeartBeat()
