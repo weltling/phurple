@@ -1559,7 +1559,7 @@ PHP_METHOD(PhurpleConversation, getConnection)
 	if(NULL != zco->pconversation) {
 		const PurpleConnection *pconn = purple_conversation_get_connection(zco->pconversation);
 		if (pconn) {
-			zval *tmp = php_create_connection_obj_zval(pconn TSRMLS_CC);
+			zval *tmp = php_create_connection_obj_zval((PurpleConnection *)pconn TSRMLS_CC);
 
 			*return_value = *tmp;
 
