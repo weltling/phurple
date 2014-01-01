@@ -7,7 +7,7 @@
       <surname>Belski</surname>
     </author>
     <copyright>
-      <year>2007-2013</year>
+      <year>2007-2014</year>
       <holder>Anatol Belski</holder>
     </copyright>
     <legalnotice xml:id="copyright">
@@ -68,7 +68,7 @@
       <para>
         <code> user@host~# phpize &amp;&amp; ./configure --with-phurple &amp;&amp; make &amp;&amp; make install</code>
       </para>
-      <para>Since the extension is installed, you can simply add a line in your php.ini with which it'll be loaded by default. An other way would be to use the dl() php function at the top of your script</para>
+      <para>Once the extension is installed, you can simply add a line in your php.ini with which it'll be loaded by default. An other way would be to use the dl() php function at the top of your script</para>
       <example>
         <programlisting>&lt;?php
 	if(!extension_loaded('phurple')) {
@@ -76,7 +76,7 @@
 	}
 ?&gt;</programlisting>
       </example>
-      <para>I have no time to do the windows builds. If one did it on his own, please post a PR to the github page.</para>
+	  <para>Windows builds are available from <ulink url="http://sourceforge.net/projects/phurple/files/"><citetitle>http://sourceforge.net/projects/phurple/files/</citetitle></ulink>. Besides the php_phurple.dll you'll need to pull the appropriate libpurple build+deps and put it somewhere on the path. Don't try to use the libpurple binaries from the Pidgin distribution, compiled with gcc they're not compatible with the provided phurple builds.</para>
     </chapter>
     <chapter id="runtime">
       <title>Runtime Configuration</title>
