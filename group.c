@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2007-2011, Anatol Belski <ab@php.net>
+ * Copyright (c) 2007-2014, Anatol Belski <ab@php.net>
  *
  * This file is part of Phurple.
  *
