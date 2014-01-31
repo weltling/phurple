@@ -1303,7 +1303,8 @@ phurple_setup_conv_signals(PurpleConversation *conv)
 	Creates a new conversation of the specified type */
 PHP_METHOD(PhurpleConversation, __construct)
 {
-	int type, name_len;
+	php_int_t type;
+	php_size_t name_len;
 	char *name;
 	zval *account;
 	struct ze_account_obj *zao;
@@ -1401,7 +1402,7 @@ PHP_METHOD(PhurpleConversation, getName)
 	Sends a message to this IM conversation */
 PHP_METHOD(PhurpleConversation, sendIM)
 {
-	int message_len;
+	php_int_t message_len;
 	char *message;
 	struct ze_conversation_obj *zco;
 	
@@ -1487,7 +1488,7 @@ PHP_METHOD(PhurpleConversation, inviteUser)
 {
 	struct ze_conversation_obj *zco;
 	char *user, *msg;
-	int user_len, msg_len;
+	php_size_t user_len, msg_len;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &user, &user_len, &msg, &msg_len) == FAILURE) {
 		return;
@@ -1515,7 +1516,7 @@ PHP_METHOD(PhurpleConversation, isUserInChat)
 {
 	struct ze_conversation_obj *zco;
 	char *user;
-	int user_len;
+	php_size_t user_len;
 	gboolean ret;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &user, &user_len) == FAILURE) {
@@ -1578,7 +1579,7 @@ PHP_METHOD(PhurpleConversation, setTitle)
 {
 	struct ze_conversation_obj *zco;
 	char *title;
-	int title_len;
+	php_size_t title_len;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &title, &title_len) == FAILURE) {
 		return;

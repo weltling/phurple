@@ -118,7 +118,7 @@ php_create_group_obj_zval(PurpleGroup *pgroup TSRMLS_DC)
 PHP_METHOD(PhurpleGroup, __construct)
 {
 	char *name;
-	int name_len;
+	php_size_t name_len;
 	struct ze_group_obj *zgo;
 
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {

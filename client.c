@@ -302,7 +302,7 @@ PHP_METHOD(PhurpleClient, __construct)
 	Creates the main loop*/
 PHP_METHOD(PhurpleClient, runLoop)
 {
-	long interval = 0;
+	php_int_t interval = 0;
 	struct ze_client_obj *zco;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &interval) == FAILURE) {
@@ -347,7 +347,8 @@ PHP_METHOD(PhurpleClient, addAccount)
 {
 	char *account_dsn, *protocol, *nick, *password, *host, *port;
 	const char *error;
-	int account_dsn_len, erroffset, offsets[19], rc;
+	php_size_t account_dsn_len;
+	int erroffset, offsets[19], rc;
 	pcre *re;
 	PurpleAccount *account = NULL;
 	
@@ -479,7 +480,7 @@ PHP_METHOD(PhurpleClient, deleteAccount)
 PHP_METHOD(PhurpleClient, findAccount)
 {
 	char *account_name;
-	int account_name_len;
+	php_size_t account_name_len;
 	PurpleAccount *paccount = NULL;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &account_name, &account_name_len) == FAILURE) {
@@ -637,7 +638,7 @@ PHP_METHOD(PhurpleClient, getProtocols)
 	Define a custom phurple settings directory, overriding the default (user's home directory/.phurple) */
 PHP_METHOD(PhurpleClient, setUserDir) {
 	char *user_dir;
-	int user_dir_len;
+	php_size_t user_dir_len;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &user_dir, &user_dir_len) == FAILURE) {
 		return;
@@ -678,7 +679,7 @@ PHP_METHOD(PhurpleClient, setDebug)
 PHP_METHOD(PhurpleClient, setUiId)
 {
 	char *ui_id;
-	int ui_id_len;
+	php_size_t ui_id_len;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &ui_id, &ui_id_len) == FAILURE) {
 		return;

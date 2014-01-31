@@ -128,7 +128,7 @@ PHP_METHOD(PhurpleBuddyList, findBuddy)
 {
 	zval *account;
 	char *name;
-	int name_len;
+	php_size_t name_len;
 	PurpleBuddy *pbuddy;
 	struct ze_account_obj *zao;
 	
@@ -277,7 +277,7 @@ PHP_METHOD(PhurpleBuddyList, removeGroup)
 PHP_METHOD(PhurpleBuddyList, addChat)
 {
 	char *chat;
-	int chat_len;
+	php_size_t chat_len;
 	GHashTable *components;
 	zval *account;
 	struct ze_account_obj *zao;

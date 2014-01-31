@@ -226,7 +226,7 @@ PHP_METHOD(PhurpleConnection, getFlags)
 /*{{{ proto public void Phurple\Connection::setFlags(integer flags) set connection flags */
 PHP_METHOD(PhurpleConnection, setFlags)
 {
-	long flags;
+	php_int_t flags;
 	struct ze_connection_obj *zco;
 	
 	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &flags) == FAILURE) {

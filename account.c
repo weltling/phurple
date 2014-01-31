@@ -144,7 +144,7 @@ php_create_account_obj_zval(PurpleAccount *paccount TSRMLS_DC)
 PHP_METHOD(PhurpleAccount, __construct)
 {
 	char *username, *protocol_name;
-	int username_len, protocol_name_len;
+	php_size_t username_len, protocol_name_len;
 	struct ze_account_obj *zao;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &username, &username_len, &protocol_name, &protocol_name_len) == FAILURE) {
@@ -169,7 +169,7 @@ PHP_METHOD(PhurpleAccount, __construct)
 	Sets the account's password */
 PHP_METHOD(PhurpleAccount, setPassword)
 {
-	int password_len;
+	php_size_t password_len;
 	char *password;
 	struct ze_account_obj *zao;
 	
@@ -276,7 +276,7 @@ PHP_METHOD(PhurpleAccount, set)
 {
 	zval *value;
 	char *name;
-	int name_len;
+	php_size_t name_len;
 	struct ze_account_obj *zao;
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
 		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
@@ -322,7 +322,7 @@ PHP_METHOD(PhurpleAccount, get)
 	PurpleAccountSetting *setting;
 	GHashTable *table = NULL;
 	char *name;
-	int name_len;
+	php_size_t name_len;
 	struct ze_account_obj *zao;
 #if PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 4
 		zval **ui_id = zend_std_get_static_property(PhurpleClient_ce, "ui_id", sizeof("ui_id")-1, 0 TSRMLS_CC);
@@ -480,7 +480,7 @@ PHP_METHOD(PhurpleAccount, getPresence)
 PHP_METHOD(PhurpleAccount, setStatus)
 {
 	struct ze_account_obj *zao;
-	long status;
+	php_int_t status;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &status) == FAILURE) {
 		return;
@@ -542,7 +542,7 @@ PHP_METHOD(PhurpleAccount, isDisconnecting)
 
 	zao = (struct ze_account_obj *) zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	RETVAL_BOOL((long) purple_account_is_disconnecting(zao->paccount));
+	RETVAL_BOOL((zend_bool) purple_account_is_disconnecting(zao->paccount));
 }
 /* }}} */
 #endif

@@ -37,6 +37,8 @@ extern zend_module_entry phurple_module_entry;
 #include "TSRM.h"
 #endif
 
+#include "compat.h"
+
 #include <purple.h>
 
 PHP_MINIT_FUNCTION(phurple);

@@ -121,7 +121,7 @@ php_create_buddy_obj_zval(PurpleBuddy *pbuddy TSRMLS_DC)
 PHP_METHOD(PhurpleBuddy, __construct)
 {
 	char *name, *alias = NULL;
-	int name_len, alias_len = 0;
+	php_size_t name_len, alias_len = 0;
 	zval *account;
 	struct ze_buddy_obj *zbo;
 	struct ze_account_obj *zao;
